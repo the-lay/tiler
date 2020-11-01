@@ -11,7 +11,7 @@ with open('README.md', 'r') as f:
 
 setup(name='tiler',
       version=__version__,
-      description='N-dimensional tiling and merging library',
+      description='Fast N-dimensional numpy array tiling and merging with overlapping, padding and tapering support',
       long_description=long_description,
       long_description_content_type='text/markdown',
       license='MIT',

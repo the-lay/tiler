@@ -70,7 +70,7 @@ class Merger:
         self.window = None
         self.set_window(window)
 
-    @Memoize
+    # @Memoize
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
         """
         Generate n-dimensional window according to the given shape.
@@ -201,7 +201,7 @@ class Merger:
         # self.merged_image = np.zeros_like(self.image_shape)
         # self.elements_visited = np.zeros_like(self.image_shape, dtype=np.uint)
         # TODO TODO TODO
-        print('adfgadf')
+        # print('adfgadf')
 
     def reset(self) -> None:
         """

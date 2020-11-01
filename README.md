@@ -24,6 +24,8 @@ Implemented features
  
 Roadmap
 ------------
+ - PyTorch Tensors support
+ - Ability to generate tiling for specific window in mind (=> so that every element has the window weight sum of 1.0)
  - Tests
  - Add border windows generation (like in Pielawski et. al - see references))
  - More examples

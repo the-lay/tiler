@@ -2,6 +2,10 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided as ast
 from tqdm.auto import tqdm
 from typing import Tuple, List, Union, Callable, Generator
+try:
+    import torch
+except ImportError:
+    pass
 
 
 class Tiler:
@@ -251,13 +255,22 @@ class Tiler:
             raise ValueError(f'Data must have the same shape as image_shape '
                              f'({data.shape} != {self.image_shape}).')
 
-        tile_strides = data.strides
-        indexing_strides = data[tuple(self._tile_slices)].strides
+        if isinstance(data, np.ndarray):
+            tile_strides = data.strides
+            indexing_strides = data[tuple(self._tile_slices)].strides
+        elif isinstance(data, torch.Tensor):
+            tile_strides = np.multiply(data.stride(), data.element_size())
+            indexing_strides = np.multiply(data[tuple(self._tile_slices)].stride(), data.element_size())
+        else:
+            raise ValueError(f'Not Pytorch Tensor or Numpy ndarray :(')
 
         shape = tuple(list(self._indexing_shape) + list(self.tile_shape))
         strides = tuple(list(indexing_strides) + list(tile_strides))
 
-        tiles = ast(data, shape=shape, strides=strides)
+        if isinstance(data, np.ndarray):
+            tiles = ast(data, shape=shape, strides=strides)
+        else:
+            tiles = torch.as_strided(data, size=shape, stride=strides)
         return tiles
 
     def get_tile(self, data: np.ndarray, tile_id: int) -> np.ndarray:
@@ -286,7 +299,12 @@ class Tiler:
 
         # get the actual data for the tile
         tile_view = tiles[tuple(self._tile_index[tile_id])]
-        tile_data = tile_view[tuple(slice(None, stop) for stop in sample_shape)].copy()
+        if isinstance(tile_view, np.ndarray):
+            tile_data = tile_view[tuple(slice(None, stop) for stop in sample_shape)].copy()
+        elif isinstance(tile_view, torch.Tensor):
+            tile_data = tile_view[tuple(slice(None, stop) for stop in sample_shape)].clone()
+        else:
+            raise ValueError('Not pytorch or numpy array')  # TODO
 
         # if sample_shape is not the same as tile_shape, we need to pad the tile in the given mode
         if self.channel_dimension:
