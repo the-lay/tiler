@@ -20,6 +20,36 @@ Implemented features
  - Access individual tiles with consistent indexing or with a convenience iterator
  - Merging tiles back into a full array with optional un-padding to the original shape
  - Merging supports scipy window functions
+
+Usage
+------------
+This is an example of basic functionality.  
+For more Tiler and Merger functionality, please check documentation.
+
+```python
+import numpy as np
+from tiler import Tiler, Merger
+
+image = np.random.random((3, 1920, 1080))
+tiler = Tiler(image_shape=image.shape,
+              tile_shape=(3, 250, 250),
+              channel_dimension=2)
+
+# You can access tiles with a convenience iterator
+for tile_id, tile in tiler(image):
+    print(f'Tile {tile_id} out of {len(tiler)} tiles.')
+
+# You can access tiles individually too
+tile_3 = tiler.get_tile(image, 3)
+
+# You can also use Merger to handle merging
+merger = Merger(tiler=tiler)
+for tile_id, tile in tiler(image):
+   merger.add(tile_id, some_processing_fn(tile))
+final_image = merger.merge(unpad=True)
+final_image.shape
+>>> (3, 1920, 1080)
+```
  
 Roadmap
 ------------
