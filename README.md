@@ -1,10 +1,12 @@
 # tiler
+![CI](https://github.com/the-lay/tiler/workflows/CI/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
 
 ### Please note: work in progress! Until a stable release, please avoid using this package in production!
 
 This package provides tools for N-dimensional tiling (patch extraction)
-and subsequent merging with tapering (window) functions.
+and subsequent merging with built-in tapering (window) function support.
 
 This is especially helpful for semantic segmentation tasks in deep learning,
 where we often have to work with images that do not fit into GPU memory
