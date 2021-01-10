@@ -1,15 +1,14 @@
 # tiler
-<!-- badges go here -->
+[![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
 
-### Work in progress!
+### Please note: work in progress! Until a stable release, please avoid using this package in production!
 
-
-This packages provides tools for N-dimensional tiling (patch extraction)
+This package provides tools for N-dimensional tiling (patch extraction)
 and subsequent merging with tapering (window) functions.
 
 This is especially helpful for semantic segmentation tasks in deep learning,
 where we often have to work with images that do not fit into GPU memory
-(2D hyperspectral satellite images, 3D tomographic data, whole slide images etc.).
+(2D hyperspectral satellite images, 2D whole slide images, 2D videos, 3D tomographic data etc.).
 
 Implemented features
 -------------
@@ -17,17 +16,19 @@ Implemented features
  - Optimized to avoid unnecessary memory copies: numpy views for all tiles, except border tiles that require padding
  - N-dimensional array tiling (but for now tiles must have the same number of dimensions as the array)
  - Supports channel dimension: dimension that will not be tiled
- - Overlapping support: you can specify tile percentage overlap or the overlap size
- - Access individual tiles with consistent indexing or with convenience iterator
- - Merging tiles back into full array: optional un-padding to original shape
+ - Overlapping support: you can specify tile percentage or directly overlap size
+ - Access individual tiles with consistent indexing or with a convenience iterator
+ - Merging tiles back into a full array with optional un-padding to the original shape
  - Merging supports scipy window functions
  
 Roadmap
 ------------
- - PyTorch Tensors support
+ - Batched tiles
+ - Implement overlap-tile strategy
  - Ability to generate tiling for specific window in mind (=> so that every element has the window weight sum of 1.0)
- - Tests
  - Add border windows generation (like in Pielawski et. al - see references))
+ - PyTorch Tensors support
+   - merging on GPU like in pytorch-toolbelt?
  - More examples
  - Implement windows functions and remove scipy dependency (we need only a couple of functions that generate windows)
  - PyTorch Dataset class convenience wrapper?
@@ -57,6 +58,9 @@ pip install .
 Examples
 -------------
 For now, only the one `examples/tiler_example.py`
+
+
+
 
 <!-- for later
 For more examples, please see examples/ folder
@@ -89,14 +93,17 @@ https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0229839#pone.0
 https://arxiv.org/pdf/1803.02786.pdf
 -->
 
-Motivation & other tiling/patching libraries
+
+
+
+
+Motivation & other tiling/patching packages
 -------------
 I work on semantic segmentation of patched 3D data and
 I often found myself reusing tiling functions that I wrote for previous projects.
 No existing libraries listed below fit my use case, so that's why I wrote `tiler`.
 
-However, there are other libraries that might fit you better:
-
+However, other libraries might fit you better than `tiler`:
  - [vfdev-5/ImageTilingUtils](https://github.com/vfdev-5/ImageTilingUtils)
     - Minimalistic image reader agnostic 2D tiling tools
 
@@ -109,12 +116,11 @@ However, there are other libraries that might fit you better:
  - [samdobson/image_slicer](https://github.com/samdobson/image_slicer)
     - Slicing and merging 2D image into N equally sized tiles
     
- - Do you know any other libraries?
+ - Do you know any other similar packages?
     - [Please make a PR](https://github.com/the-lay/tiler/pulls)
     - or [open a new issue](https://github.com/the-lay/tiler/issues).
-
-
-References
+   
+Academic references
 -------------
 [Introducing Hann windows for reducing edge-effects in patch-based image segmentation](https://doi.org/10.1371/journal.pone.0229839
 ), Pielawski and Wählby, March 2020

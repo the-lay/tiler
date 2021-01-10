@@ -3,7 +3,6 @@ import sys
 from typing import Union, Tuple, List
 from scipy.signal.windows import get_window
 from tiler import Tiler
-from tiler.utils import Memoize
 
 class Merger:
 
@@ -12,7 +11,8 @@ class Merger:
 
     def __init__(self,
                  tiler: Tiler,
-                 window: str = 'boxcar'
+                 window: str = 'boxcar',
+                 logits: int = 0
                  ):
         """
         Merger precomputes everything for merging together tiles created by given Tiler.
@@ -51,9 +51,19 @@ class Merger:
                     Minimum 4-term Blackman-Harris window according to Nuttall
                 'barthann'
                     Bartlett-Hann window.
+
+        :param logits: int
+            If logits > 0, adds an extra dimension in front for logits in the data array.
+            Default is 0.
+
         """
 
         self.tiler = tiler
+
+        # Logits support
+        if not isinstance(logits, int) or logits < 0:
+            raise ValueError(f'Logits must be an integer 0 or a positive number ({logits}).')
+        self.logits = int(logits)
 
         # Generate data and normalization arrays
         self.data = self.normalization = self.data_weights = None
@@ -70,7 +80,6 @@ class Merger:
         self.window = None
         self.set_window(window)
 
-    # @Memoize
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
         """
         Generate n-dimensional window according to the given shape.
@@ -112,9 +121,6 @@ class Merger:
 
         :return: np.ndarray
         """
-
-        if window not in self.__WINDOWS:
-            raise ValueError('Unsupported window, please check docs')
 
         w = np.ones(shape)
         for axis, length in enumerate(shape):
@@ -178,7 +184,7 @@ class Merger:
         # Warn user that changing window type after some elements were already visited is a bad idea.
         if np.count_nonzero(self.normalization):
             print('Warning: you are changing a window type after some elements '
-                  ' were already processed and that might lead to unpredicted behavior.', file=sys.stderr)
+                  ' were already processed and that might lead to an unpredicted behavior.', file=sys.stderr)
 
         # Generate and set the window
         self.window = self._generate_window(window, self.tiler.tile_shape)
@@ -214,7 +220,10 @@ class Merger:
         padded_data_shape = self.tiler._new_shape
 
         # Image holds sum of all processed tiles multiplied by the window
-        self.data = np.zeros(padded_data_shape)
+        if self.logits:
+            self.data = np.zeros([self.logits] + padded_data_shape)
+        else:
+            self.data = np.zeros(padded_data_shape)
 
         # Normalization array holds the number of times each element was visited
         self.normalization = np.zeros(padded_data_shape, dtype=np.uint32)
@@ -234,23 +243,37 @@ class Merger:
 
         :return: None
         """
-        data_shape = np.array(data.shape)
 
-        if data_shape.size != self.tiler.tile_shape.size:
-            raise ValueError(f'Data shape and tile shape must have the same length.'
-                             f'({data_shape.size} != {self.tiler.tile_shape.size})')
-        if (self.tiler.mode == 'irregular') and np.any(data_shape > self.tiler.tile_shape):
-            raise ValueError(f'With irregular mode, data shape must be equal or smaller than tile_shape '
-                             f'(np.any({data_shape} > {self.tiler.tile_shape}))')
-        elif (self.tiler.mode != 'irregular') and np.any(data_shape != self.tiler.tile_shape):
-            raise ValueError(f'Array shape does not match tile shape '
-                             f'({data.shape} != {self.tiler.tile_shape})')
+        if tile_id < 0 or tile_id >= len(self.tiler):
+            raise IndexError(f'Out of bounds, there is no tile {tile_id}. '
+                             f'There are {len(self.tiler)} tiles, starting from index 0.')
+
+        data_shape = np.array(data.shape)
+        expected_tile_shape = ((self.logits, ) + tuple(self.tiler.tile_shape)) if self.logits > 0 else tuple(self.tiler.tile_shape)
+
+        if self.tiler.mode != 'irregular':
+            if not np.all(np.equal(data_shape, expected_tile_shape)):
+                raise ValueError(f'Passed data shape ({data_shape}) '
+                                 f'does not fit expected tile shape ({expected_tile_shape}).')
+        else:
+            if not np.all(np.less_equal(data_shape, expected_tile_shape)):
+                raise ValueError(f'Passed data shape ({data_shape}) '
+                                 f'must be less or equal than tile shape ({expected_tile_shape}).')
 
         # Select coordinates for data
-        shape_diff = self.tiler.tile_shape - data_shape
+        shape_diff = expected_tile_shape - data_shape
         a, b = self.tiler.get_tile_bbox_position(tile_id, with_channel_dim=True)
+
         sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
         win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
+
+        if self.logits > 0:
+            self.data[tuple([slice(None, None, None)] + sl)] += data
+            self.data_weights[tuple(sl)] *= self.window[tuple(win_sl[1:])]
+        else:
+            self.data[tuple(sl)] += data
+            self.data_weights[tuple(sl)] *= self.window[tuple(win_sl)]
+        self.normalization[tuple(sl)] += 1
 
         # Add processed tile data
         # Data array holds data with window applied
@@ -259,11 +282,8 @@ class Merger:
         # self.data[tuple(sl)] += (data * self.window[tuple(win_sl)])
         # self.data_weights[tuple(sl)] *= self.window[tuple(win_sl)]
         # self.normalization[tuple(sl)] += 1
-        self.data[tuple(sl)] += data
-        self.data_weights[tuple(sl)] *= self.window[tuple(win_sl)]
-        self.normalization[tuple(sl)] += 1
 
-    def merge(self, unpad: bool = True, normalize: bool = True) -> np.ndarray:
+    def merge(self, unpad: bool = True, normalize: bool = True, argmax: bool = False) -> np.ndarray:
         """
         Returns final merged data array obtained from added tiles.
 
@@ -275,6 +295,10 @@ class Merger:
             If normalize is True, divides elements by the number of times they were visited (self.normalization).
             Default is True.
 
+        :param argmax: bool
+            If argmax is True, the first dimension will be argmaxed.
+            Default is False.
+
         :return: np.ndarray
             Final merged data array obtained from added tiles.
         """
@@ -282,10 +306,15 @@ class Merger:
         data = self.data * self.data_weights
 
         if normalize:
-            data = data / self.normalization
+            # context to remove division by zero warnings
+            with np.errstate(divide='ignore', invalid='ignore'):
+                data = data / self.normalization
+
+        if argmax:
+            data = np.argmax(data, 0)
 
         if unpad:
-            sl = [slice(None, self.tiler.image_shape[i]) for i in range(len(self.data.shape))]
+            sl = [slice(None, self.tiler.image_shape[i]) for i in range(len(self.tiler.image_shape))]
             data = data[tuple(sl)]
 
         return data
