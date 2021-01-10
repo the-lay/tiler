@@ -23,6 +23,8 @@ Implemented features
  
 Roadmap
 ------------
+ - Proper documentation
+ - Teaser image for github
  - Batched tiles
  - Implement overlap-tile strategy
  - Ability to generate tiling for specific window in mind (=> so that every element has the window weight sum of 1.0)
