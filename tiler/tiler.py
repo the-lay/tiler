@@ -10,7 +10,7 @@ from typing import Tuple, List, Union, Callable, Generator
 
 class Tiler:
 
-    TILING_MODES = ['constant', 'drop', 'irregular', 'overlap_tile', 'reflect', 'edge', 'wrap']
+    TILING_MODES = ['constant', 'drop', 'irregular', 'reflect', 'edge', 'wrap']
 
     # @classmethod
     # def overlap_tile(cls):
@@ -47,7 +47,6 @@ class Tiler:
                  tile_shape: Union[Tuple, List],
                  mode: Union[str] = 'constant',
                  channel_dimension: Union[int, None] = None,
-                 # offset: Union[int, tuple, List, None] = None,
                  constant_value: float = 0.0,
                  overlap: Union[float, Tuple, List] = 0.0
                  ):
@@ -56,17 +55,18 @@ class Tiler:
 
         :param image_shape: tuple or list
             Image shape, i.e. (1980, 1050, 3) or [512, 512, 512].
-            If you have a channel dimension, specify it with channel_dimension keyword.
+            Note: include channel dimension too, and specify which axis that is with channel_dimension keyword.
 
         :param tile_shape: tuple or list
             Shape of a tile, i.e. (256, 256, 3) or [64, 64, 64].
             Tile must have same the number of dimensions as data.
-            # TODO should it be any size?
+            # TODO: it should be possible to create tiles with less dimensions than data
 
-        :param mode: str # TODO allow to pass Callable too?
+        :param mode: str
             Mode defines how the data will be tiled.
+            # TODO: allow a user supplied function, Callable
 
-            One of the following string values: # TODO or a user supplied function?
+            One of the following string values:
                 `constant` (default)
                     Pads tile with constant value to match tile_shape.
                     Set the value with keyword 'constant_value'.
@@ -96,25 +96,15 @@ class Tiler:
                 # <function>
                 #     The function accepts the tile and returns the padded tile.
 
-        :param channel_dimension: int or None
-            Used to specify the channel dimension.
-            Channel dimension is treated differently from other dimensions.
-            The channel dimension will never be tiled.
-            Often it is the last or the first dimension.
+        :param channel_dimension: int, None
+            Used to specify the channel dimension, the dimension that will not be tiled.
+            Usually it is the last or the first dimension of the array.
             Default is None, no channel dimension in the data.
-
-        # :param offset: int or tuple or list or None
-        #     # TODO: does not work yet!
-        #     Used to add (padable if negative) offset to the dimensions.
-        #     If int, the same offset will be applied on each dimension.
-        #     If tuple or float, must have the same number of dimensions as tile_shape.
-        #     If None, adds a negative offset equal to half of tile_shape.
-        #     Default is None.
 
         :param constant_value: float
             Used in 'constant' mode. The value to set the padded values for each axis.
 
-        :param overlap: int, float or tuple or list
+        :param overlap: int, float, tuple, list
             If int, the same overlap in each dimension.
             If float, percentage of a tile_size to use for overlap (from 0.0 to 1.0).
             If tuple or list, size of the overlap in. Must be smaller than tile_shape.
@@ -127,8 +117,7 @@ class Tiler:
         if (self.tile_shape <= 0).any() or (self.image_shape <= 0).any():
             raise ValueError('Shapes must be tuple or lists of positive numbers.')
         if self.tile_shape.size != self.image_shape.size:
-            raise ValueError('Tile and data shapes must have the same length. '
-                             'If your array has a channel dimension, specify it in `channel_dimension`.')
+            raise ValueError('Tile and data shapes must have the same length.')
 
         # Tiling mode
         self.mode = mode
@@ -141,20 +130,6 @@ class Tiler:
                                        or (self.channel_dimension > len(self.image_shape))):
             raise ValueError(f'Specified channel dimension is out of bounds '
                              f'(should be from 0 to {len(self.image_shape)}).')
-
-        # # Offset
-        # if offset is None:
-        #     # Default offset is negative half the tile_shape
-        #     self.offset = (self.tile_shape // 2)
-        # elif isinstance(offset, int):
-        #     # Int offset applies the same offset to each dimension
-        #     self.offset = np.array([offset for _ in self.tile_shape])
-        # else:
-        #     if self.offset.size != self.tile_shape.size:
-        #         raise ValueError('Offset and tile shapes must have the same length. '
-        #                          'If your array has a channel dimension, specify it in `channel_dimension`.')
-        # if self.channel_dimension:
-        #     self.offset[self.channel_dimension] = 0
 
         # Constant value used for `constant` tiling mode
         self.constant_value = constant_value

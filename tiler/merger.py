@@ -11,7 +11,7 @@ class Merger:
 
     def __init__(self,
                  tiler: Tiler,
-                 window: str = 'boxcar',
+                 window: Union[str, np.ndarray] = 'boxcar',
                  logits: int = 0
                  ):
         """
@@ -66,7 +66,7 @@ class Merger:
         self.logits = int(logits)
 
         # Generate data and normalization arrays
-        self.data = self.normalization = self.data_weights = None
+        self.data = self.data_visits = self.weights_sum = None
         self.reset()
 
         # TODO generate window depending on tile border type
@@ -178,16 +178,22 @@ class Merger:
         :return: None
         """
 
-        if window not in self.__WINDOWS:
-            raise ValueError('Unsupported window, please check docs')
-
         # Warn user that changing window type after some elements were already visited is a bad idea.
-        if np.count_nonzero(self.normalization):
+        if np.count_nonzero(self.data_visits):
             print('Warning: you are changing a window type after some elements '
                   ' were already processed and that might lead to an unpredicted behavior.', file=sys.stderr)
 
-        # Generate and set the window
-        self.window = self._generate_window(window, self.tiler.tile_shape)
+        # Generate or set a window function
+        if isinstance(window, str):
+            if window not in self.__WINDOWS:
+                raise ValueError('Unsupported window, please check docs')
+            self.window = self._generate_window(window, self.tiler.tile_shape)
+        elif isinstance(window, np.ndarray):
+            if not np.array_equal(window.shape, self.tiler.tile_shape):
+                raise ValueError(f'Window function must have the same shape as tile shape.')
+            self.window = window
+        else:
+            raise ValueError(f'Unsupported type for window function ({type(window)}), expected str or np.ndarray.')
 
         # Border calculations
         # TODO border
@@ -226,10 +232,10 @@ class Merger:
             self.data = np.zeros(padded_data_shape)
 
         # Normalization array holds the number of times each element was visited
-        self.normalization = np.zeros(padded_data_shape, dtype=np.uint32)
+        self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
 
         # Total data window (weight) coefficients
-        self.data_weights = np.ones(padded_data_shape)
+        self.weights_sum = np.zeros(padded_data_shape)
 
     def add(self, tile_id: int, data: np.ndarray) -> None:
         """
@@ -268,31 +274,19 @@ class Merger:
         win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
 
         if self.logits > 0:
-            self.data[tuple([slice(None, None, None)] + sl)] += data
-            self.data_weights[tuple(sl)] *= self.window[tuple(win_sl[1:])]
+            self.data[tuple([slice(None, None, None)] + sl)] += (data * self.window[tuple(win_sl[1:])])
+            self.weights_sum[tuple(sl)] += self.window[tuple(win_sl[1:])]
         else:
-            self.data[tuple(sl)] += data
-            self.data_weights[tuple(sl)] *= self.window[tuple(win_sl)]
-        self.normalization[tuple(sl)] += 1
+            self.data[tuple(sl)] += (data * self.window[tuple(win_sl)])
+            self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
+        self.data_visits[tuple(sl)] += 1
 
-        # Add processed tile data
-        # Data array holds data with window applied
-        # Data weights holds final weight applied to each element
-        # Normalization holds number of times each element was modified
-        # self.data[tuple(sl)] += (data * self.window[tuple(win_sl)])
-        # self.data_weights[tuple(sl)] *= self.window[tuple(win_sl)]
-        # self.normalization[tuple(sl)] += 1
-
-    def merge(self, unpad: bool = True, normalize: bool = True, argmax: bool = False) -> np.ndarray:
+    def merge(self, unpad: bool = True, argmax: bool = False) -> np.ndarray:
         """
         Returns final merged data array obtained from added tiles.
 
         :param unpad: bool
             If unpad is True, removes padded elements.
-            Default is True.
-
-        :param normalize: bool
-            If normalize is True, divides elements by the number of times they were visited (self.normalization).
             Default is True.
 
         :param argmax: bool
@@ -302,13 +296,7 @@ class Merger:
         :return: np.ndarray
             Final merged data array obtained from added tiles.
         """
-
-        data = self.data * self.data_weights
-
-        if normalize:
-            # context to remove division by zero warnings
-            with np.errstate(divide='ignore', invalid='ignore'):
-                data = data / self.normalization
+        data = self.data
 
         if argmax:
             data = np.argmax(data, 0)

@@ -90,3 +90,17 @@ class TestMergingCommon(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             Merger(tiler=tiler, window='unsupported_window')
+
+        with self.assertRaises(ValueError):
+            Merger(tiler=tiler, window=np.zeros((10, 10)))
+
+        with self.assertRaises(ValueError):
+            Merger(tiler=tiler, window=10)
+
+        window = np.zeros((10, ))
+        window[1:10] = 1
+        merger = Merger(tiler=tiler, window=window)
+        for t_id, t in tiler(self.data):
+            merger.add(t_id, t)
+        np.testing.assert_equal(merger.merge(),
+                                [i if i % 10 else 0 for i in range(100)])
