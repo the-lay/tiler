@@ -227,7 +227,7 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros([self.logits] + padded_data_shape)
+            self.data = np.zeros(np.hstack((self.logits, padded_data_shape)))
         else:
             self.data = np.zeros(padded_data_shape)
 

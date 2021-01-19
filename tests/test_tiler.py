@@ -44,10 +44,11 @@ class TestTilingCommon(unittest.TestCase):
                       channel_dimension=0,
                       mode='irregular')
 
-        expected_repr = '[3, 15, 300] tiler for data of shape [3, 300, 300]:' \
-                        '\n\tNew shape: [3, 300, 300]' \
-                        '\n\tOverlap: 0.0' \
-                        '\n\tStep: [0, 15, 300]' \
+        expected_repr = 'Tiler split [3, 300, 300] data into 20 tiles of [3, 15, 300].' \
+                        '\n\tMosaic shape: [1, 20, 1]' \
+                        '\n\tTileable shape: [3, 300, 300]' \
+                        '\n\tTile overlap: 0' \
+                        '\n\tElement step: [0, 15, 300]' \
                         '\n\tMode: irregular' \
                         '\n\tChannel dimension: 0'
 
@@ -179,16 +180,30 @@ class TestTiling1D(unittest.TestCase):
         with self.assertRaises(IndexError):
             tiler.get_tile(self.data, -1)
 
-        tiles = tiler.view_in_tiles(self.data)
-        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(None, 0, tiles))
-
+        # copy test
+        t = tiler.get_tile(self.data, 0, copy=True)
+        t[9] = 0
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0))
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
 
-    def test_view_in_tiles(self):
-        tiler = Tiler(image_shape=self.data.shape,
-                      tile_shape=(10, ))
-        with self.assertRaises(ValueError):
-            tiler.view_in_tiles(self.data.reshape((10, 10)))
+        t = tiler.get_tile(self.data, 0, copy=False)
+        t[9] = 0
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
+        t[9] = 9
+
+        # copy test with iterator
+        t = list(tiler(self.data, copy_data=True))
+        t[0][1][9] = 0
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0))
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t[0][1])
+        self.assertNotEqual(t[0][1][9], self.data[9])
+
+        t = [tile for _, tile in tiler(self.data, copy_data=False)]
+        t[0][9] = 0
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t[0])
+        self.assertEqual(t[0][9], self.data[9])
 
     def test_overlap(self):
         # Case 1
@@ -240,21 +255,6 @@ class TestTiling1D(unittest.TestCase):
 
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
-
-    def test_tile_sample_shape(self):
-        tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape,
-                      tile_shape=(tile_size, ),
-                      channel_dimension=None)
-        tiler2 = Tiler(image_shape=(3, ) + self.data.shape,
-                       tile_shape=(3, tile_size),
-                       channel_dimension=0)
-
-        with self.assertRaises(IndexError):
-            tiler.get_tile_sample_shape(len(tiler))
-
-        np.testing.assert_equal([tile_size], tiler.get_tile_sample_shape(len(tiler) - 1))
-        np.testing.assert_equal([tile_size], tiler2.get_tile_sample_shape(len(tiler) - 1))
 
     def test_tile_mosaic_position(self):
         tile_size = 10

@@ -1,4 +1,4 @@
-# 2D RGB Overlap-tile strategy tiling/merging example
+# 2D RGB overlap-tile strategy tiling/merging example
 #
 # "This strategy allows the seamless segmentation of arbitrarily large images by an overlap-tile strategy.
 # To predict the pixels in the border region of the image, the missing context is extrapolated by mirroring
@@ -26,7 +26,6 @@ tiler = Tiler(image_shape=padded_image.shape, tile_shape=(128, 128, 3),
               overlap=(64, 64, 0), channel_dimension=2)
 
 # Window function for merging
-# We also need to generate a window for function
 window = np.zeros((128, 128, 3))
 window[32:-32, 32:-32, :] = 1
 
@@ -34,9 +33,20 @@ window[32:-32, 32:-32, :] = 1
 merger = Merger(tiler=tiler, window=window)
 
 # Let's define a function that will be applied to each tile
-# For this example, we use PIL to adjust color balance
-# In practice, this can be a neural network or any kind of processing
-def process(patch: np.ndarray) -> np.ndarray:
+def process(patch: np.ndarray, sanity_check: bool = True) -> np.ndarray:
+
+    # One example can be a sanity check
+    # Make the parts that should be remove black
+    # There should not appear any black spots in the final merged image
+    if sanity_check:
+        patch[:32, :, :] = 0
+        patch[-32:, :, :] = 0
+        patch[:, :32, :] = 0
+        patch[:, -32:, :] = 0
+        return patch
+
+    # Another example can be to just modify the whole patch
+    # Using PIL, we adjust the color balance
     enhancer = ImageEnhance.Color(Image.fromarray(patch))
     return np.array(enhancer.enhance(5.0))
 
@@ -45,6 +55,7 @@ def process(patch: np.ndarray) -> np.ndarray:
 for tile_id, tile in tiler(padded_image):
     processed_tile = process(tile)
     merger.add(tile_id, processed_tile)
+
 final_image = merger.merge().astype(np.uint8)
 final_unpadded_image = final_image[32:-32, 32:-32, :]
 

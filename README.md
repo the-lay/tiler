@@ -16,10 +16,9 @@ images do not fit into GPU memory (2D hyperspectral satellite images,
 Implemented features
 -------------
  - Data reader agnostic: works with numpy arrays
- - Optimized to avoid unnecessary memory copies: numpy views for all tiles,
-   except border tiles that require padding
  - N-dimensional array tiling
-   (but for now tiles must have the same number of dimensions as the array)
+   (note: currently tile shape must have the same number of dimensions as the array)
+ - Optional in-place tiling (without creating copies)
  - Supports channel dimension: dimension that will not be tiled
  - Overlapping support: you can specify tile percentage or directly overlap size
  - Window functions: Merger accepts weights for the tile as an array or a scipy window
@@ -116,10 +115,9 @@ However, other libraries might fit you better than `tiler`:
     
  - Do you know any other similar packages?
     - [Please make a PR](https://github.com/the-lay/tiler/pulls) or [open a new issue](https://github.com/the-lay/tiler/issues).
-   
-Academic references
--------------
-[Introducing Hann windows for reducing edge-effects in patch-based image segmentation](https://doi.org/10.1371/journal.pone.0229839
+
+Moreover, some approaches have been described in the literature:
+ - [Introducing Hann windows for reducing edge-effects in patch-based image segmentation](https://doi.org/10.1371/journal.pone.0229839
 ), Pielawski and Wählby, March 2020
 
 
@@ -158,8 +156,3 @@ https://gist.github.com/npielawski/7e77d23209a5c415f55b95d4aba914f6
 https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0229839#pone.0229839.ref005
 https://arxiv.org/pdf/1803.02786.pdf
 -->
-
-
-
-
-
