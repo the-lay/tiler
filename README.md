@@ -112,7 +112,10 @@ However, other libraries might fit you better than `tiler`:
 
  - [samdobson/image_slicer](https://github.com/samdobson/image_slicer)
     - Slicing and merging 2D image into N equally sized tiles
-    
+
+ - [dovahcrow/patchify.py](https://github.com/dovahcrow/patchify.py)
+    - Tile and merge 2D, 3D images defined by tile shapes and step between tiles
+   
  - Do you know any other similar packages?
     - [Please make a PR](https://github.com/the-lay/tiler/pulls) or [open a new issue](https://github.com/the-lay/tiler/issues).
 
