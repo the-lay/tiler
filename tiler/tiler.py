@@ -168,7 +168,7 @@ class Tiler:
                f'\n\tChannel dimension: {self.channel_dimension}'
 
     def __call__(self, data: np.ndarray, progress_bar: bool = False,
-                 batch_size: int = 1, drop_last: bool = False,
+                 batch_size: int = 0, drop_last: bool = False,
                  copy_data: bool = True) -> \
             Generator[Tuple[int, np.ndarray], None, None]:
         """
@@ -181,15 +181,15 @@ class Tiler:
             Whether to show the progress bar or not. Uses tqdm package.
 
         :param batch_size: int
-            # TODO
-            # If > 1, returns more than one tile
-            # If == 1, does not add batch dimension
-            Default: 1
+            Return tiles in batches of batch_size.
+            If batch_size == 0, return one tile at a time.
+            If batch_size >= 1, return in batches (returned shape: [batch_size, *tile_shape])
+            Default: 0
 
         :param drop_last: bool
-            # TODO
-            # if n_tiles % batch_size != 0 and drop_last == True, drop the last (incomplete) batch
-            # else, returns incomplete batch
+            If set to True, generator drops the last non-full batch.
+            Used only when batch_size > 0.
+            Default: 0
 
         :param copy_data: bool
             If true, returned tile is a copy. Otherwise, it is a view.
@@ -199,17 +199,23 @@ class Tiler:
             Returns tuple with int that is the tile_id and np.ndarray tile data.
         """
 
-        # if batch_size <= 0:
-        #     raise ValueError(f'Requested batch_size ({batch_size}) is <= 0')
-        #
-        # for batch_i in tqdm(range(0, self.n_tiles, batch_size),
-        #                     desc='Processing', disable=not progress_bar, unit='tile'):
-        #
-        #     actual_batch_size = batch_i
-        #     collated_tiles =
+        if batch_size < 0:
+            raise ValueError(f'Batch size must >= 0, not {batch_size}')
 
-        for tile_i in tqdm(range(self.n_tiles), desc='Tiling', disable=not progress_bar, unit='tile'):
-            yield tile_i, self.get_tile(data, tile_i, copy=copy_data)
+        # return just a tile
+        if batch_size == 0:
+            for tile_i in tqdm(range(self.n_tiles), disable=not progress_bar, unit=' tiles'):
+                yield tile_i, self.get_tile(data, tile_i, copy=copy_data)
+
+        # return batches
+        if batch_size > 0:
+            # check for drop_last
+            length = (self.n_tiles - (self.n_tiles % batch_size)) if drop_last else self.n_tiles
+
+            for tile_i in tqdm(range(0, length, batch_size), disable=not progress_bar, unit=' batches'):
+                tiles = np.stack([self.get_tile(data, x, copy=copy_data) for x
+                                  in range(tile_i, min(tile_i + batch_size, length))])
+                yield tile_i // batch_size, tiles
 
     def get_tile(self, data: Union[np.ndarray, None], tile_id: int, copy: bool = True) -> np.ndarray:
         """

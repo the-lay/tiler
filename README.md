@@ -20,12 +20,13 @@ Implemented features
    (note: currently tile shape must have the same number of dimensions as the array)
  - Optional in-place tiling (without creating copies)
  - Supports channel dimension: dimension that will not be tiled
+ - Supports batching of tiles
  - Overlapping support: you can specify tile percentage or directly overlap size
  - Window functions: Merger accepts weights for the tile as an array or a scipy window
  - Convenient access to the tiles: with an iterator or a separate getter
  - Easy merging to the full size: just add the processed tile to the Merger
 
-Usage
+Quick start
 ------------
 This is an example of basic functionality.  
 You can also find more examples in [examples/](examples).  
@@ -36,25 +37,38 @@ import numpy as np
 from tiler import Tiler, Merger
 
 image = np.random.random((3, 1920, 1080))
+
+# Setup tiling parameters
 tiler = Tiler(image_shape=image.shape,
               tile_shape=(3, 250, 250),
               channel_dimension=2)
 
-# You can access tiles with a convenience iterator
+# You can access tiles with an iterator
 for tile_id, tile in tiler(image):
     print(f'Tile {tile_id} out of {len(tiler)} tiles.')
 
-# You can access tiles individually too
+# You can access tiles individually
 tile_3 = tiler.get_tile(image, 3)
 
-# You can also use Merger to handle merging
-merger = Merger(tiler=tiler)
+# You can access tiles in batches
+tiles_in_batches = [batch for _, batch in tiler(image, batch_size=10, drop_last=True)]
+
+# Setup merger object with constant window
+merger = Merger(tiler, window='boxcar')
+
+# Merge one by one
 for tile_id, tile in tiler(image):
    merger.add(tile_id, some_processing_fn(tile))
 final_image = merger.merge(unpad=True)
 
-final_image.shape
->>> (3, 1920, 1080)
+# Merge in batches
+merger.reset()
+for batch_id, batch in tiler(image, batch_size=10):
+   merger.add_batch(batch_id, 10, batch)
+final_image_batches = merger.merge(unpad=True)
+
+final_image.shape, final_image_batches.shape
+>>> (3, 1920, 1080), (3, 1920, 1080)
 ```
  
 Installation
@@ -77,9 +91,9 @@ Roadmap
 ------------
  - Proper documentation
  - Teaser image for github
- - Batched tiles
- - Ability to generate tiling for specific window in mind
-   (=> so that every element has the window weight sum of 1.0)
+ - 
+ - Easy generation of tiling for specific window in mind
+   (i.e. so that every element has the window weight sum of 1.0)
  - Add border windows generation (like in Pielawski et. al - see references))
  - PyTorch Tensors support
    - merging on GPU like in pytorch-toolbelt?

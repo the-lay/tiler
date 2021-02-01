@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from tiler import Tiler
 
+
 class TestTilingCommon(unittest.TestCase):
 
     def test_init(self):
@@ -192,6 +193,11 @@ class TestTiling1D(unittest.TestCase):
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
         t[9] = 9
 
+    def test_iterator(self):
+        tile_size = 10
+        tiler = Tiler(image_shape=self.data.shape,
+                      tile_shape=(tile_size, ))
+
         # copy test with iterator
         t = list(tiler(self.data, copy_data=True))
         t[0][1][9] = 0
@@ -204,6 +210,31 @@ class TestTiling1D(unittest.TestCase):
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t[0])
         self.assertEqual(t[0][9], self.data[9])
+
+        # test batch size
+        with self.assertRaises(ValueError):
+            t = [x for _, x in tiler(self.data, batch_size=-1)]
+
+        t = [x for _, x in tiler(self.data, batch_size=0)]
+        self.assertEqual(len(t), 10)
+        np.testing.assert_equal(t[0].shape, (10, ))
+
+        t = [x for _, x in tiler(self.data, batch_size=1)]
+        self.assertEqual(len(t), 10)
+        np.testing.assert_equal(t[0].shape, (1, 10))
+
+        t = [x for _, x in tiler(self.data, batch_size=10)]
+        self.assertEqual(len(t), 1)
+        np.testing.assert_equal(t[0].shape, (10, 10))
+
+        t = [x for _, x in tiler(self.data, batch_size=9)]
+        self.assertEqual(len(t), 2)
+        np.testing.assert_equal(t[0].shape, (9, 10))
+        np.testing.assert_equal(t[1].shape, (1, 10))
+
+        t = [x for _, x in tiler(self.data, batch_size=9, drop_last=True)]
+        self.assertEqual(len(t), 1)
+        np.testing.assert_equal(t[0].shape, (9, 10))
 
     def test_overlap(self):
         # Case 1

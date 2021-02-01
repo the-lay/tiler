@@ -4,6 +4,7 @@ from tiler import Tiler, Merger
 from contextlib import redirect_stderr
 import os
 
+
 class TestMergingCommon(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -83,6 +84,48 @@ class TestMergingCommon(unittest.TestCase):
         with open(os.devnull, "w") as null:
             with redirect_stderr(null):
                 merger.set_window('boxcar')
+
+    def test_batch_add(self):
+        tiler = Tiler(image_shape=self.data.shape,
+                      tile_shape=(10,))
+        merger = Merger(tiler)
+
+        batch1 = [x for _, x in tiler(self.data, False, batch_size=1)]
+        np.testing.assert_equal(len(batch1), 10)
+        np.testing.assert_equal(batch1[0].shape, (1, 10, ))
+        for i, b in enumerate(batch1):
+            merger.add_batch(i, 1, b)
+        np.testing.assert_equal(merger.merge(), self.data)
+        merger.reset()
+
+        batch10 = [x for _, x in tiler(self.data, False, batch_size=10)]
+        for i, b in enumerate(batch10):
+            merger.add_batch(i, 10, b)
+        np.testing.assert_equal(merger.merge(), self.data)
+        merger.reset()
+
+        batch8 = [x for _, x in tiler(self.data, False, batch_size=8)]
+        np.testing.assert_equal(len(batch8), 2)
+        np.testing.assert_equal(batch8[0].shape, (8, 10, ))
+        np.testing.assert_equal(batch8[1].shape, (2, 10, ))
+        for i, b in enumerate(batch8):
+            merger.add_batch(i, 8, b)
+        np.testing.assert_equal(merger.merge(), self.data)
+        merger.reset()
+
+        batch8_drop = [x for _, x in tiler(self.data, False, batch_size=8, drop_last=True)]
+        np.testing.assert_equal(len(batch8_drop), 1)
+        np.testing.assert_equal(batch8_drop[0].shape, (8, 10, ))
+        for i, b in enumerate(batch8_drop):
+            merger.add_batch(i, 8, b)
+        np.testing.assert_equal(merger.merge()[:80], self.data[:80])
+        np.testing.assert_equal(merger.merge()[80:], np.zeros((20,)))
+
+        with self.assertRaises(IndexError):
+            merger.add_batch(-1, 10, batch10[0])
+
+        with self.assertRaises(IndexError):
+            merger.add_batch(10, 10, batch10[9])
 
     def test_generate_window(self):
         tiler = Tiler(image_shape=self.data.shape,

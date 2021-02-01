@@ -239,7 +239,7 @@ class Merger:
 
     def add(self, tile_id: int, data: np.ndarray) -> None:
         """
-        Adds processed tile back into Merger as a tile number tile_id.
+        Adds tile #tile_id into Merger.
 
         :param tile_id: int
             Specify which tile it is.
@@ -280,6 +280,34 @@ class Merger:
             self.data[tuple(sl)] += (data * self.window[tuple(win_sl)])
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
         self.data_visits[tuple(sl)] += 1
+
+    def add_batch(self, batch_id: int, batch_size: int, data: np.ndarray) -> None:
+        """
+        Adds batch #batch_id of batch_size tiles into Merger.
+
+        :param batch_id: int
+            Specify batch id, should be >= 0.
+
+        :param batch_size: int
+            Specify batch size, should be >= 0.
+
+        :param data: np.ndarray
+            Tile data, should have batch as the first dimension, i.e. [batch, *size] shape
+
+        :return: None
+        """
+
+        # calculate total number of batches
+        div, mod = np.divmod(len(self.tiler), batch_size)
+        n_batches = (div + 1) if mod > 0 else div
+
+        if batch_id < 0 or batch_id >= n_batches:
+            raise IndexError(f'Out of bounds. There are {n_batches} batches of {batch_size}, starting from index 0.')
+
+        # add each tile in a batch with computed tile_id
+        for data_i, tile_i in enumerate(range(batch_id * batch_size,
+                                        min((batch_id + 1) * batch_size, len(self.tiler)))):
+            self.add(tile_i, data[data_i])
 
     def merge(self, unpad: bool = True, argmax: bool = False) -> np.ndarray:
         """
