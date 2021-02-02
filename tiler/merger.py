@@ -326,11 +326,15 @@ class Merger:
         """
         data = self.data
 
-        if argmax:
-            data = np.argmax(data, 0)
-
         if unpad:
             sl = [slice(None, self.tiler.image_shape[i]) for i in range(len(self.tiler.image_shape))]
+
+            if self.logits:
+                sl = [slice(None, None, None)] + sl
+
             data = data[tuple(sl)]
+
+        if argmax:
+            data = np.argmax(data, 0)
 
         return data

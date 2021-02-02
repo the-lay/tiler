@@ -147,3 +147,30 @@ class TestMergingCommon(unittest.TestCase):
             merger.add(t_id, t)
         np.testing.assert_equal(merger.merge(),
                                 [i if i % 10 else 0 for i in range(100)])
+
+    def test_merge(self):
+
+        # Test padding
+        tiler = Tiler(image_shape=self.data.shape,
+                      tile_shape=(12,))
+        merger = Merger(tiler)
+        for t_id, t in tiler(self.data):
+            merger.add(t_id, t)
+
+        np.testing.assert_equal(merger.merge(unpad=True), self.data)
+        np.testing.assert_equal(merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0])))
+
+        # Test argmax
+        merger = Merger(tiler, logits=3)
+        for t_id, t in tiler(self.data):
+            merger.add(t_id, np.vstack((t, t / 2, t / 3)))
+
+        np.testing.assert_equal(merger.merge(unpad=True, argmax=True), np.zeros((100, )))
+        np.testing.assert_equal(merger.merge(unpad=True, argmax=False),
+                                np.vstack((self.data, self.data / 2, self.data / 3)))
+
+        np.testing.assert_equal(merger.merge(unpad=False, argmax=True), np.zeros((108, )))
+        np.testing.assert_equal(merger.merge(unpad=False, argmax=False),
+                                np.vstack((np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0])),
+                                           np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0])) / 2,
+                                           np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0])) / 3)))
