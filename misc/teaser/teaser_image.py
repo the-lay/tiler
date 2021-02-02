@@ -7,6 +7,7 @@ from tiler import Tiler, Merger
 # Moreover, does not really show how to do overlap tiling.
 # You can find example of 2D overlap tiling in examples/2d_overlap_tile.py
 
+
 #### Generate images
 # Original image by Marco Bianchetti on Unsplash
 # https://unsplash.com/photos/8blA_V0MI9I
