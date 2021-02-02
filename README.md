@@ -1,9 +1,12 @@
 # tiler
+
+![Demo gif](misc/teaser/tiler_teaser.png)
+
 ![CI](https://github.com/the-lay/tiler/workflows/CI/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
 
-### Please note: work in progress! Until a stable release, please avoid using this package in production!
+### Please note: work in progress, things might change and/or break!
 
 This package provides tools for N-dimensional tiling (patch extraction)
 and subsequent merging with built-in tapering (window) function support.
@@ -90,8 +93,6 @@ pip install .
 Roadmap
 ------------
  - Proper documentation
- - Teaser image for github
- - 
  - Easy generation of tiling for specific window in mind
    (i.e. so that every element has the window weight sum of 1.0)
  - Add border windows generation (like in Pielawski et. al - see references))
