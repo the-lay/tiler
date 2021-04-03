@@ -5,7 +5,7 @@
 # the input image. This tiling strategy is important to apply the network to large images,
 # since otherwise the resolution would be limited by the GPU memory." - Ronneberger et al 2015, U-Net paper
 
-# We will use napari for showing 3D volumes interactively
+# We will use napari to inspect 3D volumes
 import numpy as np
 from tiler import Tiler, Merger
 import napari
@@ -23,7 +23,7 @@ padded_volume = np.pad(volume, 14, mode='reflect')
 
 # Specifying tiling
 # The overlap should be 28 voxels
-tiler = Tiler(image_shape=padded_volume.shape,
+tiler = Tiler(data_shape=padded_volume.shape,
               tile_shape=(48, 48, 48),
               overlap=(28, 28, 28))
 
@@ -35,8 +35,8 @@ window[14:-14, 14:-14, 14:-14] = 1
 merger = Merger(tiler=tiler, window=window)
 
 # Let's define a function that will be applied to each tile
-# For this example, let's multiple the sides that should be "cropped" by window function
-# by some huge number, as a way to confirm that only the middle parts are being merged
+# For this example, let's black out the sides that should be "cropped" by window function
+# as a way to confirm that only the middle parts are being merged
 def process(patch: np.ndarray) -> np.ndarray:
     patch[:14, :, :] = 0
     patch[-14:, :, :] = 0

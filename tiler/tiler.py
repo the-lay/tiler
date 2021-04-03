@@ -1,93 +1,79 @@
 import numpy as np
 from tqdm.auto import tqdm
-from typing import Tuple, List, Union, Callable, Generator
-# try:
-#     import torch
-# except ImportError:
-#     pass
+from typing import Optional, Tuple, List, Union, Generator
 
 
 class Tiler:
-
     TILING_MODES = ['constant', 'drop', 'irregular', 'reflect', 'edge', 'wrap']
+    r"""
+    Supported tiling modes:
+    - `constant` (default)  
+        If a tile is smaller than `tile_shape`, pad it with the constant value along each axis to match `tile_shape`.
+        Set the value with the keyword `constant_value`.  
+    - `drop`  
+        If a tile is smaller than `tile_shape` in any of the dimensions, ignore it.
+    - `irregular`  
+        Allow tiles to be smaller than `tile_shape`.
+    - `reflect`  
+        If a tile is smaller than `tile_shape`,
+        pad it with the reflection of values along each axis to match `tile_shape`.
+    - `edge`  
+        If a tile is smaller than `tile_shape`,
+        pad it with the edge values of data along each axis to match `tile_shape`.
+    - `wrap`  
+        If a tile is smaller than `tile_shape`,
+        pad it with the wrap of the vector along each axis to match `tile_shape`.
+        The first values are used to pad the end and the end values are used to pad the beginning.
+    """
 
     def __init__(self,
-                 image_shape: Union[Tuple, List],
+                 data_shape: Union[Tuple, List],
                  tile_shape: Union[Tuple, List],
                  overlap: Union[int, float, Tuple, List] = 0,
-                 channel_dimension: Union[int, None] = None,
+                 channel_dimension: Optional[int] = None,
                  mode: str = 'constant',
-                 constant_value: float = 0.0
-                 ):
-        """
-        Tiler precomputes everything for tiling with specified parameters, without requiring actual data.
+                 constant_value: float = 0.0):
+        """Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
+        You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
+        with `Tiler.iterate()` (or the alias `Tiler.__call__()`).
 
-        :param image_shape: tuple or list
-            Image shape, i.e. (1980, 1050, 3) or [512, 512, 512].
-            Note: include channel dimension too, and specify which axis that is with channel_dimension keyword.
+        TODO:
+            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) < len(data_shape)
+            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)
+            - allow other numpy padding modes (maximum, minimum, mean, median)
 
-        :param tile_shape: tuple or list
-            Shape of a tile, i.e. (256, 256, 3) or [64, 64, 64].
-            Tile must have same the number of dimensions as data.
-            # TODO: it should be possible to create tiles with less dimensions than data
+        Args:
+            data_shape (tuple or list): Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].
+                If there is a channel dimension, it should be included in the shape.
 
-        :param overlap: int, float, tuple, list
-            If int, the same overlap in each dimension.
-            If float, percentage of a tile_size to use for overlap (from 0.0 to 1.0).
-            If tuple or list, size of the overlap in. Must be smaller than tile_shape.
-            Default is 0.0.
+            tile_shape (tuple or list): Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].
+                Tile must have the same number of dimensions as data.
 
-        :param channel_dimension: int, None
-            Used to specify the channel dimension, the dimension that will not be tiled.
-            Usually it is the last or the first dimension of the array.
-            Default is None, no channel dimension in the data.
+            overlap (int, float, tuple or list): Specifies overlap between tiles.
+                If integer, the same overlap of overlap pixels applied in each dimension.
+                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0).
+                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
+                Default is `0`.
 
-        :param mode: str
-            Mode defines how the data will be tiled.
-            # TODO: allow a user supplied function, Callable
+            channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.
+                Usually it is the last or the first dimension of the array.
+                Negative indexing (`-len(data_shape)` to `-1` inclusive) is translated into corresponding indices.
+                Default is `None`, no channel dimension in the data.
 
-            One of the following string values:
-                `constant` (default)
-                    If a tile is smaller than `tile_shape`, pad it with a constant value to match `tile_shape`.
-                    Set the value with the keyword 'constant_value'.
-                'drop'
-                    If a tile is smaller than `tile_shape`, ignore it.
-                'irregular'
-                    Allow tiles to be smaller than `tile_shape`.
-                `reflect`
-                    Pads tile with the reflection of values along each axis.
-                `edge`
-                    Pads tile with the edge values of data.
-                `wrap`
-                    Pads the tile with the wrap of the vector along the axis.
-                    The first values are used to pad the end and the end values
-                    are used to pad the beginning.
+            mode (str): Defines how the data will be tiled.
+                Must be one of the supported `Tiler.TILING_MODES`.
 
-                # TODO other padding modes
-                # `maximum`
-                #     Pads tile with the maximum value of each axis.
-                # `minimum`
-                #     Pads tile with the minimum value of each axis.
-                # `mean`
-                #     Pads tile with the mean value of each axis.
-                # `median`
-                #     Pads tile with the median value of each axis.
-                # TODO callable padding?
-                # <function>
-                #     The function accepts the tile and returns the padded tile.
-
-        :param constant_value: float
-            Used in 'constant' mode. The value to set the padded values for each axis.
-
+            constant_value (float): Specifies the value of padding when `mode='constant'`.
+                Default is `0.0`.
         """
 
-        # Image and tile shapes
-        self.image_shape = np.asarray(image_shape).astype(int)
+        # Data and tile shapes
+        self.data_shape = np.asarray(data_shape).astype(int)
         self.tile_shape = np.asarray(tile_shape).astype(int)
-        self._n_dim = len(image_shape)
-        if (self.tile_shape <= 0).any() or (self.image_shape <= 0).any():
+        self._n_dim: int = len(self.data_shape)
+        if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError('Tile and data shapes must be tuple or lists of positive numbers.')
-        if self.tile_shape.size != self.image_shape.size:
+        if self.tile_shape.size != self.data_shape.size:
             raise ValueError('Tile and data shapes must have the same length.')
 
         # Tiling mode
@@ -100,10 +86,13 @@ class Tiler:
 
         # Channel dimension
         self.channel_dimension = channel_dimension
-        if self.channel_dimension and \
-                ((self.channel_dimension < 0) or (self.channel_dimension >= len(self.image_shape))):
-            raise ValueError(f'Specified channel dimension is out of bounds '
-                             f'(should be None or an integer from 0 to {len(self.image_shape) - 1}).')
+        if self.channel_dimension:
+            if (self.channel_dimension >= self._n_dim) or (self.channel_dimension < -self._n_dim):
+                raise ValueError(f'Specified channel dimension is out of bounds '
+                                 f'(should be None or an integer from {-self._n_dim} to {self._n_dim - 1}).')
+            if self.channel_dimension < 0:
+                # negative indexing
+                self.channel_dimension = self._n_dim + self.channel_dimension
 
         # Overlap and step
         self.overlap = overlap
@@ -128,7 +117,7 @@ class Tiler:
         self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(int)  # tile step
 
         # Calculate mosaic (collection of tiles) shape
-        div, mod = np.divmod([image_shape[d] - self._tile_overlap[d] for d in range(self._n_dim)], self._tile_step)
+        div, mod = np.divmod([self.data_shape[d] - self._tile_overlap[d] for d in range(self._n_dim)], self._tile_step)
         if self.mode == 'drop':
             self._indexing_shape = div
         else:
@@ -138,10 +127,10 @@ class Tiler:
 
         # Calculate new shape assuming tiles are padded
         if self.mode == 'irregular':
-            self._new_shape = self.image_shape
+            self._new_shape = self.data_shape
         else:
             self._new_shape = (self._indexing_shape * self._tile_step) + self._tile_overlap
-        self._shape_diff = self._new_shape - self.image_shape
+        self._shape_diff = self._new_shape - self.data_shape
         if self.channel_dimension is not None:
             self._shape_diff[self.channel_dimension] = 0
 
@@ -155,84 +144,100 @@ class Tiler:
         self.n_tiles = len(self._tile_index)
 
     def __len__(self) -> int:
-        """ Returns number of tiles produced by tiling. """
+        """
+        Returns:
+             int: Number of tiles in the mosaic.
+        """
         return self.n_tiles
 
     def __repr__(self) -> str:
-        return f'Tiler split {list(self.image_shape)} data into {len(self)} tiles of {list(self.tile_shape)}.' \
+        """
+        Returns:
+            str: String representation of the object.
+        """
+        return f'Tiler split {list(self.data_shape)} data into {len(self)} tiles of {list(self.tile_shape)}.' \
                f'\n\tMosaic shape: {list(self._indexing_shape)}' \
-               f'\n\tTileable shape: {list(self._new_shape)}' \
+               f'\n\tPadded shape: {list(self._new_shape)}' \
                f'\n\tTile overlap: {self.overlap}' \
                f'\n\tElement step: {list(self._tile_step)}' \
                f'\n\tMode: {self.mode}' \
                f'\n\tChannel dimension: {self.channel_dimension}'
 
-    def __call__(self, data: np.ndarray, progress_bar: bool = False,
-                 batch_size: int = 0, drop_last: bool = False,
-                 copy_data: bool = True) -> \
-            Generator[Tuple[int, np.ndarray], None, None]:
-        """
-        Iterate through tiles of the given data array.
+    def iterate(self,
+                data: np.ndarray,
+                progress_bar: bool = False,
+                batch_size: int = 0,
+                drop_last: bool = False,
+                copy_data: bool = True
+                ) -> Generator[Tuple[int, np.ndarray], None, None]:
+        """Iterates through tiles of the given data array. This method can also be accessed by `Tiler.__call__()`.
 
-        :param data: np.ndarray
-            The data array on which the tiling will be performed.
+        Args:
+            data (np.ndarray): The data array on which the tiling will be performed.
 
-        :param progress_bar: bool
-            Whether to show the progress bar or not. Uses tqdm package.
+            progress_bar (bool): Specifies whether to show the progress bar or not.
+                Uses `tqdm` package.
+                Default is `False`.
 
-        :param batch_size: int
-            Return tiles in batches of batch_size.
-            If batch_size == 0, return one tile at a time.
-            If batch_size >= 1, return in batches (returned shape: [batch_size, *tile_shape])
-            Default: 0
+            batch_size (int): Specifies returned batch size.
+                If `batch_size == 0`, return one tile at a time.
+                If `batch_size >= 1`, return in batches (returned shape: `[batch_size, *tile_shape]`).
+                Default is 0.
 
-        :param drop_last: bool
-            If set to True, generator drops the last non-full batch.
-            Used only when batch_size > 0.
-            Default: 0
+            drop_last (bool): Specifies whether to drop last non-full batch.
+                Used only when batch_size > 0.
+                Default is False.
 
-        :param copy_data: bool
-            If true, returned tile is a copy. Otherwise, it is a view.
-            Default is True.
+            copy_data (bool): Specifies whether to copy the tile before returning it.
+                If `copy_data == False`, returns a view.
+                Default is True.
 
-        :return: yields (int, np.ndarray)
-            Returns tuple with int that is the tile_id and np.ndarray tile data.
+        Yields:
+            (int, np.ndarray): Tuple with integer tile number and array tile data.
         """
 
         if batch_size < 0:
             raise ValueError(f'Batch size must >= 0, not {batch_size}')
 
-        # return just a tile
+        # return a tile at a time
         if batch_size == 0:
             for tile_i in tqdm(range(self.n_tiles), disable=not progress_bar, unit=' tiles'):
-                yield tile_i, self.get_tile(data, tile_i, copy=copy_data)
+                yield tile_i, self.get_tile(data, tile_i, copy_data=copy_data)
 
-        # return batches
+        # return in batches
         if batch_size > 0:
             # check for drop_last
             length = (self.n_tiles - (self.n_tiles % batch_size)) if drop_last else self.n_tiles
 
             for tile_i in tqdm(range(0, length, batch_size), disable=not progress_bar, unit=' batches'):
-                tiles = np.stack([self.get_tile(data, x, copy=copy_data) for x
+                tiles = np.stack([self.get_tile(data, x, copy_data=copy_data) for x
                                   in range(tile_i, min(tile_i + batch_size, length))])
                 yield tile_i // batch_size, tiles
 
-    def get_tile(self, data: Union[np.ndarray, None], tile_id: int, copy: bool = True) -> np.ndarray:
-        """
-        Returns tile content.
+    def __call__(self,
+                 data: np.ndarray,
+                 progress_bar: bool = False,
+                 batch_size: int = 0,
+                 drop_last: bool = False,
+                 copy_data: bool = True
+                 ) -> Generator[Tuple[int, np.ndarray], None, None]:
+        """ Alias for `Tiler.iterate()` """
+        return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
-        :param data: np.ndarray
-            Data from which tile_id-th tile will be taken.
+    def get_tile(self, data: np.ndarray, tile_id: int, copy_data: bool = True) -> np.ndarray:
+        """Returns an individual tile.
 
-        :param tile_id: int
-            Specify which tile to return. Must be smaller than number of tiles.
+        Args:
+            data (np.ndarray): Data from which `tile_id`-th tile will be taken.
 
-        :param copy: bool
-            If true, returned tile is a copy. Otherwise, it is a view.
-            Default is True.
+            tile_id (int): Specifies which tile to return. Must be smaller than the total number of tiles.
 
-        :return: np.ndarray
-            Content of tile number tile_id. Padded if necessary.
+            copy_data (bool): Specifies whether returned tile is a copy.
+                If `copy_data == False` returns a view.
+                Default is True.
+
+        Returns:
+            np.ndarray: Content of tile number `tile_id`, padded if necessary.
         """
 
         if (tile_id < 0) or (tile_id >= self.n_tiles):
@@ -244,7 +249,7 @@ class Tiler:
         sampling = [slice(tile_corner[d], tile_corner[d] + self.tile_shape[d]) for d in range(self._n_dim)]
         tile_data = data[tuple(sampling)]
 
-        if copy:
+        if copy_data:
             tile_data = tile_data.copy()
 
         shape_diff = self.tile_shape - tile_data.shape
@@ -258,19 +263,17 @@ class Tiler:
         return tile_data
 
     def get_tile_bbox_position(self, tile_id: int, with_channel_dim: bool = False) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Returns diagonal corner coordinates of bounding hyperrectangle of the tile on padded data.
-        The first element is the smallest corner, the second is the largest.
+        """Returns opposite corners coordinates of bounding hyperrectangle of the tile on padded data.
 
-        :param tile_id: int
-            Specify which tile bounding box must be returned.
-            Must be smaller than number of tiles.
+        Args:
+            tile_id (int): Specifies which tile's bounding coordinates will be returned.
+                Must be smaller than the total number of tiles.
 
-        :param with_channel_dim: bool
-            Whether to return shape with channel dimension or without.
+            with_channel_dim (bool): Specifies whether to return shape with channel dimension or without.
+                Default is False.
 
-        :return: (np.ndarray, np.ndarray)
-            Smallest and largest corners of the bounding box.
+        Returns:
+            (np.ndarray, np.ndarray): Smallest and largest corners of the bounding box.
         """
 
         if (tile_id < 0) or (tile_id >= self.n_tiles):
@@ -280,23 +283,23 @@ class Tiler:
         starting_corner = self._tile_step * self.get_tile_mosaic_position(tile_id, True)
         finish_corner = starting_corner + self.tile_shape
         if self.channel_dimension is not None and not with_channel_dim:
-            dim_indices = list(range(self.channel_dimension)) + list(range(self.channel_dimension + 1, len(self._tile_step)))
+            dim_indices = list(range(self.channel_dimension)) + \
+                          list(range(self.channel_dimension + 1, len(self._tile_step)))
             starting_corner = starting_corner[dim_indices]
             finish_corner = finish_corner[dim_indices]
         return starting_corner, finish_corner
 
     def get_tile_mosaic_position(self, tile_id: int, with_channel_dim: bool = False) -> np.ndarray:
-        """
-        Returns tile position in mosaic (relative to other tiles).
+        """Returns tile position in the mosaic.
 
-        :param tile_id: int
-            Tile ID for which to return mosaic position.
+        Args:
+          tile_id (int): Specifies which tile's mosaic position will be returned. \
+            Must be smaller than the total number of tiles.
+          with_channel_dim (bool): Specifies whether to return position with channel dimension or without.
+            Default is False.
 
-        :param with_channel_dim: bool
-            Whether to return position with channel dimension or without.
-
-        :return: np.ndarray
-            Tile mosaic position (tile position relative to other tiles).
+        Returns:
+            np.ndarray: Tile mosaic position (tile position relative to other tiles).
         """
         if (tile_id < 0) or (tile_id >= self.n_tiles):
             raise IndexError(f'Out of bounds, there is no tile {tile_id}. '
@@ -307,14 +310,14 @@ class Tiler:
         return self._tile_index[tile_id]
 
     def get_mosaic_shape(self, with_channel_dim: bool = False) -> np.ndarray:
-        """
-        Return mosaic shape (array/atlas of tiles)
+        """Returns mosaic shape.
 
-        # :param with_channel_dim: bool
-        #     Whether to return shape with channel dimension or without.
+        Args:
+            with_channel_dim (bool):
+                Specifies whether to return shape with channel dimension or without. Defaults to False.
 
-        :return: np.ndarray
-            Shape of tiles array/atlas.
+        Returns:
+            np.ndarray: Shape of tiles mosaic.
         """
         if self.channel_dimension is not None and not with_channel_dim:
             return self._indexing_shape[~(np.arange(self._n_dim) == self.channel_dimension)]

@@ -22,7 +22,7 @@ padded_image = np.pad(image, ((32, 32), (32, 32), (0, 0)), mode='reflect')
 
 # Specifying tiling
 # The overlap should be 50% or explicitly (64, 64, 0)
-tiler = Tiler(image_shape=padded_image.shape, tile_shape=(128, 128, 3),
+tiler = Tiler(data_shape=padded_image.shape, tile_shape=(128, 128, 3),
               overlap=(64, 64, 0), channel_dimension=2)
 
 # Window function for merging
@@ -36,7 +36,7 @@ merger = Merger(tiler=tiler, window=window)
 def process(patch: np.ndarray, sanity_check: bool = True) -> np.ndarray:
 
     # One example can be a sanity check
-    # Make the parts that should be remove black
+    # Make the parts that should be removed black
     # There should not appear any black spots in the final merged image
     if sanity_check:
         patch[:32, :, :] = 0

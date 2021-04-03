@@ -11,7 +11,7 @@ class TestMergingCommon(unittest.TestCase):
         self.data = np.arange(0, 100)
 
     def test_init(self):
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(10, ))
 
         # logits test
@@ -30,12 +30,12 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(merger2.data.shape, (99, ) + self.data.shape)
 
     def test_add(self):
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(10, ))
-        tiler2 = Tiler(image_shape=self.data.shape,
+        tiler2 = Tiler(data_shape=self.data.shape,
                        tile_shape=(12, ),
                        mode='irregular')
-        tiler3 = Tiler(image_shape=(3, ) + self.data.shape,
+        tiler3 = Tiler(data_shape=(3,) + self.data.shape,
                        tile_shape=(3, 10, ), channel_dimension=0)
 
         merger = Merger(tiler)
@@ -86,7 +86,7 @@ class TestMergingCommon(unittest.TestCase):
                 merger.set_window('boxcar')
 
     def test_batch_add(self):
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(10,))
         merger = Merger(tiler)
 
@@ -128,7 +128,7 @@ class TestMergingCommon(unittest.TestCase):
             merger.add_batch(10, 10, batch10[9])
 
     def test_generate_window(self):
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(10,))
 
         with self.assertRaises(ValueError):
@@ -151,7 +151,7 @@ class TestMergingCommon(unittest.TestCase):
     def test_merge(self):
 
         # Test padding
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(12,))
         merger = Merger(tiler)
         for t_id, t in tiler(self.data):

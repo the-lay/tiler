@@ -7,47 +7,43 @@ class TestTilingCommon(unittest.TestCase):
 
     def test_init(self):
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(-10, -30), tile_shape=(10, 10))
+            Tiler(data_shape=(-10, -30), tile_shape=(10, 10))
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(100, 300), tile_shape=(-10, -10))
+            Tiler(data_shape=(100, 300), tile_shape=(-10, -10))
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10, 10))
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10, 10))
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10),
                   mode='unsupported_mode')
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
-                  channel_dimension=-1)
-
-        with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10),
                   channel_dimension=10)
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10),
                   overlap=1337.0)
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10),
                   overlap=(15, 0))
 
         with self.assertRaises(ValueError):
-            Tiler(image_shape=(300, 300), tile_shape=(10, 10),
+            Tiler(data_shape=(300, 300), tile_shape=(10, 10),
                   overlap='unsupported_overlap')
 
     def test_repr(self):
         # gotta get that coverage
-        tiler = Tiler(image_shape=(3, 300, 300), tile_shape=(3, 15, 300),
+        tiler = Tiler(data_shape=(3, 300, 300), tile_shape=(3, 15, 300),
                       channel_dimension=0,
                       mode='irregular')
 
         expected_repr = 'Tiler split [3, 300, 300] data into 20 tiles of [3, 15, 300].' \
                         '\n\tMosaic shape: [1, 20, 1]' \
-                        '\n\tTileable shape: [3, 300, 300]' \
+                        '\n\tPadded shape: [3, 300, 300]' \
                         '\n\tTile overlap: 0' \
                         '\n\tElement step: [0, 15, 300]' \
                         '\n\tMode: irregular' \
@@ -65,7 +61,7 @@ class TestTiling1D(unittest.TestCase):
     def test_drop_mode(self):
         # Drop mode drops last uneven tile
         tile_size = 15
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='drop')
 
@@ -80,7 +76,7 @@ class TestTiling1D(unittest.TestCase):
     def test_irregular_mode(self):
         # Irregular mode returns last chunk even if it is not equal to the tile size
         tile_size = 15
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='irregular')
 
@@ -95,7 +91,7 @@ class TestTiling1D(unittest.TestCase):
         # Constant mode pads the non-full tiles with constant_value
         tile_size = 15
         constant_value = -99
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='constant', constant_value=constant_value)
 
@@ -111,7 +107,7 @@ class TestTiling1D(unittest.TestCase):
     def test_reflect_mode(self):
         # Reflect mode pads with reflected values along the axis
         tile_size = 15
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='reflect')
 
@@ -126,7 +122,7 @@ class TestTiling1D(unittest.TestCase):
     def test_edge_mode(self):
         # Edge mode pads with the edge values of data
         tile_size = 15
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='edge')
 
@@ -141,7 +137,7 @@ class TestTiling1D(unittest.TestCase):
     def test_wrap_mode(self):
         # Wrap mode pads the tile with the wrap of the vector along the axis
         tile_size = 15
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ),
                       mode='wrap')
 
@@ -154,10 +150,9 @@ class TestTiling1D(unittest.TestCase):
         np.testing.assert_equal(expected_split, calculated_split)
 
     def test_channel_dimensions(self):
-        # If a channel dimension is specified, the tiler should return the data without splitting
         tile_size = 15
         data = np.vstack((self.data, self.data * 2, self.data * 3))
-        tiler = Tiler(image_shape=data.shape,
+        tiler = Tiler(data_shape=data.shape,
                       tile_shape=(3, tile_size),
                       mode='irregular', channel_dimension=0)
 
@@ -171,9 +166,24 @@ class TestTiling1D(unittest.TestCase):
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
 
+        # test negative indexing
+        tiler = Tiler(data_shape=data.shape,
+                      tile_shape=(3, tile_size),
+                      mode='irregular', channel_dimension=-2)
+
+        expected_split = [[data[0][i:i + tile_size],
+                           data[1][i:i + tile_size],
+                           data[2][i:i + tile_size]]
+                          for i in range(0, self.n_elements, tile_size)]
+
+        calculated_split = [t for _, t in tiler(data)]
+
+        self.assertEqual(len(tiler), len(expected_split))
+        np.testing.assert_equal(expected_split, calculated_split)
+
     def test_get_tile(self):
         tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ))
 
         with self.assertRaises(IndexError):
@@ -182,12 +192,12 @@ class TestTiling1D(unittest.TestCase):
             tiler.get_tile(self.data, -1)
 
         # copy test
-        t = tiler.get_tile(self.data, 0, copy=True)
+        t = tiler.get_tile(self.data, 0, copy_data=True)
         t[9] = 0
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
 
-        t = tiler.get_tile(self.data, 0, copy=False)
+        t = tiler.get_tile(self.data, 0, copy_data=False)
         t[9] = 0
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
@@ -195,7 +205,7 @@ class TestTiling1D(unittest.TestCase):
 
     def test_iterator(self):
         tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ))
 
         # copy test with iterator
@@ -241,7 +251,7 @@ class TestTiling1D(unittest.TestCase):
         # If overlap is an integer, the same overlap should be applied in each dimension
         tile_size = 10
         overlap = 5
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ), overlap=overlap)
 
         expected_split = [[i for i in range(j, j + tile_size)]
@@ -257,7 +267,7 @@ class TestTiling1D(unittest.TestCase):
         tile_size = 10
         overlap = 0.5
         el_overlap = int(tile_size * overlap)
-        tiler = Tiler(image_shape=self.data.shape,
+        tiler = Tiler(data_shape=self.data.shape,
                       tile_shape=(tile_size, ), overlap=overlap)
 
         expected_split = [[i for i in range(j, j + tile_size)]
@@ -274,7 +284,7 @@ class TestTiling1D(unittest.TestCase):
         tile_size = 10
         data = np.vstack((self.data, self.data * 2, self.data * 3))
         overlap = (0, 5, )
-        tiler = Tiler(image_shape=data.shape,
+        tiler = Tiler(data_shape=data.shape,
                       tile_shape=(3, tile_size, ), overlap=overlap)
 
         expected_split = [[[i for i in range(j, j + tile_size)],
@@ -289,8 +299,8 @@ class TestTiling1D(unittest.TestCase):
 
     def test_tile_mosaic_position(self):
         tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape, tile_shape=(tile_size, ))
-        tiler2 = Tiler(image_shape=(3, ) + self.data.shape, tile_shape=(3, tile_size, ), channel_dimension=0)
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,))
+        tiler2 = Tiler(data_shape=(3,) + self.data.shape, tile_shape=(3, tile_size,), channel_dimension=0)
 
         tile_id = 0
         np.testing.assert_equal([0], tiler.get_tile_mosaic_position(tile_id))
@@ -311,10 +321,10 @@ class TestTiling1D(unittest.TestCase):
 
     def test_mosaic_shape(self):
         tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape, tile_shape=(tile_size, ))
-        tiler2 = Tiler(image_shape=(3, ) + self.data.shape, tile_shape=(3, tile_size, ), channel_dimension=0)
-        tiler3 = Tiler(image_shape=(9, ) + self.data.shape, tile_shape=(3, tile_size, ), channel_dimension=0)
-        tiler4 = Tiler(image_shape=(9, ) + self.data.shape, tile_shape=(3, tile_size, ))
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,))
+        tiler2 = Tiler(data_shape=(3,) + self.data.shape, tile_shape=(3, tile_size,), channel_dimension=0)
+        tiler3 = Tiler(data_shape=(9,) + self.data.shape, tile_shape=(3, tile_size,), channel_dimension=0)
+        tiler4 = Tiler(data_shape=(9,) + self.data.shape, tile_shape=(3, tile_size,))
 
         np.testing.assert_equal([10], tiler.get_mosaic_shape())
         np.testing.assert_equal([10], tiler.get_mosaic_shape(with_channel_dim=True))
@@ -330,8 +340,8 @@ class TestTiling1D(unittest.TestCase):
 
     def test_tile_bbox_position(self):
         tile_size = 10
-        tiler = Tiler(image_shape=self.data.shape, tile_shape=(tile_size, ))
-        tiler2 = Tiler(image_shape=(3, ) + self.data.shape, tile_shape=(3, tile_size, ), channel_dimension=0)
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,))
+        tiler2 = Tiler(data_shape=(3,) + self.data.shape, tile_shape=(3, tile_size,), channel_dimension=0)
 
         with self.assertRaises(IndexError):
             tiler.get_tile_bbox_position(-1)

@@ -7,7 +7,7 @@ from tiler import Tiler, Merger
 image = np.array(Image.open('example_image.jpg'))  # 1280x1920x3
 
 # Setup Tiler and Merger
-tiler = Tiler(image_shape=image.shape, tile_shape=(200, 200, 3), channel_dimension=2)
+tiler = Tiler(data_shape=image.shape, tile_shape=(200, 200, 3), channel_dimension=2)
 merger = Merger(tiler)
 
 # Example 1: process all tiles one by one, i.e. batch_size=0
