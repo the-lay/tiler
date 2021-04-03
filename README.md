@@ -6,6 +6,11 @@
 [![Coverage status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
 [![Documentation](https://img.shields.io/badge/documentation-✔-green.svg)](https://the-lay.github.io/tiler)
+
+
+[Github repository](https://github.com/the-lay/tiler) | 
+[Github issues](https://github.com/the-lay/tiler/issues) | 
+[Documentation](https://the-lay.github.io/tiler)
 _________________
 ⚠️ **Please note: work in progress, things will change and/or break!** ⚠️
 _________________
