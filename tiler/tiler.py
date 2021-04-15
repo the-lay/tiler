@@ -164,7 +164,7 @@ class Tiler:
                f'\n\tChannel dimension: {self.channel_dimension}'
 
     def iterate(self,
-                data: np.ndarray,
+                data: Union[np.ndarray, Callable[[int, int, int, int], np.ndarray]],
                 progress_bar: bool = False,
                 batch_size: int = 0,
                 drop_last: bool = False,
@@ -173,7 +173,9 @@ class Tiler:
         """Iterates through tiles of the given data array. This method can also be accessed by `Tiler.__call__()`.
 
         Args:
-            data (np.ndarray): The data array on which the tiling will be performed.
+            data (np.ndarray): The data array on which the tiling will be performed. A callable can be supplied to
+                load data into memory instead of slicing from an array. The callable should take the upper left tile
+                corner coordinates, tile width, and tile height as input.
 
             progress_bar (bool): Specifies whether to show the progress bar or not.
                 Uses `tqdm` package.
@@ -215,7 +217,7 @@ class Tiler:
                 yield tile_i // batch_size, tiles
 
     def __call__(self,
-                 data: np.ndarray,
+                 data: Union[np.ndarray, Callable[[int, int, int, int], np.ndarray]],
                  progress_bar: bool = False,
                  batch_size: int = 0,
                  drop_last: bool = False,
@@ -224,13 +226,17 @@ class Tiler:
         """ Alias for `Tiler.iterate()` """
         return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
-    def get_tile(self, data: Union[np.ndarray, Callable], tile_id: int, copy_data: bool = True) -> np.ndarray:
+    def get_tile(self,
+                 data: Union[np.ndarray, Callable[[int, int, int, int], np.ndarray]],
+                 tile_id: int,
+                 copy_data: bool = True
+                 ) -> np.ndarray:
         """Returns an individual tile.
 
         Args:
-            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable is used to
-                load data into memory instead of slicing from an array. The function should take coordinates for the
-                upper left tile corner and the width and height of the tile.
+            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable can be
+                supplied to load data into memory instead of slicing from an array. The callable should take the
+                upper left tile corner coordinates, tile width, and tile height as input.
 
                 e.g.
                 # python-bioformats
