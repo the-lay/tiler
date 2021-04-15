@@ -24,6 +24,7 @@ jobs:
         run: python -m coverage run --source=tiler -m pytest -vvs tests/
 
       - name: Run coveralls
+        if: ${{ secrets.COVERALLS_TOKEN }}
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
