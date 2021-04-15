@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm.auto import tqdm
-from typing import Optional, Tuple, List, Union, Generator
+from typing import Optional, Tuple, List, Union, Generator, Callable
 
 
 class Tiler:
@@ -224,11 +224,22 @@ class Tiler:
         """ Alias for `Tiler.iterate()` """
         return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
-    def get_tile(self, data: np.ndarray, tile_id: int, copy_data: bool = True) -> np.ndarray:
+    def get_tile(self, data: Union[np.ndarray, Callable], tile_id: int, copy_data: bool = True) -> np.ndarray:
         """Returns an individual tile.
 
         Args:
-            data (np.ndarray): Data from which `tile_id`-th tile will be taken.
+            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable is used to
+                load data into memory instead of slicing from an array. The function should take coordinates for the
+                upper left tile corner and the width and height of the tile.
+
+                e.g.
+                # python-bioformats
+                >>> reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])
+                >>> tiler.get_tile(reader_func, 0)
+
+                # open-slide
+                >>> reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])
+                >>> tiler.get_tile(reader_func, 0)
 
             tile_id (int): Specifies which tile to return. Must be smaller than the total number of tiles.
 
@@ -246,8 +257,15 @@ class Tiler:
 
         # get tile data
         tile_corner = self._tile_index[tile_id] * self._tile_step
-        sampling = [slice(tile_corner[d], tile_corner[d] + self.tile_shape[d]) for d in range(self._n_dim)]
-        tile_data = data[tuple(sampling)]
+        # take the lesser of the tile shape and the distance to the edge
+        sampling = [slice(tile_corner[d], np.min([self.data_shape[d], tile_corner[d] + self.tile_shape[d]])) for d in range(self._n_dim)]
+
+        if callable(data):
+            W = sampling[0].stop - sampling[0].start
+            H = sampling[1].stop - sampling[1].start
+            tile_data = data(tile_corner[0], tile_corner[1], W, H)
+        else:
+            tile_data = data[tuple(sampling)]
 
         if copy_data:
             tile_data = tile_data.copy()
