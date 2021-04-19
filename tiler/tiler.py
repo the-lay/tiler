@@ -1,6 +1,6 @@
 import numpy as np
 from tqdm.auto import tqdm
-from typing import Optional, Tuple, List, Union, Generator
+from typing import Optional, Tuple, List, Union, Generator, Callable
 
 
 class Tiler:
@@ -164,7 +164,7 @@ class Tiler:
                f'\n\tChannel dimension: {self.channel_dimension}'
 
     def iterate(self,
-                data: np.ndarray,
+                data: Union[np.ndarray, Callable[..., np.ndarray]],
                 progress_bar: bool = False,
                 batch_size: int = 0,
                 drop_last: bool = False,
@@ -173,7 +173,27 @@ class Tiler:
         """Iterates through tiles of the given data array. This method can also be accessed by `Tiler.__call__()`.
 
         Args:
-            data (np.ndarray): The data array on which the tiling will be performed.
+            data (np.ndarray or callable): The data array on which the tiling will be performed. A callable can be
+                supplied to load data into memory instead of slicing from an array. The callable should take integers
+                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.
+
+                e.g.
+                *python-bioformats*
+                ```python
+                >>> tileSize = 2000
+                >>> tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))
+                >>> def reader_func(*args):
+                >>>     X, Y, W, H = args[0], args[1], args[3], args[4]
+                >>>     return reader.read(XYWH=[X, Y, W, H])
+                >>> for t_id, tile in tiler.iterate(reader_func):
+                >>>     pass
+                ```
+                *open-slide*
+                ```python
+                >>> reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])
+                >>> for t_id, tile in tiler.iterate(reader_func):
+                >>>     pass
+                ```
 
             progress_bar (bool): Specifies whether to show the progress bar or not.
                 Uses `tqdm` package.
@@ -215,7 +235,7 @@ class Tiler:
                 yield tile_i // batch_size, tiles
 
     def __call__(self,
-                 data: np.ndarray,
+                 data: Union[np.ndarray, Callable[..., np.ndarray]],
                  progress_bar: bool = False,
                  batch_size: int = 0,
                  drop_last: bool = False,
@@ -224,11 +244,33 @@ class Tiler:
         """ Alias for `Tiler.iterate()` """
         return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
-    def get_tile(self, data: np.ndarray, tile_id: int, copy_data: bool = True) -> np.ndarray:
+    def get_tile(self,
+                 data: Union[np.ndarray, Callable[..., np.ndarray]],
+                 tile_id: int,
+                 copy_data: bool = True
+                 ) -> np.ndarray:
         """Returns an individual tile.
 
         Args:
-            data (np.ndarray): Data from which `tile_id`-th tile will be taken.
+            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable can be
+                supplied to load data into memory instead of slicing from an array. The callable should take integers
+                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.
+
+                e.g.
+                *python-bioformats*
+                ```python
+                >>> tileSize = 2000
+                >>> tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))
+                >>> def reader_func(*args):
+                >>>     X, Y, W, H = args[0], args[1], args[3], args[4]
+                >>>     return reader.read(XYWH=[X, Y, W, H])
+                >>> tiler.get_tile(reader_func, 0)
+                ```
+                *open-slide*
+                ```python
+                >>> reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])
+                >>> tiler.get_tile(reader_func, 0)
+                ```
 
             tile_id (int): Specifies which tile to return. Must be smaller than the total number of tiles.
 
@@ -246,8 +288,14 @@ class Tiler:
 
         # get tile data
         tile_corner = self._tile_index[tile_id] * self._tile_step
-        sampling = [slice(tile_corner[d], tile_corner[d] + self.tile_shape[d]) for d in range(self._n_dim)]
-        tile_data = data[tuple(sampling)]
+        # take the lesser of the tile shape and the distance to the edge
+        sampling = [slice(tile_corner[d], np.min([self.data_shape[d], tile_corner[d] + self.tile_shape[d]])) for d in range(self._n_dim)]
+
+        if callable(data):
+            sampling = [x.stop - x.start for x in sampling]
+            tile_data = data(*tile_corner, *sampling)
+        else:
+            tile_data = data[tuple(sampling)]
 
         if copy_data:
             tile_data = tile_data.copy()

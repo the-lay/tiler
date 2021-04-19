@@ -51,6 +51,40 @@ class TestTilingCommon(unittest.TestCase):
 
         self.assertEqual(str(tiler), expected_repr)
 
+    def test_callable_data(self):
+
+        def fn(*x):
+            raise ValueError(x)
+
+        # 1D test
+        tiler = Tiler(data_shape=(100, ), tile_shape=(10, ))
+        for i in range(tiler.n_tiles):
+            with self.assertRaises(ValueError) as cm:
+                tiler.get_tile(fn, i)
+            np.testing.assert_equal(cm.exception.args[0], (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape))
+
+        # 2D test
+        tiler = Tiler(data_shape=(100, 100), tile_shape=(10, 20))
+        for i in range(tiler.n_tiles):
+            with self.assertRaises(ValueError) as cm:
+                tiler.get_tile(fn, i)
+            np.testing.assert_equal(cm.exception.args[0], (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape))
+
+        # 3D test
+        tiler = Tiler(data_shape=(100, 100, 100), tile_shape=(10, 20, 50))
+        for i in range(tiler.n_tiles):
+            with self.assertRaises(ValueError) as cm:
+                tiler.get_tile(fn, i)
+            np.testing.assert_equal(cm.exception.args[0], (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape))
+
+        # channel dimension test
+        tiler = Tiler(data_shape=(100, 100, 3), tile_shape=(10, 20, 3), channel_dimension=2)
+        for i in range(tiler.n_tiles):
+            with self.assertRaises(ValueError) as cm:
+                tiler.get_tile(fn, i)
+            np.testing.assert_equal(cm.exception.args[0], (*tiler.get_tile_bbox_position(i, with_channel_dim=True)[0],
+                                                           *tiler.tile_shape))
+
 
 class TestTiling1D(unittest.TestCase):
 
@@ -202,6 +236,13 @@ class TestTiling1D(unittest.TestCase):
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
         t[9] = 9
+
+        # test callable data
+        fn = lambda x, w: self.data[x:x+w]
+        t = tiler.get_tile(fn, 0)
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], t)
+        t = tiler.get_tile(fn, 1)
+        np.testing.assert_equal([10, 11, 12, 13, 14, 15, 16, 17, 18, 19], t)
 
     def test_iterator(self):
         tile_size = 10

@@ -495,7 +495,7 @@ https://arxiv.org/pdf/1803.02786.pdf
                <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">Channel dimension: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="si">}</span><span class="s1">&#39;</span>
 
     <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
                 <span class="n">progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="n">drop_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -504,7 +504,25 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="sd">&quot;&quot;&quot;Iterates through tiles of the given data array. This method can also be accessed by `Tiler.__call__()`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray): The data array on which the tiling will be performed.</span>
+<span class="sd">            data (np.ndarray or callable): The data array on which the tiling will be performed. A callable can be</span>
+<span class="sd">                supplied to load data into memory instead of slicing from an array. The callable should take integers</span>
+<span class="sd">                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</span>
+
+<span class="sd">                e.g.</span>
+<span class="sd">                *python-bioformats*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
+<span class="sd">                *open-slide*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
 
 <span class="sd">            progress_bar (bool): Specifies whether to show the progress bar or not.</span>
 <span class="sd">                Uses `tqdm` package.</span>
@@ -546,7 +564,7 @@ https://arxiv.org/pdf/1803.02786.pdf
                 <span class="k">yield</span> <span class="n">tile_i</span> <span class="o">//</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">tiles</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                 <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                 <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
                  <span class="n">progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">drop_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -555,11 +573,33 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="sd">&quot;&quot;&quot; Alias for `Tiler.iterate()` &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">drop_last</span><span class="p">,</span> <span class="n">copy_data</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tile_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+                 <span class="n">tile_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns an individual tile.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray): Data from which `tile_id`-th tile will be taken.</span>
+<span class="sd">            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable can be</span>
+<span class="sd">                supplied to load data into memory instead of slicing from an array. The callable should take integers</span>
+<span class="sd">                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</span>
+
+<span class="sd">                e.g.</span>
+<span class="sd">                *python-bioformats*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
+<span class="sd">                *open-slide*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
 
 <span class="sd">            tile_id (int): Specifies which tile to return. Must be smaller than the total number of tiles.</span>
 
@@ -577,8 +617,14 @@ https://arxiv.org/pdf/1803.02786.pdf
 
         <span class="c1"># get tile data</span>
         <span class="n">tile_corner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="p">[</span><span class="n">tile_id</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span>
-        <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">d</span><span class="p">])</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)]</span>
-        <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">)]</span>
+        <span class="c1"># take the lesser of the tile shape and the distance to the edge</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">d</span><span class="p">]]))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">]</span>
+            <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="o">*</span><span class="n">tile_corner</span><span class="p">,</span> <span class="o">*</span><span class="n">sampling</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">copy_data</span><span class="p">:</span>
             <span class="n">tile_data</span> <span class="o">=</span> <span class="n">tile_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -872,7 +918,7 @@ The first values are used to pad the end and the end values are used to pad the 
             <span class="def">def</span>
             <span class="name">iterate</span><span class="signature">(
     self,
-    data: numpy.ndarray,
+    data: Union[numpy.ndarray, Callable[..., numpy.ndarray]],
     progress_bar: bool = False,
     batch_size: int = 0,
     drop_last: bool = False,
@@ -883,7 +929,7 @@ The first values are used to pad the end and the end values are used to pad the 
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
                 <span class="n">progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="n">drop_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -892,7 +938,25 @@ The first values are used to pad the end and the end values are used to pad the 
         <span class="sd">&quot;&quot;&quot;Iterates through tiles of the given data array. This method can also be accessed by `Tiler.__call__()`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray): The data array on which the tiling will be performed.</span>
+<span class="sd">            data (np.ndarray or callable): The data array on which the tiling will be performed. A callable can be</span>
+<span class="sd">                supplied to load data into memory instead of slicing from an array. The callable should take integers</span>
+<span class="sd">                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</span>
+
+<span class="sd">                e.g.</span>
+<span class="sd">                *python-bioformats*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
+<span class="sd">                *open-slide*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
 
 <span class="sd">            progress_bar (bool): Specifies whether to show the progress bar or not.</span>
 <span class="sd">                Uses `tqdm` package.</span>
@@ -941,7 +1005,26 @@ The first values are used to pad the end and the end values are used to pad the 
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>data (np.ndarray):</strong>  The data array on which the tiling will be performed.</li>
+<li><p><strong>data (np.ndarray or callable):</strong>  The data array on which the tiling will be performed. A callable can be
+supplied to load data into memory instead of slicing from an array. The callable should take integers
+as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</p>
+
+<p>e.g.
+<em>python-bioformats</em></p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tileSize</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">((</span><span class="n">sizeX</span><span class="p">,</span> <span class="n">sizeY</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">),</span> <span class="p">(</span><span class="n">tileSize</span><span class="p">,</span> <span class="n">tileSize</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">reader_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">return</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p><em>open-slide</em></p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">wsi</span><span class="o">.</span><span class="n">read_region</span><span class="p">([</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></li>
 <li><strong>progress_bar (bool):</strong>  Specifies whether to show the progress bar or not.
 Uses <code>tqdm</code> package.
 Default is <code>False</code>.</li>
@@ -973,7 +1056,7 @@ Default is True.</li>
             <span class="def">def</span>
             <span class="name">get_tile</span><span class="signature">(
     self,
-    data: numpy.ndarray,
+    data: Union[numpy.ndarray, Callable[..., numpy.ndarray]],
     tile_id: int,
     copy_data: bool = True
 ) -&gt; numpy.ndarray</span>:
@@ -981,11 +1064,33 @@ Default is True.</li>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tile_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">get_tile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+                 <span class="n">tile_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns an individual tile.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray): Data from which `tile_id`-th tile will be taken.</span>
+<span class="sd">            data (np.ndarray or callable): Data from which `tile_id`-th tile will be taken. A callable can be</span>
+<span class="sd">                supplied to load data into memory instead of slicing from an array. The callable should take integers</span>
+<span class="sd">                as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</span>
+
+<span class="sd">                e.g.</span>
+<span class="sd">                *python-bioformats*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
+<span class="sd">                *open-slide*</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
+<span class="sd">                ```</span>
 
 <span class="sd">            tile_id (int): Specifies which tile to return. Must be smaller than the total number of tiles.</span>
 
@@ -1003,8 +1108,14 @@ Default is True.</li>
 
         <span class="c1"># get tile data</span>
         <span class="n">tile_corner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="p">[</span><span class="n">tile_id</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span>
-        <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">d</span><span class="p">])</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)]</span>
-        <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">)]</span>
+        <span class="c1"># take the lesser of the tile shape and the distance to the edge</span>
+        <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">tile_corner</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">d</span><span class="p">]]))</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">stop</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">sampling</span><span class="p">]</span>
+            <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">(</span><span class="o">*</span><span class="n">tile_corner</span><span class="p">,</span> <span class="o">*</span><span class="n">sampling</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tile_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sampling</span><span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">copy_data</span><span class="p">:</span>
             <span class="n">tile_data</span> <span class="o">=</span> <span class="n">tile_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1027,7 +1138,26 @@ Default is True.</li>
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>data (np.ndarray):</strong>  Data from which <code>tile_id</code>-th tile will be taken.</li>
+<li><p><strong>data (np.ndarray or callable):</strong>  Data from which <code>tile_id</code>-th tile will be taken. A callable can be
+supplied to load data into memory instead of slicing from an array. The callable should take integers
+as input, the smallest tile corner coordinates and tile size in each dimension, and output numpy array.</p>
+
+<p>e.g.
+<em>python-bioformats</em></p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tileSize</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">((</span><span class="n">sizeX</span><span class="p">,</span> <span class="n">sizeY</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">),</span> <span class="p">(</span><span class="n">tileSize</span><span class="p">,</span> <span class="n">tileSize</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">reader_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">return</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+
+<p><em>open-slide</em></p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">wsi</span><span class="o">.</span><span class="n">read_region</span><span class="p">([</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></li>
 <li><strong>tile_id (int):</strong>  Specifies which tile to return. Must be smaller than the total number of tiles.</li>
 <li><strong>copy_data (bool):</strong>  Specifies whether returned tile is a copy.
 If <code>copy_data == False</code> returns a view.
