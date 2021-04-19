@@ -255,12 +255,16 @@ class Tiler:
                 e.g.
                 *python-bioformats*
                 ```python
-                >>> reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])
+                >>> tileSize = 2000
+                >>> tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))
+                >>> def reader_func(*args):
+                >>>     X, Y, W, H = args[0], args[1], args[3], args[4]
+                >>>     return reader.read(XYWH=[X, Y, W, H])
                 >>> tiler.get_tile(reader_func, 0)
                 ```
                 *open-slide*
                 ```
-                >>> reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])
+                >>> reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])
                 >>> tiler.get_tile(reader_func, 0)
                 ```
 
