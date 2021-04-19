@@ -511,15 +511,17 @@ https://arxiv.org/pdf/1803.02786.pdf
 <span class="sd">                e.g.</span>
 <span class="sd">                *python-bioformats*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])</span>
-<span class="sd">                &gt;&gt;&gt; for t_id, tile in tiler.iterate(reader_func):</span>
-<span class="sd">                &gt;&gt;&gt;     pass</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 <span class="sd">                *open-slide*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])</span>
-<span class="sd">                &gt;&gt;&gt; for t_id, tile in tiler.iterate(reader_func):</span>
-<span class="sd">                &gt;&gt;&gt;     pass</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 
 <span class="sd">            progress_bar (bool): Specifies whether to show the progress bar or not.</span>
@@ -586,12 +588,16 @@ https://arxiv.org/pdf/1803.02786.pdf
 <span class="sd">                e.g.</span>
 <span class="sd">                *python-bioformats*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
 <span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 <span class="sd">                *open-slide*</span>
-<span class="sd">                ```</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
 <span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 
@@ -939,15 +945,17 @@ The first values are used to pad the end and the end values are used to pad the 
 <span class="sd">                e.g.</span>
 <span class="sd">                *python-bioformats*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])</span>
-<span class="sd">                &gt;&gt;&gt; for t_id, tile in tiler.iterate(reader_func):</span>
-<span class="sd">                &gt;&gt;&gt;     pass</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 <span class="sd">                *open-slide*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])</span>
-<span class="sd">                &gt;&gt;&gt; for t_id, tile in tiler.iterate(reader_func):</span>
-<span class="sd">                &gt;&gt;&gt;     pass</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
+<span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 
 <span class="sd">            progress_bar (bool): Specifies whether to show the progress bar or not.</span>
@@ -1004,16 +1012,18 @@ as input, the smallest tile corner coordinates and tile size in each dimension, 
 <p>e.g.
 <em>python-bioformats</em></p>
 
-<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">t_id</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiler</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="n">reader_func</span><span class="p">):</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">pass</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tileSize</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">((</span><span class="n">sizeX</span><span class="p">,</span> <span class="n">sizeY</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">),</span> <span class="p">(</span><span class="n">tileSize</span><span class="p">,</span> <span class="n">tileSize</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">reader_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">return</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 
 <p><em>open-slide</em></p>
 
-<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">wsi</span><span class="o">.</span><span class="n">read_region</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">t_id</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiler</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="n">reader_func</span><span class="p">):</span>
-<span class="o">&gt;&gt;&gt;</span>     <span class="k">pass</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">wsi</span><span class="o">.</span><span class="n">read_region</span><span class="p">([</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div></li>
 <li><strong>progress_bar (bool):</strong>  Specifies whether to show the progress bar or not.
 Uses <code>tqdm</code> package.
@@ -1069,12 +1079,16 @@ Default is True.</li>
 <span class="sd">                e.g.</span>
 <span class="sd">                *python-bioformats*</span>
 <span class="sd">                ```python</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: reader.read(XYWH=[X, Y, W, H])</span>
+<span class="sd">                &gt;&gt;&gt; tileSize = 2000</span>
+<span class="sd">                &gt;&gt;&gt; tiler = Tiler((sizeX, sizeY, sizeC), (tileSize, tileSize, sizeC))</span>
+<span class="sd">                &gt;&gt;&gt; def reader_func(*args):</span>
+<span class="sd">                &gt;&gt;&gt;     X, Y, W, H = args[0], args[1], args[3], args[4]</span>
+<span class="sd">                &gt;&gt;&gt;     return reader.read(XYWH=[X, Y, W, H])</span>
 <span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 <span class="sd">                *open-slide*</span>
-<span class="sd">                ```</span>
-<span class="sd">                &gt;&gt;&gt; reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])</span>
+<span class="sd">                ```python</span>
+<span class="sd">                &gt;&gt;&gt; reader_func = lambda *args: wsi.read_region([args[0], args[1]], 0, [args[3], args[4]])</span>
 <span class="sd">                &gt;&gt;&gt; tiler.get_tile(reader_func, 0)</span>
 <span class="sd">                ```</span>
 
@@ -1131,15 +1145,19 @@ as input, the smallest tile corner coordinates and tile size in each dimension, 
 <p>e.g.
 <em>python-bioformats</em></p>
 
-<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tileSize</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">((</span><span class="n">sizeX</span><span class="p">,</span> <span class="n">sizeY</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">),</span> <span class="p">(</span><span class="n">tileSize</span><span class="p">,</span> <span class="n">tileSize</span><span class="p">,</span> <span class="n">sizeC</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">reader_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="k">return</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">XYWH</span><span class="o">=</span><span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">])</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
 
 <p><em>open-slide</em></p>
 
-<pre><code>&gt;&gt;&gt; reader_func = lambda X, Y, W, H: wsi.read_region([X, Y], 0, [W, H])
-&gt;&gt;&gt; <a href="#get_tile">tiler.get_tile</a>(reader_func, 0)
-</code></pre></li>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">reader_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">wsi</span><span class="o">.</span><span class="n">read_region</span><span class="p">([</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">reader_func</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></li>
 <li><strong>tile_id (int):</strong>  Specifies which tile to return. Must be smaller than the total number of tiles.</li>
 <li><strong>copy_data (bool):</strong>  Specifies whether returned tile is a copy.
 If <code>copy_data == False</code> returns a view.
