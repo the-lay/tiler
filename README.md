@@ -5,6 +5,7 @@
 [![CI](https://github.com/the-lay/tiler/workflows/CI/badge.svg)](https://github.com/the-lay/tiler/actions/workflows/ci.yml)
 [![Coverage status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/tiler)
 [![Documentation](https://img.shields.io/badge/documentation-✔-green.svg)](https://the-lay.github.io/tiler)
 
 
