@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from tqdm.auto import tqdm
 from typing import Optional, Tuple, List, Union, Generator, Callable
@@ -11,7 +13,7 @@ class Tiler:
         If a tile is smaller than `tile_shape`, pad it with the constant value along each axis to match `tile_shape`.
         Set the value with the keyword `constant_value`.  
     - `drop`  
-        If a tile is smaller than `tile_shape` in any of the dimensions, ignore it.
+        If a tile is smaller than `tile_shape` in any of the dimensions, ignore it. Can result in zero tiles.
     - `irregular`  
         Allow tiles to be smaller than `tile_shape`.
     - `reflect`  
@@ -96,21 +98,23 @@ class Tiler:
 
         # Overlap and step
         self.overlap = overlap
-        if isinstance(self.overlap, float) and (self.overlap < 0 or self.overlap > 1.0):
-            raise ValueError('Overlap, if float, must be in range of 0.0 (0%) to 1.0 (100%).')
-        if (isinstance(self.overlap, list) or isinstance(self.overlap, tuple)) \
-                and (np.any((self.tile_shape - np.array(self.overlap)) <= 0)):
-            raise ValueError('Overlap size much be smaller than tile_shape.')
+        if isinstance(self.overlap, float):
+            if self.overlap < 0 or self.overlap > 1.0:
+                raise ValueError('Overlap, if float, must be in range of 0.0 (0%) to 1.0 (100%).')
 
-        if isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
-            # overlap is given directly
-            self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
-        elif isinstance(self.overlap, int):
-            # int overlap applies the same overlap to each dimension
-            self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
-        elif isinstance(self.overlap, float):
             # compute overlap
             self._tile_overlap: np.ndarray = np.ceil(self.overlap * self.tile_shape).astype(int)
+
+        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple) or (isinstance(self.overlap, int)):
+            if np.any((self.tile_shape - np.array(self.overlap)) <= 0):
+                raise ValueError('Overlap size much be smaller than tile_shape.')
+
+            if isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
+                self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
+
+            if isinstance(self.overlap, int):
+                self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
+
         else:
             raise ValueError('Unsupported overlap mode (not float, int, list or tuple).')
 
@@ -142,6 +146,9 @@ class Tiler:
         self._tile_index = np.vstack(np.meshgrid(*[np.arange(0, x) for x in self._indexing_shape], indexing='ij'))
         self._tile_index = self._tile_index.reshape(self._n_dim, -1).T
         self.n_tiles = len(self._tile_index)
+
+        if self.n_tiles == 0:
+            warnings.warn(f'Tiler ({mode=}, {overlap=}) has split data ({data_shape=}) into zero tiles ({tile_shape=})')
 
     def __len__(self) -> int:
         """

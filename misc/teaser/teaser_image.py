@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from tiler import Tiler, Merger
 
 # Warning: ugly code, but explicit.
-# Moreover, does not really show how to do overlap tiling.
-# You can find example of 2D overlap tiling in examples/2d_overlap_tile.py
+# Moreover, it is not really merging the tiles back together.
+# You can find example of actual 2D overlap tiling and merging in examples/2d_overlap_tile.py
 
 
 #### Generate images

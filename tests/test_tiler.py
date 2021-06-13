@@ -1,4 +1,6 @@
 import unittest
+import warnings
+
 import numpy as np
 from tiler import Tiler
 
@@ -86,7 +88,7 @@ class TestTilingCommon(unittest.TestCase):
                                                            *tiler.tile_shape))
 
 
-class TestTiling1D(unittest.TestCase):
+class TestTiling(unittest.TestCase):
 
     def setUp(self):
         self.n_elements = 100
@@ -106,6 +108,18 @@ class TestTiling1D(unittest.TestCase):
 
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
+
+        # Drop mode with overlap bigger than any of the dimensions
+        with self.assertRaises(ValueError):
+            Tiler(data_shape=(2, 100), tile_shape=(1, 64), overlap=32, mode='drop')
+
+        # Drop mode with tile shape bigger than data shape
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            tiler = Tiler(data_shape=(1, 63),
+                          tile_shape=(1, 64),
+                          mode='drop')
+            self.assertEqual(tiler.n_tiles, 0)
 
     def test_irregular_mode(self):
         # Irregular mode returns last chunk even if it is not equal to the tile size
@@ -137,6 +151,11 @@ class TestTiling1D(unittest.TestCase):
 
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
+
+        # Constant mode with tile shape bigger than data
+        tiler = Tiler(data_shape=(1, 63),
+                      tile_shape=(1, 64), mode='constant')
+        self.assertEqual(tiler.n_tiles, 1)
 
     def test_reflect_mode(self):
         # Reflect mode pads with reflected values along the axis
