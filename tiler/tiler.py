@@ -148,7 +148,8 @@ class Tiler:
         self.n_tiles = len(self._tile_index)
 
         if self.n_tiles == 0:
-            warnings.warn(f'Tiler ({mode=}, {overlap=}) has split data ({data_shape=}) into zero tiles ({tile_shape=})')
+            warnings.warn(f'Tiler (mode={mode}, overlap={overlap}) will split data_shape {data_shape} '
+                          f'into zero tiles (tile_shape={tile_shape})')
 
     def __len__(self) -> int:
         """
