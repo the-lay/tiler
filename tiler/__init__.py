@@ -2,7 +2,7 @@ import sys
 from tiler.tiler import Tiler
 from tiler.merger import Merger
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __all__ = ['Tiler', 'Merger']
 
 # Import README file as a module general docstring, only when generating documentation

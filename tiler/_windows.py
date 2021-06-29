@@ -206,17 +206,21 @@ def _hamming(m: int):
 _mapping = {
     'boxcar': _boxcar,
     'triang': _triang,
-    '_parzen': _parzen,
-    '_bohman': _bohman,
-    '_blackman': _blackman,
-    '_nuttall': _nuttall,
-    '_blackmanharris': _blackmanharris,
-    '_flattop': _flattop,
-    '_bartlett': _bartlett,
-    '_hann': _hann,
-    '_barthann': _barthann,
-    '_hamming': _hamming
+    'parzen': _parzen,
+    'bohman': _bohman,
+    'blackman': _blackman,
+    'nuttall': _nuttall,
+    'blackmanharris': _blackmanharris,
+    'flattop': _flattop,
+    'bartlett': _bartlett,
+    'hann': _hann,
+    'barthann': _barthann,
+    'hamming': _hamming
 }
 
 def get_window(window: str, length: int):
-    return _mapping[window](length)
+    fn = _mapping.get(window, None)
+    if not fn:
+        raise ValueError(f'Window function {window} is not supported.')
+
+    return fn(length)
