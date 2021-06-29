@@ -106,7 +106,7 @@ tiler    </h1>
 <p><a href="https://github.com/the-lay/tiler/actions/workflows/ci.yml"><img src="https://github.com/the-lay/tiler/workflows/CI/badge.svg" alt="CI" /></a>
 <a href="https://coveralls.io/github/the-lay/tiler?branch=master"><img src="https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master" alt="Coverage status" /></a>
 <a href="https://badge.fury.io/py/tiler"><img src="https://badge.fury.io/py/tiler.svg" alt="PyPI version" /></a>
-<img src="https://img.shields.io/pypi/dm/tiler" alt="PyPI - Downloads" />
+<a href="https://pypistats.org/packages/tiler"><img src="https://img.shields.io/pypi/dm/tiler" alt="PyPI Downloads" /></a>
 <a href="https://the-lay.github.io/tiler"><img src="https://img.shields.io/badge/documentation-✔-green.svg" alt="Documentation" /></a></p>
 
 <p><a href="https://github.com/the-lay/tiler">Github repository</a> | 
@@ -206,8 +206,6 @@ pip install
 <li>merging on GPU like in pytorch-toolbelt?</li>
 </ul></li>
 <li>More examples</li>
-<li>Implement windows functions and remove scipy dependency
-(we need only a couple of functions that generate windows)</li>
 <li>PyTorch Dataset class convenience wrapper?</li>
 <li>Arbitrary sized tiles (m-dim window over n-dim array, m &lt;= n)?
 <ul>
@@ -309,7 +307,7 @@ https://arxiv.org/pdf/1803.02786.pdf
 <span class="kn">from</span> <span class="nn">tiler.tiler</span> <span class="kn">import</span> <span class="n">Tiler</span>
 <span class="kn">from</span> <span class="nn">tiler.merger</span> <span class="kn">import</span> <span class="n">Merger</span>
 
-<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.2.3&#39;</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.3.0&#39;</span>
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Tiler&#39;</span><span class="p">,</span> <span class="s1">&#39;Merger&#39;</span><span class="p">]</span>
 
 <span class="c1"># Import README file as a module general docstring, only when generating documentation</span>
@@ -383,8 +381,8 @@ https://arxiv.org/pdf/1803.02786.pdf
 <span class="sd">                Tile must have the same number of dimensions as data.</span>
 
 <span class="sd">            overlap (int, float, tuple or list): Specifies overlap between tiles.</span>
-<span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension.</span>
-<span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0).</span>
+<span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
+<span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.</span>
 <span class="sd">                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).</span>
 <span class="sd">                Default is `0`.</span>
 
@@ -431,20 +429,26 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Overlap, if float, must be in range of 0.0 (0%) to 1.0 (100%).&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Float overlap must be in range of 0.0 (0%) to 1.0 (100%).&#39;</span><span class="p">)</span>
 
-            <span class="c1"># compute overlap</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">tile_shape_without_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="n">tile_shape_without_channel</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Integer overlap must be in range of 0 to </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tile_shape_without_channel</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Overlap size much be smaller than tile_shape.&#39;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported overlap mode (not float, int, list or tuple).&#39;</span><span class="p">)</span>
@@ -479,7 +483,8 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiler (</span><span class="si">{</span><span class="n">mode</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">overlap</span><span class="si">=}</span><span class="s1">) has split data (</span><span class="si">{</span><span class="n">data_shape</span><span class="si">=}</span><span class="s1">) into zero tiles (</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">=}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiler (mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">, overlap=</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s1">) will split data_shape </span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s1"> &#39;</span>
+                          <span class="sa">f</span><span class="s1">&#39;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -754,8 +759,8 @@ https://arxiv.org/pdf/1803.02786.pdf
 <span class="sd">                Tile must have the same number of dimensions as data.</span>
 
 <span class="sd">            overlap (int, float, tuple or list): Specifies overlap between tiles.</span>
-<span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension.</span>
-<span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0).</span>
+<span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
+<span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.</span>
 <span class="sd">                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).</span>
 <span class="sd">                Default is `0`.</span>
 
@@ -802,20 +807,26 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Overlap, if float, must be in range of 0.0 (0%) to 1.0 (100%).&#39;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Float overlap must be in range of 0.0 (0%) to 1.0 (100%).&#39;</span><span class="p">)</span>
 
-            <span class="c1"># compute overlap</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">tile_shape_without_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="n">tile_shape_without_channel</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Integer overlap must be in range of 0 to </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tile_shape_without_channel</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Overlap size much be smaller than tile_shape.&#39;</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported overlap mode (not float, int, list or tuple).&#39;</span><span class="p">)</span>
@@ -850,7 +861,8 @@ https://arxiv.org/pdf/1803.02786.pdf
         <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiler (</span><span class="si">{</span><span class="n">mode</span><span class="si">=}</span><span class="s1">, </span><span class="si">{</span><span class="n">overlap</span><span class="si">=}</span><span class="s1">) has split data (</span><span class="si">{</span><span class="n">data_shape</span><span class="si">=}</span><span class="s1">) into zero tiles (</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">=}</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Tiler (mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s1">, overlap=</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s1">) will split data_shape </span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s1"> &#39;</span>
+                          <span class="sa">f</span><span class="s1">&#39;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -877,8 +889,8 @@ If there is a channel dimension, it should be included in the shape.</li>
 <li><strong>tile_shape (tuple or list):</strong>  Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].
 Tile must have the same number of dimensions as data.</li>
 <li><strong>overlap (int, float, tuple or list):</strong>  Specifies overlap between tiles.
-If integer, the same overlap of overlap pixels applied in each dimension.
-If float, percentage of a tile_shape to overlap (from 0.0 to 1.0).
+If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
+If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
 If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
 Default is <code>0</code>.</li>
 <li><strong>channel_dimension (int, optional):</strong>  Specifies which axis is the channel dimension that will not be tiled.
@@ -1366,7 +1378,8 @@ Default is False.</li>
             <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Merger</span><span class="p">:</span>
 
     <span class="n">SUPPORTED_WINDOWS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;boxcar&#39;</span><span class="p">,</span> <span class="s1">&#39;triang&#39;</span><span class="p">,</span> <span class="s1">&#39;blackman&#39;</span><span class="p">,</span> <span class="s1">&#39;hamming&#39;</span><span class="p">,</span> <span class="s1">&#39;hann&#39;</span><span class="p">,</span> <span class="s1">&#39;bartlett&#39;</span><span class="p">,</span>
-                         <span class="s1">&#39;flattop&#39;</span><span class="p">,</span> <span class="s1">&#39;parzen&#39;</span><span class="p">,</span> <span class="s1">&#39;bohman&#39;</span><span class="p">,</span> <span class="s1">&#39;blackmanharris&#39;</span><span class="p">,</span> <span class="s1">&#39;nuttall&#39;</span><span class="p">,</span> <span class="s1">&#39;barthann&#39;</span><span class="p">]</span>
+                         <span class="s1">&#39;flattop&#39;</span><span class="p">,</span> <span class="s1">&#39;parzen&#39;</span><span class="p">,</span> <span class="s1">&#39;bohman&#39;</span><span class="p">,</span> <span class="s1">&#39;blackmanharris&#39;</span><span class="p">,</span> <span class="s1">&#39;nuttall&#39;</span><span class="p">,</span> <span class="s1">&#39;barthann&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;overlap-tile&#39;</span><span class="p">]</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Supported windows:</span>
 <span class="sd">    - &#39;boxcar&#39; (default)  </span>
@@ -1391,14 +1404,17 @@ Default is False.</li>
 <span class="sd">    - &#39;blackmanharris&#39;  </span>
 <span class="sd">        Minimum 4-term Blackman-Harris window.</span>
 <span class="sd">    - &#39;nuttall&#39;  </span>
-<span class="sd">        Minimum 4-term Blackman-Harris window according to Nuttall</span>
+<span class="sd">        Minimum 4-term Blackman-Harris window according to Nuttall.</span>
 <span class="sd">    - &#39;barthann&#39;  </span>
-<span class="sd">        Bartlett-Hann window.</span>
+<span class="sd">        Bartlett-Hann window.    </span>
+<span class="sd">    - &#39;overlap-tile&#39;  </span>
+<span class="sd">        Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.</span>
+<span class="sd">        (Ronneberger et al. 2015, U-Net paper)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span>
-                 <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;boxcar&#39;</span><span class="p">,</span>
+                 <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
 
@@ -1408,12 +1424,13 @@ Default is False.</li>
 <span class="sd">        Args:</span>
 <span class="sd">            tiler (Tiler): Tiler with which the tiles were originally created.</span>
 
-<span class="sd">            window (str or np.ndarray): Specifies which window function to use for tile merging.</span>
+<span class="sd">            window (None, str or np.ndarray): Specifies which window function to use for tile merging.</span>
 <span class="sd">                Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.</span>
-<span class="sd">                Default is `boxcar`.</span>
+<span class="sd">                Default is None which creates a boxcar window (constant 1s).</span>
 
 <span class="sd">            logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
 
         <span class="c1"># Logits support</span>
@@ -1450,12 +1467,18 @@ Default is False.</li>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">_tile_overlap</span>
         <span class="k">for</span> <span class="n">axis</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">:</span>
                 <span class="c1"># channel dimension should have weight of 1 everywhere</span>
                 <span class="n">win</span> <span class="o">=</span> <span class="n">get_window</span><span class="p">(</span><span class="s1">&#39;boxcar&#39;</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">win</span> <span class="o">=</span> <span class="n">get_window</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">window</span> <span class="o">==</span> <span class="s1">&#39;overlap-tile&#39;</span><span class="p">:</span>
+                    <span class="n">axis_overlap</span> <span class="o">=</span> <span class="n">overlap</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+                    <span class="n">win</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>
+                    <span class="n">win</span><span class="p">[</span><span class="n">axis_overlap</span><span class="p">:</span><span class="o">-</span><span class="n">axis_overlap</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">win</span> <span class="o">=</span> <span class="n">get_window</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">axis</span><span class="p">:</span>
@@ -1467,21 +1490,25 @@ Default is False.</li>
 
         <span class="k">return</span> <span class="n">w</span>
 
-    <span class="k">def</span> <span class="nf">set_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">set_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets window function depending on the given window function.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            window (str or np.ndarray): Specifies which window function to use for tile merging.</span>
+<span class="sd">            window (None, str or np.ndarray): Specifies which window function to use for tile merging.</span>
 <span class="sd">                Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.</span>
-<span class="sd">                Default is `boxcar`.</span>
+<span class="sd">                If passed None sets a boxcar window (constant 1s).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># Warn user that changing window type after some elements were already visited is a bad idea.</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: you are changing a window type after some elements &#39;</span>
-                  <span class="s1">&#39; were already processed and that might lead to an unpredicted behavior.&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;You are setting window type after some elements were already added.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Default window is boxcar</span>
+        <span class="k">if</span> <span class="n">window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="s1">&#39;boxcar&#39;</span>
 
         <span class="c1"># Generate or set a window function</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1508,7 +1535,7 @@ Default is False.</li>
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="n">padded_data_shape</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
 
@@ -1551,6 +1578,7 @@ Default is False.</li>
         <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">shape_diff</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))]</span>
         <span class="n">win_sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">diff</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">shape_diff</span><span class="p">]</span>
 
+        <span class="c1"># TODO check for self.data and data dtypes mismatch?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
@@ -1587,7 +1615,7 @@ Default is False.</li>
         <span class="sd">&quot;&quot;&quot;Returns final merged data array obtained from added tiles.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            unpad (bool): If unpad is True, removes padded elements. Default is True.</span>
+<span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
 <span class="sd">        Returns:</span>
@@ -1619,7 +1647,7 @@ Default is False.</li>
         
             <span class="name">Merger</span><span class="signature">(
     tiler: <a href="#tiler.Tiler">tiler.tiler.Tiler</a>,
-    window: Union[str, numpy.ndarray] = &#39;boxcar&#39;,
+    window: Union[NoneType, str, numpy.ndarray] = None,
     logits: int = 0
 )</span>
     </div>
@@ -1628,7 +1656,7 @@ Default is False.</li>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span>
-                 <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;boxcar&#39;</span><span class="p">,</span>
+                 <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
 
@@ -1638,12 +1666,13 @@ Default is False.</li>
 <span class="sd">        Args:</span>
 <span class="sd">            tiler (Tiler): Tiler with which the tiles were originally created.</span>
 
-<span class="sd">            window (str or np.ndarray): Specifies which window function to use for tile merging.</span>
+<span class="sd">            window (None, str or np.ndarray): Specifies which window function to use for tile merging.</span>
 <span class="sd">                Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.</span>
-<span class="sd">                Default is `boxcar`.</span>
+<span class="sd">                Default is None which creates a boxcar window (constant 1s).</span>
 
 <span class="sd">            logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
 
         <span class="c1"># Logits support</span>
@@ -1683,9 +1712,9 @@ Default is False.</li>
 
 <ul>
 <li><strong>tiler (Tiler):</strong>  Tiler with which the tiles were originally created.</li>
-<li><strong>window (str or np.ndarray):</strong>  Specifies which window function to use for tile merging.
+<li><strong>window (None, str or np.ndarray):</strong>  Specifies which window function to use for tile merging.
 Must be one of <code><a href="#Merger.SUPPORTED_WINDOWS">Merger.SUPPORTED_WINDOWS</a></code> or a numpy array with the same size as the tile.
-Default is <code>boxcar</code>.</li>
+Default is None which creates a boxcar window (constant 1s).</li>
 <li><strong>logits (int):</strong>  Specify whether to add logits dimensions in front of the data array. Default is <code>0</code>.</li>
 </ul>
 </div>
@@ -1695,7 +1724,7 @@ Default is <code>boxcar</code>.</li>
                             <div id="Merger.SUPPORTED_WINDOWS" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Merger.SUPPORTED_WINDOWS">#&nbsp;&nbsp</a>
 
-        <span class="name">SUPPORTED_WINDOWS</span><span class="default_value"> = [&#39;boxcar&#39;, &#39;triang&#39;, &#39;blackman&#39;, &#39;hamming&#39;, &#39;hann&#39;, &#39;bartlett&#39;, &#39;flattop&#39;, &#39;parzen&#39;, &#39;bohman&#39;, &#39;blackmanharris&#39;, &#39;nuttall&#39;, &#39;barthann&#39;]</span>
+        <span class="name">SUPPORTED_WINDOWS</span><span class="default_value"> = [&#39;boxcar&#39;, &#39;triang&#39;, &#39;blackman&#39;, &#39;hamming&#39;, &#39;hann&#39;, &#39;bartlett&#39;, &#39;flattop&#39;, &#39;parzen&#39;, &#39;bohman&#39;, &#39;blackmanharris&#39;, &#39;nuttall&#39;, &#39;barthann&#39;, &#39;overlap-tile&#39;]</span>
     </div>
 
             <div class="docstring"><p>Supported windows:</p>
@@ -1723,9 +1752,12 @@ Bohman window.</li>
 <li>'blackmanharris' <br />
 Minimum 4-term Blackman-Harris window.</li>
 <li>'nuttall' <br />
-Minimum 4-term Blackman-Harris window according to Nuttall</li>
+Minimum 4-term Blackman-Harris window according to Nuttall.</li>
 <li>'barthann' <br />
-Bartlett-Hann window.</li>
+Bartlett-Hann window.    </li>
+<li>'overlap-tile' <br />
+Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
+(Ronneberger et al. 2015, U-Net paper)</li>
 </ul>
 </div>
 
@@ -1736,26 +1768,30 @@ Bartlett-Hann window.</li>
 
         
             <span class="def">def</span>
-            <span class="name">set_window</span><span class="signature">(self, window: Union[str, numpy.ndarray]) -&gt; None</span>:
+            <span class="name">set_window</span><span class="signature">(self, window: Union[NoneType, str, numpy.ndarray] = None) -&gt; None</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">set_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">set_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Sets window function depending on the given window function.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            window (str or np.ndarray): Specifies which window function to use for tile merging.</span>
+<span class="sd">            window (None, str or np.ndarray): Specifies which window function to use for tile merging.</span>
 <span class="sd">                Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.</span>
-<span class="sd">                Default is `boxcar`.</span>
+<span class="sd">                If passed None sets a boxcar window (constant 1s).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># Warn user that changing window type after some elements were already visited is a bad idea.</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: you are changing a window type after some elements &#39;</span>
-                  <span class="s1">&#39; were already processed and that might lead to an unpredicted behavior.&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;You are setting window type after some elements were already added.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Default window is boxcar</span>
+        <span class="k">if</span> <span class="n">window</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">window</span> <span class="o">=</span> <span class="s1">&#39;boxcar&#39;</span>
 
         <span class="c1"># Generate or set a window function</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">window</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -1777,9 +1813,9 @@ Bartlett-Hann window.</li>
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>window (str or np.ndarray):</strong>  Specifies which window function to use for tile merging.
+<li><strong>window (None, str or np.ndarray):</strong>  Specifies which window function to use for tile merging.
 Must be one of <code><a href="#Merger.SUPPORTED_WINDOWS">Merger.SUPPORTED_WINDOWS</a></code> or a numpy array with the same size as the tile.
-Default is <code>boxcar</code>.</li>
+If passed None sets a boxcar window (constant 1s).</li>
 </ul>
 
 <h6 id="returns">Returns</h6>
@@ -1814,7 +1850,7 @@ Default is <code>boxcar</code>.</li>
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="n">padded_data_shape</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
 
@@ -1883,6 +1919,7 @@ Default is <code>boxcar</code>.</li>
         <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">shape_diff</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))]</span>
         <span class="n">win_sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">diff</span><span class="p">)</span> <span class="k">if</span> <span class="p">(</span><span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">shape_diff</span><span class="p">]</span>
 
+        <span class="c1"># TODO check for self.data and data dtypes mismatch?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
@@ -1982,7 +2019,7 @@ Default is <code>boxcar</code>.</li>
         <span class="sd">&quot;&quot;&quot;Returns final merged data array obtained from added tiles.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            unpad (bool): If unpad is True, removes padded elements. Default is True.</span>
+<span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
 <span class="sd">        Returns:</span>
@@ -2011,7 +2048,7 @@ Default is <code>boxcar</code>.</li>
 <h6 id="args">Args</h6>
 
 <ul>
-<li><strong>unpad (bool):</strong>  If unpad is True, removes padded elements. Default is True.</li>
+<li><strong>unpad (bool):</strong>  If unpad is True, removes padded array elements. Default is True.</li>
 <li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed. Default is False.</li>
 </ul>
 

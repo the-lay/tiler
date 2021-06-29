@@ -5,7 +5,7 @@
 [![CI](https://github.com/the-lay/tiler/workflows/CI/badge.svg)](https://github.com/the-lay/tiler/actions/workflows/ci.yml)
 [![Coverage status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/tiler)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/tiler)](https://pypistats.org/packages/tiler)
 [![Documentation](https://img.shields.io/badge/documentation-✔-green.svg)](https://the-lay.github.io/tiler)
 
 
@@ -103,8 +103,6 @@ Roadmap
  - PyTorch Tensors support
    - merging on GPU like in pytorch-toolbelt?
  - More examples
- - Implement windows functions and remove scipy dependency
-   (we need only a couple of functions that generate windows)
  - PyTorch Dataset class convenience wrapper?
  - Arbitrary sized tiles (m-dim window over n-dim array, m <= n)?
     - [Some leads here](https://stackoverflow.com/questions/45960192/using-numpy-as-strided-function-to-create-patches-tiles-rolling-or-sliding-w)

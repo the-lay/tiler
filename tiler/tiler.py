@@ -52,8 +52,8 @@ class Tiler:
                 Tile must have the same number of dimensions as data.
 
             overlap (int, float, tuple or list): Specifies overlap between tiles.
-                If integer, the same overlap of overlap pixels applied in each dimension.
-                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0).
+                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
+                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
                 If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
                 Default is `0`.
 
@@ -100,20 +100,26 @@ class Tiler:
         self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap > 1.0:
-                raise ValueError('Overlap, if float, must be in range of 0.0 (0%) to 1.0 (100%).')
+                raise ValueError('Float overlap must be in range of 0.0 (0%) to 1.0 (100%).')
 
-            # compute overlap
             self._tile_overlap: np.ndarray = np.ceil(self.overlap * self.tile_shape).astype(int)
+            if self.channel_dimension is not None:
+                self._tile_overlap[self.channel_dimension] = 0
 
-        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple) or (isinstance(self.overlap, int)):
-            if np.any((self.tile_shape - np.array(self.overlap)) <= 0):
+        elif isinstance(self.overlap, int):
+            tile_shape_without_channel = self.tile_shape[np.arange(self._n_dim) != self.channel_dimension]
+            if self.overlap < 0 or np.any(self.overlap >= tile_shape_without_channel):
+                raise ValueError(f'Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}')
+
+            self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
+            if self.channel_dimension is not None:
+                self._tile_overlap[self.channel_dimension] = 0
+
+        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
+            if np.any(np.array(self.overlap) < 0) or np.any(self.overlap >= self.tile_shape):
                 raise ValueError('Overlap size much be smaller than tile_shape.')
 
-            if isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
-                self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
-
-            if isinstance(self.overlap, int):
-                self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
+            self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
 
         else:
             raise ValueError('Unsupported overlap mode (not float, int, list or tuple).')

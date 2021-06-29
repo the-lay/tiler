@@ -148,6 +148,53 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(merger.merge(),
                                 [i if i % 10 else 0 for i in range(100)])
 
+    def test_overlap_tile_window(self):
+
+        # no overlap is given - the resulting window should be just zeros
+        tiler = Tiler(data_shape=(100, ), tile_shape=(10, ), overlap=0)
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, np.zeros((10, )))
+
+        # odd overlap - discarding overlap // 2 elements from both sides
+        tiler = Tiler(data_shape=(100, ), tile_shape=(10, ), overlap=5)
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [0, 0, 1, 1, 1, 1, 1, 1, 0, 0])
+
+        # even overlap - discarding overlap // 2 elements from both sides
+        tiler = Tiler(data_shape=(100, ), tile_shape=(10, ), overlap=(6,))
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [0, 0, 0, 1, 1, 1, 1, 0, 0, 0])
+
+        # channel dimension case
+        tiler = Tiler(data_shape=(3, 100), tile_shape=(3, 4), channel_dimension=0, overlap=2)
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [[0, 1, 1, 0],
+                                                [0, 1, 1, 0],
+                                                [0, 1, 1, 0]])
+
+        # 2D even case
+        tiler = Tiler(data_shape=(100, 100), tile_shape=(4, 4), overlap=(2, 2))
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [[0, 0, 0, 0],
+                                                [0, 1, 1, 0],
+                                                [0, 1, 1, 0],
+                                                [0, 0, 0, 0]])
+
+        # 2D odd case
+        tiler = Tiler(data_shape=(100, 100), tile_shape=(4, 4), overlap=3)
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [[0, 0, 0, 0],
+                                                [0, 1, 1, 0],
+                                                [0, 1, 1, 0],
+                                                [0, 0, 0, 0]])
+
+        # Channel + 2D even case
+        tiler = Tiler(data_shape=(3, 100, 100), tile_shape=(3, 4, 4), channel_dimension=0, overlap=2)
+        merger = Merger(tiler=tiler, window='overlap-tile')
+        np.testing.assert_equal(merger.window, [[[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+                                                [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]],
+                                                [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]])
+
     def test_merge(self):
 
         # Test padding

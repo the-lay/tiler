@@ -20,17 +20,18 @@ image = np.array(Image.open('example_image.jpg'))  # 1280x1920x3
 # we should pad the image by 32 from each side, using reflect mode
 padded_image = np.pad(image, ((32, 32), (32, 32), (0, 0)), mode='reflect')
 
-# Specifying tiling
-# The overlap should be 50% or explicitly (64, 64, 0)
+# Specifying tiling parameters
+# The overlap should be 0.5, 64 or explicitly (64, 64, 0)
 tiler = Tiler(data_shape=padded_image.shape, tile_shape=(128, 128, 3),
               overlap=(64, 64, 0), channel_dimension=2)
 
-# Window function for merging
-window = np.zeros((128, 128, 3))
-window[32:-32, 32:-32, :] = 1
-
-# Specifying merging
-merger = Merger(tiler=tiler, window=window)
+# Specifying merging parameters
+# You can define overlap-tile window explicitly, i.e.
+# window = np.zeros((128, 128, 3))
+# window[32:-32, 32:-32, :] = 1
+# merger = Merger(tiler=tiler, window=window)
+# or you can use overlap-tile window which will do that automatically based on tiler.overlap
+merger = Merger(tiler=tiler, window='overlap-tile')
 
 # Let's define a function that will be applied to each tile
 def process(patch: np.ndarray, sanity_check: bool = True) -> np.ndarray:
@@ -56,6 +57,7 @@ for tile_id, tile in tiler(padded_image):
     processed_tile = process(tile)
     merger.add(tile_id, processed_tile)
 
+# Merger.merge() returns unpadded from tiler image, but we still need to unpad line#21
 final_image = merger.merge().astype(np.uint8)
 final_unpadded_image = final_image[32:-32, 32:-32, :]
 

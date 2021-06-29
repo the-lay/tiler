@@ -1,14 +1,17 @@
-import numpy as np
-import sys
 from typing import Union, Tuple, List
-from scipy.signal.windows import get_window
+import warnings
+
+import numpy as np
+
 from tiler import Tiler
+from tiler._windows import get_window
 
 
 class Merger:
 
     SUPPORTED_WINDOWS = ['boxcar', 'triang', 'blackman', 'hamming', 'hann', 'bartlett',
-                         'flattop', 'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann']
+                         'flattop', 'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann',
+                         'overlap-tile']
     r"""
     Supported windows:
     - 'boxcar' (default)  
@@ -33,14 +36,17 @@ class Merger:
     - 'blackmanharris'  
         Minimum 4-term Blackman-Harris window.
     - 'nuttall'  
-        Minimum 4-term Blackman-Harris window according to Nuttall
+        Minimum 4-term Blackman-Harris window according to Nuttall.
     - 'barthann'  
-        Bartlett-Hann window.
+        Bartlett-Hann window.    
+    - 'overlap-tile'  
+        Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
+        (Ronneberger et al. 2015, U-Net paper)
     """
 
     def __init__(self,
                  tiler: Tiler,
-                 window: Union[str, np.ndarray] = 'boxcar',
+                 window: Union[None, str, np.ndarray] = None,
                  logits: int = 0):
         """Merger precomputes everything for merging together tiles created by given Tiler.
 
@@ -50,12 +56,13 @@ class Merger:
         Args:
             tiler (Tiler): Tiler with which the tiles were originally created.
 
-            window (str or np.ndarray): Specifies which window function to use for tile merging.
+            window (None, str or np.ndarray): Specifies which window function to use for tile merging.
                 Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.
-                Default is `boxcar`.
+                Default is None which creates a boxcar window (constant 1s).
 
             logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.
         """
+
         self.tiler = tiler
 
         # Logits support
@@ -92,12 +99,18 @@ class Merger:
         """
 
         w = np.ones(shape)
+        overlap = self.tiler._tile_overlap
         for axis, length in enumerate(shape):
-            if self.tiler.channel_dimension == axis:
+            if axis == self.tiler.channel_dimension:
                 # channel dimension should have weight of 1 everywhere
                 win = get_window('boxcar', length)
             else:
-                win = get_window(window, length)
+                if window == 'overlap-tile':
+                    axis_overlap = overlap[axis] // 2
+                    win = np.zeros(length)
+                    win[axis_overlap:-axis_overlap] = 1
+                else:
+                    win = get_window(window, length)
 
             for i in range(len(shape)):
                 if i == axis:
@@ -109,21 +122,25 @@ class Merger:
 
         return w
 
-    def set_window(self, window: Union[str, np.ndarray]) -> None:
+    def set_window(self, window: Union[None, str, np.ndarray] = None) -> None:
         """Sets window function depending on the given window function.
 
         Args:
-            window (str or np.ndarray): Specifies which window function to use for tile merging.
+            window (None, str or np.ndarray): Specifies which window function to use for tile merging.
                 Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.
-                Default is `boxcar`.
+                If passed None sets a boxcar window (constant 1s).
 
         Returns:
             None
         """
+
         # Warn user that changing window type after some elements were already visited is a bad idea.
         if np.count_nonzero(self.data_visits):
-            print('Warning: you are changing a window type after some elements '
-                  ' were already processed and that might lead to an unpredicted behavior.', file=sys.stderr)
+            warnings.warn('You are setting window type after some elements were already added.')
+
+        # Default window is boxcar
+        if window is None:
+            window = 'boxcar'
 
         # Generate or set a window function
         if isinstance(window, str):
@@ -150,7 +167,7 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros(np.hstack((self.logits, padded_data_shape)))
+            self.data = np.zeros((self.logits, *padded_data_shape))
         else:
             self.data = np.zeros(padded_data_shape)
 
@@ -193,6 +210,7 @@ class Merger:
         sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
         win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
 
+        # TODO check for self.data and data dtypes mismatch?
         if self.logits > 0:
             self.data[tuple([slice(None, None, None)] + sl)] += (data * self.window[tuple(win_sl[1:])])
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl[1:])]
@@ -229,7 +247,7 @@ class Merger:
         """Returns final merged data array obtained from added tiles.
 
         Args:
-            unpad (bool): If unpad is True, removes padded elements. Default is True.
+            unpad (bool): If unpad is True, removes padded array elements. Default is True.
             argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
 
         Returns:

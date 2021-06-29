@@ -11,7 +11,7 @@ with open('README.md', 'r') as f:
 
 setup(name='tiler',
       version=__version__,
-      description='Fast N-dimensional numpy array tiling and merging with overlapping, padding and tapering support',
+      description='N-dimensional NumPy array tiling and merging with easy overlapping, padding and tapering support',
       long_description=long_description,
       long_description_content_type='text/markdown',
       license='MIT',
@@ -21,12 +21,11 @@ setup(name='tiler',
       platforms=['any'],
       install_requires=[
           'numpy',
-          'scipy',
           'tqdm'
       ],
       packages=find_packages(),
       classifiers=[
-          'Development Status :: 2 - Pre-Alpha',
+          'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
           'Intended Audience :: Science/Research',
           'Topic :: Software Development :: Libraries :: Python Modules',
