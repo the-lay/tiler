@@ -34,7 +34,8 @@ class Tiler:
                  overlap: Union[int, float, Tuple, List] = 0,
                  channel_dimension: Optional[int] = None,
                  mode: str = 'constant',
-                 constant_value: float = 0.0):
+                 constant_value: float = 0.0,
+                 get_padding: bool = False):
         """Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
         You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
         with `Tiler.iterate()` (or the alias `Tiler.__call__()`).
@@ -78,10 +79,19 @@ class Tiler:
         if self.tile_shape.size != self.data_shape.size:
             raise ValueError('Tile and data shapes must have the same length.')
 
+        self.overlap = overlap
+
+        # need to caclulate get correct padding?
+        if get_padding:
+            self.pads = self.calculate_padding(
+                self.data_shape, self.tile_shape, np.asarray(self.overlap))
+            self.data_shape = self.fix_data_shape(self.data_shape, self.pads)
+
         # Tiling mode
         self.mode = mode
         if self.mode not in self.TILING_MODES:
-            raise ValueError(f'{self.mode} is an unsupported tiling mode, please check the documentation.')
+            raise ValueError(
+                f'{self.mode} is an unsupported tiling mode, please check the documentation.')
 
         # Constant value used for constant tiling mode
         self.constant_value = constant_value
@@ -97,7 +107,6 @@ class Tiler:
                 self.channel_dimension = self._n_dim + self.channel_dimension
 
         # Overlap and step
-        self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap > 1.0:
                 raise ValueError('Float overlap must be in range of 0.0 (0%) to 1.0 (100%).')
@@ -107,9 +116,11 @@ class Tiler:
                 self._tile_overlap[self.channel_dimension] = 0
 
         elif isinstance(self.overlap, int):
-            tile_shape_without_channel = self.tile_shape[np.arange(self._n_dim) != self.channel_dimension]
+            tile_shape_without_channel = self.tile_shape[np.arange(
+                self._n_dim) != self.channel_dimension]
             if self.overlap < 0 or np.any(self.overlap >= tile_shape_without_channel):
-                raise ValueError(f'Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}')
+                raise ValueError(
+                    f'Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}')
 
             self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
             if self.channel_dimension is not None:
@@ -124,10 +135,12 @@ class Tiler:
         else:
             raise ValueError('Unsupported overlap mode (not float, int, list or tuple).')
 
-        self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(int)  # tile step
+        self._tile_step: np.ndarray = (
+            self.tile_shape - self._tile_overlap).astype(int)  # tile step
 
         # Calculate mosaic (collection of tiles) shape
-        div, mod = np.divmod([self.data_shape[d] - self._tile_overlap[d] for d in range(self._n_dim)], self._tile_step)
+        div, mod = np.divmod([self.data_shape[d] - self._tile_overlap[d]
+                              for d in range(self._n_dim)], self._tile_step)
         if self.mode == 'drop':
             self._indexing_shape = div
         else:
@@ -149,7 +162,8 @@ class Tiler:
             self._tile_step[self.channel_dimension] = 0
 
         # Tile indexing
-        self._tile_index = np.vstack(np.meshgrid(*[np.arange(0, x) for x in self._indexing_shape], indexing='ij'))
+        self._tile_index = np.vstack(np.meshgrid(
+            *[np.arange(0, x) for x in self._indexing_shape], indexing='ij'))
         self._tile_index = self._tile_index.reshape(self._n_dim, -1).T
         self.n_tiles = len(self._tile_index)
 
@@ -303,7 +317,8 @@ class Tiler:
         # get tile data
         tile_corner = self._tile_index[tile_id] * self._tile_step
         # take the lesser of the tile shape and the distance to the edge
-        sampling = [slice(tile_corner[d], np.min([self.data_shape[d], tile_corner[d] + self.tile_shape[d]])) for d in range(self._n_dim)]
+        sampling = [slice(tile_corner[d], np.min(
+            [self.data_shape[d], tile_corner[d] + self.tile_shape[d]])) for d in range(self._n_dim)]
 
         if callable(data):
             sampling = [x.stop - x.start for x in sampling]
@@ -320,7 +335,8 @@ class Tiler:
                 tile_data = np.pad(tile_data, list((0, diff) for diff in shape_diff), mode=self.mode,
                                    constant_values=self.constant_value)
             elif self.mode == 'reflect' or self.mode == 'edge' or self.mode == 'wrap':
-                tile_data = np.pad(tile_data, list((0, diff) for diff in shape_diff), mode=self.mode)
+                tile_data = np.pad(tile_data, list((0, diff)
+                                                   for diff in shape_diff), mode=self.mode)
 
         return tile_data
 
@@ -346,7 +362,7 @@ class Tiler:
         finish_corner = starting_corner + self.tile_shape
         if self.channel_dimension is not None and not with_channel_dim:
             dim_indices = list(range(self.channel_dimension)) + \
-                          list(range(self.channel_dimension + 1, len(self._tile_step)))
+                list(range(self.channel_dimension + 1, len(self._tile_step)))
             starting_corner = starting_corner[dim_indices]
             finish_corner = finish_corner[dim_indices]
         return starting_corner, finish_corner
@@ -384,3 +400,97 @@ class Tiler:
         if self.channel_dimension is not None and not with_channel_dim:
             return self._indexing_shape[~(np.arange(self._n_dim) == self.channel_dimension)]
         return self._indexing_shape
+
+    def calculate_padding(self,
+                          data_shape_nonpad: np.ndarray,
+                          tile_shape: np.ndarray,
+                          overlap: np.ndarray,
+                          pprint: Optional[bool] = False) -> np.ndarray:
+        """Calculates the Padding from a given input. 
+
+
+        Parameters
+        ----------
+        data_shape_nonpad : Union[Tuple, List]
+            [description]
+        tile_shape : Union[Tuple, List]
+            [description]
+        overlap : Union[int, float, Tuple, List], optional
+            [description], by default 0
+        pprint : Optional[bool], optional
+            [description], by default False
+
+        Returns
+        -------
+        pads: np.ndarray
+            List of padding to applied to the different dimensions
+
+        ToDo
+        ----
+        1) Update description.
+        2) implement for non-even tileshapes.
+        3) add for percentage overlapping.
+        """
+        # overlap assumed in pixels for now; cannot be bigger than tile_shape nor smaller than 0
+        overlap[overlap < 0] = 0
+        overlap = np.mod(overlap, tile_shape)
+
+        # get padding -> note: at max adding 1 more tile should be nessary as negative overlap is not allowed
+        step_size = tile_shape-overlap
+        dis = (data_shape_nonpad-tile_shape)/step_size
+
+        # assuming even tileshapes
+        last_pos = tile_shape+np.ceil(dis)*step_size
+        pad_add = last_pos-data_shape_nonpad
+
+        # calculate pads and (if uneven padding necessary) pad more to the right
+        pads = np.transpose([pad_add//2, pad_add//2+np.mod(pad_add, 2)]).astype('int')
+
+        # pretty print-out results if wanted
+        if pprint:
+            print(
+                f"Input: data_shape_nonpad={data_shape_nonpad},\t tile_shape={tile_shape},\t overlap=\t{overlap}\npads=\t{list(pads)}.")
+
+        return pads
+
+    def pad_outer(self,
+                  data: Union[np.ndarray, Callable[..., np.ndarray]],
+                  pads: Union[np.ndarray, Tuple, List]) -> np.ndarray:
+        """Simple padding wrapper to be part of the routine.
+
+        Parameters
+        ----------
+        data : Union[np.ndarray, Callable[..., np.ndarray]]
+            [description]
+        pads : Union[np.ndarray, Tuple, List]
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        return np.pad(data, pads, mode='reflect')
+
+    def fix_data_shape(self,
+                       data_shape: np.ndarray,
+                       pads: Union[np.ndarray, Tuple, List]):
+        """Calculate correct padded data-shape.
+
+        Parameters
+        ----------
+        data_shape : np.ndarray
+            [description]
+        pads : Union[np.ndarray, Tuple, List]
+            [description]
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+        data_shape_new = np.array(data_shape)
+        for m, pad in enumerate(pads):
+            data_shape_new[m] += (pad[0]+pad[1])
+
+        return data_shape_new
