@@ -494,3 +494,29 @@ class Tiler:
             data_shape_new[m] += (pad[0]+pad[1])
 
         return data_shape_new
+
+    def calculate_minimal_overlap(self,
+                                  data_shape: np.ndarray,
+                                  tile_shape: np.ndarray,
+                                  pprint: Optional[bool] = False) -> tuple:
+
+        # get padding
+        rmod = np.mod(data_shape, tile_shape)
+        pad_add = np.mod(tile_shape-rmod, tile_shape)
+        data_shape_new = data_shape+pad_add
+        pads = np.transpose([np.ceil(pad_add/2), np.ceil(pad_add/2) +
+                             np.mod(pad_add, 2)]).astype('int')
+
+        # get minimal overlap
+        divs = (data_shape_new//tile_shape)-1
+        divs[divs < 1] = 1
+        overlap = np.floor(pad_add/divs).astype('int')
+        overlap_perc = overlap/tile_shape
+
+        # pretty print
+        if pprint:
+            print(
+                f"Input: data_shape=\t{data_shape},\t tile_shape={tile_shape}\noverlap=\t{overlap}\noverlap_perc=\t{overlap_perc}\npads=\t\t{list(pads)}\n~~~~~~~~~~~~~~~~~~~~")
+
+        # done?
+        return overlap, overlap_perc, pads

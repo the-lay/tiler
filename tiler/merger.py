@@ -313,12 +313,14 @@ class Merger:
 
         if unpad:
             if not hasattr(self.tiler, 'pads'):
-                if self.data_orig_shape is None:
-                    raise ValueError(
-                        'data_orig_shape needs to be given if data_shape was aautomatically calculated.')
-                self.data_orig_shape = data_orig_shape
-                self.pads = self.tiler.calculate_padding(
-                    self.data_orig_shape, self.overlap, self.tile_shape)
+                if data_orig_shape is None:
+                    if self.data_orig_shape is None:
+                        raise ValueError(
+                            'data_orig_shape needs to be given if data_shape was aautomatically calculated.')
+                else:
+                    self.data_orig_shape = data_orig_shape
+                self.pads = self.tiler.calculate_padding(data_shape_nonpad=
+                    data_orig_shape, tile_shape=self.tiler.tile_shape,overlap=np.array(self.tiler.overlap))
             data = self.do_unpad(data, self.tiler.pads)
         #    sl = [slice(None, self.tiler.data_shape[i]) for i in range(len(self.tiler.data_shape))]
         #
