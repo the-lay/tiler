@@ -9,9 +9,21 @@ from tiler._windows import get_window
 
 class Merger:
 
-    SUPPORTED_WINDOWS = ['boxcar', 'triang', 'blackman', 'hamming', 'hann', 'bartlett',
-                         'flattop', 'parzen', 'bohman', 'blackmanharris', 'nuttall', 'barthann',
-                         'overlap-tile']
+    SUPPORTED_WINDOWS = [
+        "boxcar",
+        "triang",
+        "blackman",
+        "hamming",
+        "hann",
+        "bartlett",
+        "flattop",
+        "parzen",
+        "bohman",
+        "blackmanharris",
+        "nuttall",
+        "barthann",
+        "overlap-tile",
+    ]
     r"""
     Supported windows:
     - 'boxcar' (default)  
@@ -44,11 +56,8 @@ class Merger:
         (Ronneberger et al. 2015, U-Net paper)
     """
 
-    def __init__(self,
-                 tiler: Tiler,
-                 window: Union[None, str, np.ndarray] = None,
-                 logits: int = 0,
-                 atol: float = 1e-10):
+    def __init__(
+        self, tiler: Tiler, window: Union[None, str, np.ndarray] = None, logits: int = 0, atol: float = 1e-10):
         """Merger precomputes everything for merging together tiles created by given Tiler.
 
         TODO:
@@ -69,7 +78,9 @@ class Merger:
 
         # Logits support
         if not isinstance(logits, int) or logits < 0:
-            raise ValueError(f'Logits must be an integer 0 or a positive number ({logits}).')
+            raise ValueError(
+                f"Logits must be an integer 0 or a positive number ({logits})."
+            )
         self.logits = int(logits)
 
         # Generate data and normalization arrays
@@ -105,9 +116,9 @@ class Merger:
         for axis, length in enumerate(shape):
             if axis == self.tiler.channel_dimension:
                 # channel dimension should have weight of 1 everywhere
-                win = get_window('boxcar', length)
+                win = get_window("boxcar", length)
             else:
-                if window == 'overlap-tile':
+                if window == "overlap-tile":
                     axis_overlap = overlap[axis] // 2
                     win = np.zeros(length)
                     win[axis_overlap:-axis_overlap] = 1
@@ -138,24 +149,29 @@ class Merger:
 
         # Warn user that changing window type after some elements were already visited is a bad idea.
         if np.count_nonzero(self.data_visits):
-            warnings.warn('You are setting window type after some elements were already added.')
+            warnings.warn(
+                "You are setting window type after some elements were already added."
+            )
 
         # Default window is boxcar
         if window is None:
-            window = 'boxcar'
+            window = "boxcar"
 
         # Generate or set a window function
         if isinstance(window, str):
             if window not in self.SUPPORTED_WINDOWS:
-                raise ValueError('Unsupported window, please check docs')
+                raise ValueError("Unsupported window, please check docs")
             self.window = self._generate_window(window, self.tiler.tile_shape)
         elif isinstance(window, np.ndarray):
             if not np.array_equal(window.shape, self.tiler.tile_shape):
-                raise ValueError(f'Window function must have the same shape as tile shape.')
+                raise ValueError(
+                    f"Window function must have the same shape as tile shape."
+                )
             self.window = window
         else:
             raise ValueError(
-                f'Unsupported type for window function ({type(window)}), expected str or np.ndarray.')
+                f"Unsupported type for window function ({type(window)}), expected str or np.ndarray."
+            )
 
     def reset(self) -> None:
         """Reset data and normalization buffers.
@@ -191,36 +207,49 @@ class Merger:
             None
         """
         if tile_id < 0 or tile_id >= len(self.tiler):
-            raise IndexError(f'Out of bounds, there is no tile {tile_id}. '
-                             f'There are {len(self.tiler)} tiles, starting from index 0.')
+            raise IndexError(
+                f"Out of bounds, there is no tile {tile_id}. "
+                f"There are {len(self.tiler)} tiles, starting from index 0."
+            )
 
         data_shape = np.array(data.shape)
-        expected_tile_shape = ((self.logits, ) + tuple(self.tiler.tile_shape)
-                               ) if self.logits > 0 else tuple(self.tiler.tile_shape)
+        expected_tile_shape = (
+            ((self.logits,) + tuple(self.tiler.tile_shape))
+            if self.logits > 0
+            else tuple(self.tiler.tile_shape)
+        )
 
-        if self.tiler.mode != 'irregular':
+        if self.tiler.mode != "irregular":
             if not np.all(np.equal(data_shape, expected_tile_shape)):
-                raise ValueError(f'Passed data shape ({data_shape}) '
-                                 f'does not fit expected tile shape ({expected_tile_shape}).')
+                raise ValueError(
+                    f"Passed data shape ({data_shape}) "
+                    f"does not fit expected tile shape ({expected_tile_shape})."
+                )
         else:
             if not np.all(np.less_equal(data_shape, expected_tile_shape)):
-                raise ValueError(f'Passed data shape ({data_shape}) '
-                                 f'must be less or equal than tile shape ({expected_tile_shape}).')
+                raise ValueError(
+                    f"Passed data shape ({data_shape}) "
+                    f"must be less or equal than tile shape ({expected_tile_shape})."
+                )
 
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
         a, b = self.tiler.get_tile_bbox_position(tile_id, with_channel_dim=True)
 
         sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
-        win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
+        win_sl = [
+            slice(None, -diff) if (diff > 0) else slice(None, None)
+            for diff in shape_diff
+        ]
 
         # TODO check for self.data and data dtypes mismatch?
         if self.logits > 0:
-            self.data[tuple([slice(None, None, None)] + sl)
-                      ] += (data * self.window[tuple(win_sl[1:])])
+            self.data[tuple([slice(None, None, None)] + sl)] += (
+                data * self.window[tuple(win_sl[1:])]
+            )
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl[1:])]
         else:
-            self.data[tuple(sl)] += (data * self.window[tuple(win_sl)])
+            self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
         self.data_visits[tuple(sl)] += 1
 
@@ -242,15 +271,19 @@ class Merger:
 
         if batch_id < 0 or batch_id >= n_batches:
             raise IndexError(
-                f'Out of bounds. There are {n_batches} batches of {batch_size}, starting from index 0.')
+                f"Out of bounds. There are {n_batches} batches of {batch_size}, starting from index 0."
+            )
 
         # add each tile in a batch with computed tile_id
-        for data_i, tile_i in enumerate(range(batch_id * batch_size,
-                                              min((batch_id + 1) * batch_size, len(self.tiler)))):
+        for data_i, tile_i in enumerate(
+            range(
+                batch_id * batch_size, min((batch_id + 1) * batch_size, len(self.tiler))
+            )
+        ):
             self.add(tile_i, data[data_i])
 
     def norm_by_weights(self, data: np.ndarray, weights: np.ndarray, atol: float = 1e-10, in_place: bool = True) -> np.ndarray:
-        """Normalised applied weights such that sum guarantees approx. 1. 
+        """Normalised applied weights such that sum guarantees approx. 1.
 
         Parameters
         ----------

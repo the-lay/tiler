@@ -1,8 +1,6 @@
 cd $(dirname "$file_name")/..
-pwd
 
 # build docs
-pip install pdoc==7.1.1
 pdoc -o docs -d google tiler
 
 # add downsized teaser image to the docs directory
@@ -13,4 +11,4 @@ rm docs/index.html
 mv docs/tiler.html docs/index.html
 
 # remove unused search index
-rm docs/search.json
+rm docs/search.js
