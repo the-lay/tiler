@@ -78,12 +78,9 @@ class TestMergingCommon(unittest.TestCase):
         merger_channel_dim.add(0, tile_logits)
         np.testing.assert_equal(merger_channel_dim.merge()[:, :10], tile_logits)
 
-        # gotta get that 100% coverage
-        # this should just print a warning
-        # let's suppress it to avoid confusion
-        with open(os.devnull, "w") as null:
-            with redirect_stderr(null):
-                merger.set_window('boxcar')
+        # Setting window after .add should show a warning
+        with self.assertWarns(Warning):
+            merger.set_window('boxcar')
 
     def test_batch_add(self):
         tiler = Tiler(data_shape=self.data.shape,
