@@ -1,0 +1,25 @@
+[build-system]
+requires = [
+    "setuptools >= 40.6.0",
+    "setuptools_scm[toml] >= 4, <6",
+    "setuptools_scm_git_archive",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "tiler/version.py"
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = ['tiler']
+omit = ['tiler/version.py']
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95
+
+[tool.black]
+line-length = 88
+target-version = ['py38']

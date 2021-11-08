@@ -1,0 +1,29 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [ 3.7, 3.8, 3.9 ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install test dependencies and tiler
+        run: |
+          pip install -e .[test]
+          pip install coveralls
+
+      - name: Run tests
+        run: coverage run -m pytest -v
+
+      - name: Submit coveralls
+        if: github.repository == 'the-lay/tiler'
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}

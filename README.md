@@ -2,11 +2,10 @@
 
 ![Tiler teaser image](misc/teaser/tiler_teaser.png)
 
-[![CI](https://github.com/the-lay/tiler/workflows/CI/badge.svg)](https://github.com/the-lay/tiler/actions/workflows/ci.yml)
+[![Tests](https://github.com/the-lay/tiler/workflows/test/badge.svg)](https://github.com/the-lay/tiler/actions/workflows/test.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
-[![PyPI Downloads](https://img.shields.io/pypi/dm/tiler)](https://pypistats.org/packages/tiler)
-[![Documentation](https://img.shields.io/badge/documentation-✔-green.svg)](https://the-lay.github.io/tiler)
 
 
 [Github repository](https://github.com/the-lay/tiler) | 
@@ -28,7 +27,7 @@ Features
  - N-dimensional *(note: currently tile shape must have the same number of dimensions as the array)*
  - Optional in-place tiling
  - Optional channel dimension, dimension that is not tiled
- - Optional tile batching
+ - Optional batching
  - Tile overlapping
  - Access individual tiles with iterator or a getter
  - Tile merging, with optional window functions/tapering
@@ -139,40 +138,3 @@ However, other libraries might fit you better:
 Moreover, some related approaches have been described in the literature:
  - [Introducing Hann windows for reducing edge-effects in patch-based image segmentation](https://doi.org/10.1371/journal.pone.0229839
 ), Pielawski and Wählby, March 2020
-
-
-
-
-
-
-
-<!-- for later
-For more examples, please see examples/ folder
-```python
-
- ```
-
-Benchmarks
--------------
- Benchmarks?
- 
-
-Examples
--------------
-https://github.com/BloodAxe/pytorch-toolbelt#inference-on-huge-images
-https://github.com/BloodAxe/pytorch-toolbelt/blob/master/pytorch_toolbelt/inference/tiles.py
-
-https://github.com/vfdev-5/ImageTilingUtils
-
-https://github.com/Vooban/Smoothly-Blend-Image-Patches/blob/master/smooth_tiled_predictions.py
-
-for windows:
-https://stackoverflow.com/questions/1988804/what-is-memoization-and-how-can-i-use-it-in-python
-
-https://en.wikipedia.org/wiki/Window_function#A_list_of_window_functions
-https://github.com/scipy/scipy/blob/v1.4.1/scipy/signal/windows/windows.py
-https://gist.github.com/npielawski/7e77d23209a5c415f55b95d4aba914f6
-
-https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0229839#pone.0229839.ref005
-https://arxiv.org/pdf/1803.02786.pdf
--->

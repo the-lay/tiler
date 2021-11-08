@@ -7,8 +7,9 @@ import numpy as np
 def _len_guards(m: int):
     """Handle small or incorrect window lengths"""
     if int(m) != m or m < 0:
-        raise ValueError('Window length m must be a non-negative integer')
+        raise ValueError("Window length m must be a non-negative integer")
     return m <= 1
+
 
 def _general_cosine(m: int, a: Union[np.ndarray, List]):
     """Generic weighted sum of cosine terms window"""
@@ -22,9 +23,11 @@ def _general_cosine(m: int, a: Union[np.ndarray, List]):
 
     return w
 
+
 def _general_hamming(m: int, alpha: float):
     """Return a generalized Hamming window."""
-    return _general_cosine(m, [alpha, 1. - alpha])
+    return _general_cosine(m, [alpha, 1.0 - alpha])
+
 
 def _boxcar(m: int):
     """Return a boxcar or rectangular window.
@@ -41,6 +44,7 @@ def _boxcar(m: int):
     if _len_guards(m):
         return np.ones(m)
     return np.ones(m, dtype=float)
+
 
 def _triang(m: int):
     """Return a triangular window.
@@ -63,6 +67,7 @@ def _triang(m: int):
         w = np.r_[w, w[-2::-1]]
     return w
 
+
 def _parzen(m: int):
     """Return a Parzen window.
 
@@ -79,10 +84,10 @@ def _parzen(m: int):
     na = np.extract(n < -(m - 1) / 4.0, n)
     nb = np.extract(abs(n) <= (m - 1) / 4.0, n)
     wa = 2 * (1 - np.abs(na) / (m / 2.0)) ** 3.0
-    wb = (1 - 6 * (np.abs(nb) / (m / 2.0)) ** 2.0 +
-          6 * (np.abs(nb) / (m / 2.0)) ** 3.0)
+    wb = 1 - 6 * (np.abs(nb) / (m / 2.0)) ** 2.0 + 6 * (np.abs(nb) / (m / 2.0)) ** 3.0
     w = np.r_[wa, wb, wa[::-1]]
     return w
+
 
 def _bohman(m: int):
     """Return a Bohman window.
@@ -101,6 +106,7 @@ def _bohman(m: int):
     w = np.r_[0, w, 0]
     return w
 
+
 def _blackman(m: int):
     """Return a minimum 4-term Blackman-Harris window according to Nuttall.
 
@@ -111,6 +117,7 @@ def _blackman(m: int):
         np.ndarray: minimum 4-term Blackman-Harris window according to Nuttall
     """
     return _general_cosine(m, [0.42, 0.50, 0.08])
+
 
 def _nuttall(m: int):
     """Return a minimum 4-term Blackman-Harris window according to Nuttall.
@@ -123,6 +130,7 @@ def _nuttall(m: int):
     """
     return _general_cosine(m, [0.3635819, 0.4891775, 0.1365995, 0.0106411])
 
+
 def _blackmanharris(m: int):
     """Return a minimum 4-term Blackman-Harris window.
 
@@ -134,6 +142,7 @@ def _blackmanharris(m: int):
     """
     return _general_cosine(m, [0.35875, 0.48829, 0.14128, 0.01168])
 
+
 def _flattop(m: int):
     """Return a flat top window.
 
@@ -143,7 +152,10 @@ def _flattop(m: int):
     Returns:
         np.ndarray: a flat top window
     """
-    return _general_cosine(m, [0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947368])
+    return _general_cosine(
+        m, [0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947368]
+    )
+
 
 def _bartlett(m: int):
     """Return a Bartlett window.
@@ -158,10 +170,12 @@ def _bartlett(m: int):
         return np.ones(m)
 
     n = np.arange(0, m)
-    w = np.where(np.less_equal(n, (m - 1) / 2.0),
-                 2.0 * n / (m - 1), 2.0 - 2.0 * n / (m - 1))
+    w = np.where(
+        np.less_equal(n, (m - 1) / 2.0), 2.0 * n / (m - 1), 2.0 - 2.0 * n / (m - 1)
+    )
 
     return w
+
 
 def _hann(m: int):
     """Return a Hann window.
@@ -173,6 +187,7 @@ def _hann(m: int):
         np.ndarray: Hann window
     """
     return _general_hamming(m, 0.5)
+
 
 def _barthann(m: int):
     """Return a modified Bartlett-Hann window.
@@ -192,6 +207,7 @@ def _barthann(m: int):
 
     return w
 
+
 def _hamming(m: int):
     """Return a Hamming window.
 
@@ -203,24 +219,26 @@ def _hamming(m: int):
     """
     return _general_hamming(m, 0.54)
 
+
 _mapping = {
-    'boxcar': _boxcar,
-    'triang': _triang,
-    'parzen': _parzen,
-    'bohman': _bohman,
-    'blackman': _blackman,
-    'nuttall': _nuttall,
-    'blackmanharris': _blackmanharris,
-    'flattop': _flattop,
-    'bartlett': _bartlett,
-    'hann': _hann,
-    'barthann': _barthann,
-    'hamming': _hamming
+    "boxcar": _boxcar,
+    "triang": _triang,
+    "parzen": _parzen,
+    "bohman": _bohman,
+    "blackman": _blackman,
+    "nuttall": _nuttall,
+    "blackmanharris": _blackmanharris,
+    "flattop": _flattop,
+    "bartlett": _bartlett,
+    "hann": _hann,
+    "barthann": _barthann,
+    "hamming": _hamming,
 }
+
 
 def get_window(window: str, length: int):
     fn = _mapping.get(window, None)
     if not fn:
-        raise ValueError(f'Window function {window} is not supported.')
+        raise ValueError(f"Window function {window} is not supported.")
 
     return fn(length)
