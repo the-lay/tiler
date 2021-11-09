@@ -57,7 +57,12 @@ class Merger:
     """
 
     def __init__(
-        self, tiler: Tiler, window: Union[None, str, np.ndarray] = None, logits: int = 0, atol: float = 1e-10):
+        self,
+        tiler: Tiler,
+        window: Union[None, str, np.ndarray] = None,
+        logits: int = 0,
+        atol: float = 1e-10,
+    ):
         """Merger precomputes everything for merging together tiles created by given Tiler.
 
         TODO:
@@ -101,7 +106,6 @@ class Merger:
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
         """Generate n-dimensional window according to the given shape.
         Adapted from: https://stackoverflow.com/a/53588640/1668421
-        We use scipy to generate windows (scipy.signal.get_window()).
 
         Args:
             window (str): Specifies window function. Must be one of `Merger.SUPPORTED_WINDOWS`.
@@ -282,7 +286,13 @@ class Merger:
         ):
             self.add(tile_i, data[data_i])
 
-    def norm_by_weights(self, data: np.ndarray, weights: np.ndarray, atol: float = 1e-10, in_place: bool = True) -> np.ndarray:
+    def norm_by_weights(
+        self,
+        data: np.ndarray,
+        weights: np.ndarray,
+        atol: float = 1e-10,
+        in_place: bool = True,
+    ) -> np.ndarray:
         """Normalised applied weights such that sum guarantees approx. 1.
 
         Parameters
@@ -307,7 +317,7 @@ class Merger:
         weights[weights < atol] = 1
 
         # reweight
-        data_re = data/weights
+        data_re = data / weights
 
         return data_re
 
@@ -326,10 +336,15 @@ class Merger:
         [type]
             [description]
         """
-        slices = [slice(pad[0], data.shape[m]-pad[1]) for m, pad in enumerate(pads)]
+        slices = [slice(pad[0], data.shape[m] - pad[1]) for m, pad in enumerate(pads)]
         return data[slices]
 
-    def merge(self, unpad: bool = True, argmax: bool = False, data_orig_shape: np.ndarray = None) -> np.ndarray:
+    def merge(
+        self,
+        unpad: bool = True,
+        argmax: bool = False,
+        data_orig_shape: np.ndarray = None,
+    ) -> np.ndarray:
         """Returns final merged data array obtained from added tiles.
 
         Args:
@@ -345,15 +360,19 @@ class Merger:
         data = self.norm_by_weights(data, self.weights_sum, self.atol)
 
         if unpad:
-            if not hasattr(self.tiler, 'pads'):
+            if not hasattr(self.tiler, "pads"):
                 if data_orig_shape is None:
                     if self.data_orig_shape is None:
                         raise ValueError(
-                            'data_orig_shape needs to be given if data_shape was aautomatically calculated.')
+                            "data_orig_shape needs to be given if data_shape was aautomatically calculated."
+                        )
                 else:
                     self.data_orig_shape = data_orig_shape
-                self.pads = self.tiler.calculate_padding(data_shape_nonpad=
-                    data_orig_shape, tile_shape=self.tiler.tile_shape,overlap=np.array(self.tiler.overlap))
+                self.pads = self.tiler.calculate_padding(
+                    data_shape_nonpad=data_orig_shape,
+                    tile_shape=self.tiler.tile_shape,
+                    overlap=np.array(self.tiler.overlap),
+                )
             data = self.do_unpad(data, self.tiler.pads)
         #    sl = [slice(None, self.tiler.data_shape[i]) for i in range(len(self.tiler.data_shape))]
         #

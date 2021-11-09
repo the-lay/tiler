@@ -36,7 +36,7 @@ class Tiler:
         channel_dimension: Optional[int] = None,
         mode: str = "constant",
         constant_value: float = 0.0,
-        get_padding: bool = False
+        get_padding: bool = False,
     ):
         """Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
         You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
@@ -88,14 +88,16 @@ class Tiler:
         # need to caclulate get correct padding?
         if get_padding:
             self.pads = self.calculate_padding(
-                self.data_shape, self.tile_shape, np.asarray(self.overlap))
+                self.data_shape, self.tile_shape, np.asarray(self.overlap)
+            )
             self.data_shape = self.fix_data_shape(self.data_shape, self.pads)
 
         # Tiling mode
         self.mode = mode
         if self.mode not in self.TILING_MODES:
             raise ValueError(
-                f'{self.mode} is an unsupported tiling mode, please check the documentation.')
+                f"{self.mode} is an unsupported tiling mode, please check the documentation."
+            )
 
         # Constant value used for constant tiling mode
         self.constant_value = constant_value
@@ -471,11 +473,13 @@ class Tiler:
             ]
         return self._indexing_shape
 
-    def calculate_padding(self,
-                          data_shape_nonpad: np.ndarray,
-                          tile_shape: np.ndarray,
-                          overlap: np.ndarray,
-                          pprint: Optional[bool] = False) -> np.ndarray:
+    def calculate_padding(
+        self,
+        data_shape_nonpad: np.ndarray,
+        tile_shape: np.ndarray,
+        overlap: np.ndarray,
+        pprint: Optional[bool] = False,
+    ) -> np.ndarray:
         """Calculates the Padding from a given input.
 
 
@@ -506,26 +510,31 @@ class Tiler:
         overlap = np.mod(overlap, tile_shape)
 
         # get padding -> note: at max adding 1 more tile should be nessary as negative overlap is not allowed
-        step_size = tile_shape-overlap
-        dis = (data_shape_nonpad-tile_shape)/step_size
+        step_size = tile_shape - overlap
+        dis = (data_shape_nonpad - tile_shape) / step_size
 
         # assuming even tileshapes
-        last_pos = tile_shape+np.ceil(dis)*step_size
-        pad_add = last_pos-data_shape_nonpad
+        last_pos = tile_shape + np.ceil(dis) * step_size
+        pad_add = last_pos - data_shape_nonpad
 
         # calculate pads and (if uneven padding necessary) pad more to the right
-        pads = np.transpose([pad_add//2, pad_add//2+np.mod(pad_add, 2)]).astype('int')
+        pads = np.transpose([pad_add // 2, pad_add // 2 + np.mod(pad_add, 2)]).astype(
+            "int"
+        )
 
         # pretty print-out results if wanted
         if pprint:
             print(
-                f"Input: data_shape_nonpad={data_shape_nonpad},\t tile_shape={tile_shape},\t overlap=\t{overlap}\npads=\t{list(pads)}.")
+                f"Input: data_shape_nonpad={data_shape_nonpad},\t tile_shape={tile_shape},\t overlap=\t{overlap}\npads=\t{list(pads)}."
+            )
 
         return pads
 
-    def pad_outer(self,
-                  data: Union[np.ndarray, Callable[..., np.ndarray]],
-                  pads: Union[np.ndarray, Tuple, List]) -> np.ndarray:
+    def pad_outer(
+        self,
+        data: Union[np.ndarray, Callable[..., np.ndarray]],
+        pads: Union[np.ndarray, Tuple, List],
+    ) -> np.ndarray:
         """Simple padding wrapper to be part of the routine.
 
         Parameters
@@ -540,11 +549,11 @@ class Tiler:
         [type]
             [description]
         """
-        return np.pad(data, pads, mode='reflect')
+        return np.pad(data, pads, mode="reflect")
 
-    def fix_data_shape(self,
-                       data_shape: np.ndarray,
-                       pads: Union[np.ndarray, Tuple, List]):
+    def fix_data_shape(
+        self, data_shape: np.ndarray, pads: Union[np.ndarray, Tuple, List]
+    ):
         """Calculate correct padded data-shape.
 
         Parameters
@@ -561,32 +570,36 @@ class Tiler:
         """
         data_shape_new = np.array(data_shape)
         for m, pad in enumerate(pads):
-            data_shape_new[m] += (pad[0]+pad[1])
+            data_shape_new[m] += pad[0] + pad[1]
 
         return data_shape_new
 
-    def calculate_minimal_overlap(self,
-                                  data_shape: np.ndarray,
-                                  tile_shape: np.ndarray,
-                                  pprint: Optional[bool] = False) -> tuple:
+    def calculate_minimal_overlap(
+        self,
+        data_shape: np.ndarray,
+        tile_shape: np.ndarray,
+        pprint: Optional[bool] = False,
+    ) -> tuple:
 
         # get padding
         rmod = np.mod(data_shape, tile_shape)
-        pad_add = np.mod(tile_shape-rmod, tile_shape)
-        data_shape_new = data_shape+pad_add
-        pads = np.transpose([np.ceil(pad_add/2), np.ceil(pad_add/2) +
-                             np.mod(pad_add, 2)]).astype('int')
+        pad_add = np.mod(tile_shape - rmod, tile_shape)
+        data_shape_new = data_shape + pad_add
+        pads = np.transpose(
+            [np.ceil(pad_add / 2), np.ceil(pad_add / 2) + np.mod(pad_add, 2)]
+        ).astype("int")
 
         # get minimal overlap
-        divs = (data_shape_new//tile_shape)-1
+        divs = (data_shape_new // tile_shape) - 1
         divs[divs < 1] = 1
-        overlap = np.floor(pad_add/divs).astype('int')
-        overlap_perc = overlap/tile_shape
+        overlap = np.floor(pad_add / divs).astype("int")
+        overlap_perc = overlap / tile_shape
 
         # pretty print
         if pprint:
             print(
-                f"Input: data_shape=\t{data_shape},\t tile_shape={tile_shape}\noverlap=\t{overlap}\noverlap_perc=\t{overlap_perc}\npads=\t\t{list(pads)}\n~~~~~~~~~~~~~~~~~~~~")
+                f"Input: data_shape=\t{data_shape},\t tile_shape={tile_shape}\noverlap=\t{overlap}\noverlap_perc=\t{overlap_perc}\npads=\t\t{list(pads)}\n~~~~~~~~~~~~~~~~~~~~"
+            )
 
         # done?
         return overlap, overlap_perc, pads
