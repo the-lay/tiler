@@ -16,7 +16,6 @@ class Merger:
         "hamming",
         "hann",
         "bartlett",
-        "flattop",
         "parzen",
         "bohman",
         "blackmanharris",
@@ -39,8 +38,6 @@ class Merger:
         Hann window.
     - 'bartlett'  
         Bartlett window.
-    - 'flattop'  
-        Flat top window.
     - 'parzen'  
         Parzen window.
     - 'bohman'  

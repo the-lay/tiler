@@ -143,20 +143,6 @@ def _blackmanharris(m: int):
     return _general_cosine(m, [0.35875, 0.48829, 0.14128, 0.01168])
 
 
-def _flattop(m: int):
-    """Return a flat top window.
-
-    Args:
-        m (int): Number of points in the output window. If zero or less, an empty array is returned.
-
-    Returns:
-        np.ndarray: a flat top window
-    """
-    return _general_cosine(
-        m, [0.21557895, 0.41663158, 0.277263158, 0.083578947, 0.006947368]
-    )
-
-
 def _bartlett(m: int):
     """Return a Bartlett window.
 
@@ -228,7 +214,6 @@ _mapping = {
     "blackman": _blackman,
     "nuttall": _nuttall,
     "blackmanharris": _blackmanharris,
-    "flattop": _flattop,
     "bartlett": _bartlett,
     "hann": _hann,
     "barthann": _barthann,
