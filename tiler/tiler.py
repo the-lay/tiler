@@ -30,8 +30,8 @@ class Tiler:
 
     def __init__(
         self,
-        data_shape: Union[Tuple, List],
-        tile_shape: Union[Tuple, List],
+        data_shape: Union[Tuple, List, np.ndarray],
+        tile_shape: Union[Tuple, List, np.ndarray],
         overlap: Union[int, float, Tuple, List] = 0,
         channel_dimension: Optional[int] = None,
         mode: str = "constant",
@@ -48,10 +48,10 @@ class Tiler:
             - allow other numpy padding modes (maximum, minimum, mean, median)
 
         Args:
-            data_shape (tuple or list): Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].
+            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
                 If there is a channel dimension, it should be included in the shape.
 
-            tile_shape (tuple or list): Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].
+            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
                 Tile must have the same number of dimensions as data.
 
             overlap (int, float, tuple or list): Specifies overlap between tiles.
@@ -361,6 +361,12 @@ class Tiler:
             raise IndexError(
                 f"Out of bounds, there is no tile {tile_id}."
                 f"There are {len(self) - 1} tiles, starting from index 0."
+            )
+
+        if isinstance(data, np.ndarray) and np.not_equal(data.shape, self.data_shape).any():
+            raise ValueError(
+                f"Shape of provided data array ({data.shape}) does not match "
+                f"same as Tiler's data_shape ({tuple(self.data_shape)})."
             )
 
         # get tile data

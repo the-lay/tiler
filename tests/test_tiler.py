@@ -289,6 +289,8 @@ class TestTiling(unittest.TestCase):
             tiler.get_tile(self.data, len(tiler))
         with self.assertRaises(IndexError):
             tiler.get_tile(self.data, -1)
+        with self.assertRaises(ValueError):
+            tiler.get_tile(np.zeros((self.n_elements + 1, )), 0)
 
         # copy test
         t = tiler.get_tile(self.data, 0, copy_data=True)
