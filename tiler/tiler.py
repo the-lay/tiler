@@ -363,7 +363,10 @@ class Tiler:
                 f"There are {len(self) - 1} tiles, starting from index 0."
             )
 
-        if isinstance(data, np.ndarray) and np.not_equal(data.shape, self.data_shape).any():
+        if (
+            isinstance(data, np.ndarray)
+            and np.not_equal(data.shape, self.data_shape).any()
+        ):
             raise ValueError(
                 f"Shape of provided data array ({data.shape}) does not match "
                 f"same as Tiler's data_shape ({tuple(self.data_shape)})."
