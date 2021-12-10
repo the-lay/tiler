@@ -184,7 +184,7 @@ class Merger:
             )
 
     def reset(self, save_visits: bool = True) -> None:
-        """Reset data and normalization buffers.
+        """Reset data, weights and optional data_visits buffers.
 
         Should be done after finishing merging full tile set and before starting processing the next tile set.
 
@@ -270,7 +270,7 @@ class Merger:
             self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
 
-        if self.data_visits:
+        if self.data_visits is not None:
             self.data_visits[tuple(sl)] += 1
 
     def add_batch(self, batch_id: int, batch_size: int, data: np.ndarray) -> None:
