@@ -58,6 +58,7 @@ class Merger:
         tiler: Tiler,
         window: Union[None, str, np.ndarray] = None,
         logits: int = 0,
+        save_visits: bool = True,
         dtype: np.dtype = np.float64,
         atol: float = 1e-10,
     ):
@@ -74,6 +75,9 @@ class Merger:
                 Default is None which creates a boxcar window (constant 1s).
 
             logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.
+
+            save_visits (bool): Specify whether to save which elements has been modified and how many times in
+                `self.data_visits`. Can be disabled to save some memory. Default is `True`.
 
             dtype (np.dtype): Specify dtype of buffer that holds added tiles. Default is `np.float64`.
 
@@ -92,7 +96,7 @@ class Merger:
         # Generate data and normalization arrays
         self.dtype = dtype
         self.data = self.data_visits = self.weights_sum = None
-        self.reset()
+        self.reset(save_visits)
 
         # for the future borders generation
         # 1d = 3 types of tiles: 2 corners and middle
@@ -179,10 +183,14 @@ class Merger:
                 f"Unsupported type for window function ({type(window)}), expected str or np.ndarray."
             )
 
-    def reset(self) -> None:
+    def reset(self, save_visits: bool = True) -> None:
         """Reset data and normalization buffers.
 
         Should be done after finishing merging full tile set and before starting processing the next tile set.
+
+        Args:
+            save_visits (bool): Specify whether to save which elements has been modified and how many times in
+                `self.data_visits`. Can be disabled to save some memory. Default is `True`.
 
         Returns:
             None
@@ -196,8 +204,9 @@ class Merger:
         else:
             self.data = np.zeros(padded_data_shape, dtype=self.dtype)
 
-        # Normalization array holds the number of times each element was visited
-        self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
+        # Data visits holds the number of times each element was assigned
+        if save_visits:
+            self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
 
         # Total data window (weight) coefficients
         self.weights_sum = np.zeros(padded_data_shape, dtype=np.float64)
@@ -260,7 +269,9 @@ class Merger:
         else:
             self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
-        self.data_visits[tuple(sl)] += 1
+
+        if self.data_visits:
+            self.data_visits[tuple(sl)] += 1
 
     def add_batch(self, batch_id: int, batch_size: int, data: np.ndarray) -> None:
         """Adds `batch_id`-th batch of `batch_size` tiles into Merger.
