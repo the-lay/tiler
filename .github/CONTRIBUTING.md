@@ -1,8 +1,10 @@
 ## Bug reports
-Please be as specific as you can, ideally with code to recreate the issue.
+Please include:
+1. Which version you are using (`python -c "import tiler; print(tiler.__version__)"`)
+2. A minimal code example to recreate the issue
 
 
-# Code contribution workflow
+## Code contribution
 First off, thanks for taking the time!  
 Please feel free to contact me with questions.
 
@@ -30,3 +32,4 @@ cd misc
 5. Once you want to share what you've changed, please commit, push make a pull request to the main repo.
 
 6. Github will run lint and tests, but please don't rely on that and test before pull request :)
+
