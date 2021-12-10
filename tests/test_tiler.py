@@ -131,8 +131,7 @@ class TestTiling(unittest.TestCase):
             Tiler(data_shape=(2, 100), tile_shape=(1, 64), overlap=32, mode="drop")
 
         # Drop mode with tile shape bigger than data shape
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+        with self.assertWarns(Warning):
             tiler = Tiler(data_shape=(1, 63), tile_shape=(1, 64), mode="drop")
             self.assertEqual(tiler.n_tiles, 0)
 
@@ -400,7 +399,7 @@ class TestTiling(unittest.TestCase):
         np.testing.assert_equal(expected_split, calculated_split)
 
         # Case 3
-        # Overlap is provided as tuple or list
+        # Overlap is provided as tuple, list or np.ndarray
         # Let's try a slightly more complicated test case with a channel dimension
         tile_size = 10
         data = np.vstack((self.data, self.data * 2, self.data * 3))
@@ -543,3 +542,27 @@ class TestTiling(unittest.TestCase):
         np.testing.assert_equal(
             ([0, 90], [3, 100]), tiler2.get_tile_bbox_position(tile_id, True)
         )
+
+    def test_apply_padding(self):
+
+        t1 = Tiler(data_shape=self.data.shape,
+                   tile_shape=(3,),
+                   mode="reflect")
+
+        # without apply padding the padding is done based on data in the tile
+        # last tile has only one 99, but when reflect padded becomes 99, 99, 99
+        np.testing.assert_equal(t1.get_tile(self.data, 0), [0, 1, 2])
+        np.testing.assert_equal(t1.get_tile(self.data, len(t1) - 1), [99, 99, 99])
+
+        # padding should now be correctly applied,
+        data = t1.apply_padding(self.data, mode="reflect")
+        np.testing.assert_equal(t1.get_tile(data, 0), [1, 0, 1])
+        np.testing.assert_equal(t1.get_tile(data, len(t1) - 1), [98, 99, 98])
+
+        # giving data with wrong (in this case old) data shape should raise an exception
+        with self.assertRaises(ValueError):
+            t1.apply_padding(self.data)
+
+        # re applying padding should show a warning
+        with self.assertWarns(Warning):
+            t1.apply_padding(data, mode="reflect")

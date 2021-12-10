@@ -32,11 +32,10 @@ class Tiler:
         self,
         data_shape: Union[Tuple, List, np.ndarray],
         tile_shape: Union[Tuple, List, np.ndarray],
-        overlap: Union[int, float, Tuple, List] = 0,
+        overlap: Union[int, float, Tuple, List, np.ndarray] = 0,
         channel_dimension: Optional[int] = None,
         mode: str = "constant",
         constant_value: float = 0.0,
-        get_padding: bool = False,
     ):
         """Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
         You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
@@ -54,43 +53,50 @@ class Tiler:
             tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
                 Tile must have the same number of dimensions as data.
 
-            overlap (int, float, tuple or list): Specifies overlap between tiles.
+            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.
                 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
                 If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
-                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
+                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).
                 Default is `0`.
 
             channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.
                 Usually it is the last or the first dimension of the array.
-                Negative indexing (`-len(data_shape)` to `-1` inclusive) is translated into corresponding indices.
+                Negative indexing (`-len(data_shape)` to `-1` inclusive) is allowed.
                 Default is `None`, no channel dimension in the data.
 
             mode (str): Defines how the data will be tiled.
-                Must be one of the supported `Tiler.TILING_MODES`.
+                Must be one of the supported `Tiler.TILING_MODES`. Defaults to `"constant"`.
 
             constant_value (float): Specifies the value of padding when `mode='constant'`.
                 Default is `0.0`.
         """
 
+        self._recalculate(data_shape, tile_shape,
+                          overlap, channel_dimension,
+                          mode, constant_value)
+
+    def _recalculate(self,
+                     data_shape: Union[Tuple, List, np.ndarray],
+                     tile_shape: Union[Tuple, List, np.ndarray],
+                     overlap: Union[int, float, Tuple, List, np.ndarray] = 0,
+                     channel_dimension: Optional[int] = None,
+                     mode: str = "constant",
+                     constant_value: float = 0.0,
+                     ) -> None:
+
         # Data and tile shapes
         self.data_shape = np.asarray(data_shape).astype(int)
         self.tile_shape = np.asarray(tile_shape).astype(int)
         self._n_dim: int = len(self.data_shape)
+        self._padding = tuple((0, 0) for _ in range(self._n_dim))
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError(
                 "Tile and data shapes must be tuple or lists of positive numbers."
             )
         if self.tile_shape.size != self.data_shape.size:
-            raise ValueError("Tile and data shapes must have the same length.")
-
-        self.overlap = overlap
-
-        # need to caclulate get correct padding?
-        if get_padding:
-            self.pads = self.calculate_padding(
-                self.data_shape, self.tile_shape, np.asarray(self.overlap)
-            )
-            self.data_shape = self.fix_data_shape(self.data_shape, self.pads)
+            raise ValueError("Tile and data shapes must have the same length. "
+                             "Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, "
+                             "e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).")
 
         # Tiling mode
         self.mode = mode
@@ -117,6 +123,7 @@ class Tiler:
                 self.channel_dimension = self._n_dim + self.channel_dimension
 
         # Overlap and step
+        self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap > 1.0:
                 raise ValueError(
@@ -144,7 +151,7 @@ class Tiler:
             if self.channel_dimension is not None:
                 self._tile_overlap[self.channel_dimension] = 0
 
-        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
+        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple) or isinstance(self.overlap, np.ndarray):
             if np.any(np.array(self.overlap) < 0) or np.any(
                 self.overlap >= self.tile_shape
             ):
@@ -154,7 +161,7 @@ class Tiler:
 
         else:
             raise ValueError(
-                "Unsupported overlap mode (not float, int, list or tuple)."
+                "Unsupported overlap mode (not float, int, list, tuple or np.ndarray)."
             )
 
         self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(
@@ -198,7 +205,7 @@ class Tiler:
         if self.n_tiles == 0:
             warnings.warn(
                 f"Tiler (mode={mode}, overlap={overlap}) will split data_shape {data_shape} "
-                f"into zero tiles (tile_shape={tile_shape})"
+                f"into zero tiles (tile_shape={tile_shape})."
             )
 
     def __len__(self) -> int:
@@ -222,6 +229,17 @@ class Tiler:
             f"\n\tMode: {self.mode}"
             f"\n\tChannel dimension: {self.channel_dimension}"
         )
+
+    def __call__(
+        self,
+        data: Union[np.ndarray, Callable[..., np.ndarray]],
+        progress_bar: bool = False,
+        batch_size: int = 0,
+        drop_last: bool = False,
+        copy_data: bool = True,
+    ) -> Generator[Tuple[int, np.ndarray], None, None]:
+        """Alias for `Tiler.iterate()`"""
+        return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
     def iterate(
         self,
@@ -306,17 +324,6 @@ class Tiler:
                     ]
                 )
                 yield tile_i // batch_size, tiles
-
-    def __call__(
-        self,
-        data: Union[np.ndarray, Callable[..., np.ndarray]],
-        progress_bar: bool = False,
-        batch_size: int = 0,
-        drop_last: bool = False,
-        copy_data: bool = True,
-    ) -> Generator[Tuple[int, np.ndarray], None, None]:
-        """Alias for `Tiler.iterate()`"""
-        return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
     def get_tile(
         self,
@@ -482,133 +489,60 @@ class Tiler:
             ]
         return self._indexing_shape
 
-    def calculate_padding(
-        self,
-        data_shape_nonpad: np.ndarray,
-        tile_shape: np.ndarray,
-        overlap: np.ndarray,
-        pprint: Optional[bool] = False,
-    ) -> np.ndarray:
-        """Calculates the Padding from a given input.
+    def apply_padding(self,
+                      data: np.ndarray,
+                      mode: str = "reflect",
+                      ) -> np.ndarray:
+        """Applies difference between required data shape and original data shape as padding around data.
+        Automatically adjusts Tiler parameters and returns padded data.
+        Moreover, Merger (with `unpad=True`) will automatically remove padding created with this method.
+        Consider using this instead of relying on tile automatic padding (see example below).
 
+        Example:
+            ```python
+            >>> data = np.arange(0, 10)  # [0 1 2 3 4 5 6 7 8 9]
+            >>> tiler = Tiler(data_shape=(10, ), tile_shape=(3, ), mode="reflect")
+            >>> # without apply_padding, padding in tiles is generated only looking at that tile
+            >>> tiler.get_tile(data, 0)  # [ 0 1 2]
+            >>> tiler.get_tile(data, 3)  # [ 9 9 9]
+            >>> # with apply_padding, the data is padded correctly
+            >>> data = tiler.apply_padding(data)  # [1 0 1 2 3 4 5 6 7 8 9 8]
+            >>> tiler.data_shape  # (12, )
+            >>> tiler.get_tile(data, 0)  # [ 1 0 1]
+            >>> tiler.get_tile(data, 3)  # [ 8 9 8]
+            ```
 
-        Parameters
-        ----------
-        data_shape_nonpad : Union[Tuple, List]
-            [description]
-        tile_shape : Union[Tuple, List]
-            [description]
-        overlap : Union[int, float, Tuple, List], optional
-            [description], by default 0
-        pprint : Optional[bool], optional
-            [description], by default False
+        Args:
+            data (np.ndarray):
+                The data which will be padded.
+            mode (str):
+                Numpy padding mode. Defaults to "reflect".
+                [Read more on numpy docs](https://numpy.org/doc/stable/reference/generated/numpy.pad.html).
 
-        Returns
-        -------
-        pads: np.ndarray
-            List of padding to applied to the different dimensions
-
-        ToDo
-        ----
-        1) Update description.
-        2) implement for non-even tileshapes.
-        3) add for percentage overlapping.
+        Returns:
+            np.ndarray: Padded data.
         """
-        # overlap assumed in pixels for now; cannot be bigger than tile_shape nor smaller than 0
-        overlap[overlap < 0] = 0
-        overlap = np.mod(overlap, tile_shape)
-
-        # get padding -> note: at max adding 1 more tile should be nessary as negative overlap is not allowed
-        step_size = tile_shape - overlap
-        dis = (data_shape_nonpad - tile_shape) / step_size
-
-        # assuming even tileshapes
-        last_pos = tile_shape + np.ceil(dis) * step_size
-        pad_add = last_pos - data_shape_nonpad
-
-        # calculate pads and (if uneven padding necessary) pad more to the right
-        pads = np.transpose([pad_add // 2, pad_add // 2 + np.mod(pad_add, 2)]).astype(
-            "int"
-        )
-
-        # pretty print-out results if wanted
-        if pprint:
-            print(
-                f"Input: data_shape_nonpad={data_shape_nonpad},\t tile_shape={tile_shape},\t overlap=\t{overlap}\npads=\t{list(pads)}."
+        # Warn user if padding was already applied before
+        if np.any(self._padding):
+            warnings.warn(
+                f"Padding was already applied before! Overwriting old parameters."
             )
 
-        return pads
+        # If user provided data that is different from initialized data shape, raise an error
+        if np.not_equal(self.data_shape, data.shape).any():
+            raise ValueError(f"Provided data has a different shape (data.shape={data.shape}) than what Tiler "
+                             f"was initialized with (self.data_shape={self.data_shape}).")
 
-    def pad_outer(
-        self,
-        data: Union[np.ndarray, Callable[..., np.ndarray]],
-        pads: Union[np.ndarray, Tuple, List],
-    ) -> np.ndarray:
-        """Simple padding wrapper to be part of the routine.
+        # Split shape diff in two and use those values as frame padding for data
+        pre_pad = self._shape_diff // 2
+        post_pad = (self._shape_diff // 2) + np.mod(self._tile_overlap, 2)
 
-        Parameters
-        ----------
-        data : Union[np.ndarray, Callable[..., np.ndarray]]
-            [description]
-        pads : Union[np.ndarray, Tuple, List]
-            [description]
+        # Adjust parameters for new data shape and
+        self._recalculate(self._new_shape,
+                          self.tile_shape,
+                          self.overlap,
+                          )
+        self._padding = list(zip(pre_pad, post_pad))
 
-        Returns
-        -------
-        [type]
-            [description]
-        """
-        return np.pad(data, pads, mode="reflect")
-
-    def fix_data_shape(
-        self, data_shape: np.ndarray, pads: Union[np.ndarray, Tuple, List]
-    ):
-        """Calculate correct padded data-shape.
-
-        Parameters
-        ----------
-        data_shape : np.ndarray
-            [description]
-        pads : Union[np.ndarray, Tuple, List]
-            [description]
-
-        Returns
-        -------
-        [type]
-            [description]
-        """
-        data_shape_new = np.array(data_shape)
-        for m, pad in enumerate(pads):
-            data_shape_new[m] += pad[0] + pad[1]
-
-        return data_shape_new
-
-    def calculate_minimal_overlap(
-        self,
-        data_shape: np.ndarray,
-        tile_shape: np.ndarray,
-        pprint: Optional[bool] = False,
-    ) -> tuple:
-
-        # get padding
-        rmod = np.mod(data_shape, tile_shape)
-        pad_add = np.mod(tile_shape - rmod, tile_shape)
-        data_shape_new = data_shape + pad_add
-        pads = np.transpose(
-            [np.ceil(pad_add / 2), np.ceil(pad_add / 2) + np.mod(pad_add, 2)]
-        ).astype("int")
-
-        # get minimal overlap
-        divs = (data_shape_new // tile_shape) - 1
-        divs[divs < 1] = 1
-        overlap = np.floor(pad_add / divs).astype("int")
-        overlap_perc = overlap / tile_shape
-
-        # pretty print
-        if pprint:
-            print(
-                f"Input: data_shape=\t{data_shape},\t tile_shape={tile_shape}\noverlap=\t{overlap}\noverlap_perc=\t{overlap_perc}\npads=\t\t{list(pads)}\n~~~~~~~~~~~~~~~~~~~~"
-            )
-
-        # done?
-        return overlap, overlap_perc, pads
+        # Return padded input data
+        return np.pad(data, self._padding, mode)
