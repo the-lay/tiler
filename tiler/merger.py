@@ -58,6 +58,7 @@ class Merger:
         tiler: Tiler,
         window: Union[None, str, np.ndarray] = None,
         logits: int = 0,
+        dtype: np.dtype = np.float64,
         atol: float = 1e-10,
     ):
         """Merger precomputes everything for merging together tiles created by given Tiler.
@@ -73,6 +74,9 @@ class Merger:
                 Default is None which creates a boxcar window (constant 1s).
 
             logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.
+
+            dtype (np.dtype): Specify dtype of buffer that holds added tiles. Default is `np.float64`.
+
         """
 
         self.tiler = tiler
@@ -86,6 +90,7 @@ class Merger:
         self.logits = int(logits)
 
         # Generate data and normalization arrays
+        self.dtype = dtype
         self.data = self.data_visits = self.weights_sum = None
         self.reset()
 
@@ -187,15 +192,15 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros((self.logits, *padded_data_shape))
+            self.data = np.zeros((self.logits, *padded_data_shape), dtype=self.dtype)
         else:
-            self.data = np.zeros(padded_data_shape)
+            self.data = np.zeros(padded_data_shape, dtype=self.dtype)
 
         # Normalization array holds the number of times each element was visited
         self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
 
         # Total data window (weight) coefficients
-        self.weights_sum = np.zeros(padded_data_shape)
+        self.weights_sum = np.zeros(padded_data_shape, dtype=np.float64)
 
     def add(self, tile_id: int, data: np.ndarray) -> None:
         """Adds `tile_id`-th tile into Merger.
@@ -233,6 +238,10 @@ class Merger:
                     f"must be less or equal than tile shape ({expected_tile_shape})."
                 )
 
+        # Check for dtype mismatch
+        if self.dtype != data.dtype:
+            raise ValueError(f"Passed data dtype ({data.dtype}) must match Merger initialized dtype ({self.dtype}).")
+
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
         a, b = self.tiler.get_tile_bbox_position(tile_id, with_channel_dim=True)
@@ -243,7 +252,6 @@ class Merger:
             for diff in shape_diff
         ]
 
-        # TODO check for self.data and data dtypes mismatch?
         if self.logits > 0:
             self.data[tuple([slice(None, None, None)] + sl)] += (
                 data * self.window[tuple(win_sl[1:])]
