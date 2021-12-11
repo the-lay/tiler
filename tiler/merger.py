@@ -325,7 +325,14 @@ class Merger:
         data = self.data
 
         if normalize_by_weights:
-            data = np.nan_to_num(data / self.weights_sum)
+            # ignoring division by zero
+            # alternatively, set values < atol to 1
+            # https://github.com/the-lay/tiler/blob/46e948bb2bd7a909e954baf87a0c15b384109fde/tiler/merger.py#L314
+            # TODO check which way is better
+            #  ignoring should be more precise without atol
+            #  but can hide other errors
+            with np.errstate(divide='ignore', invalid='ignore'):
+                data = np.nan_to_num(data / self.weights_sum)
 
         if unpad:
             sl = [slice(pad_from, shape - pad_to)
