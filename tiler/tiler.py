@@ -535,7 +535,7 @@ class Tiler:
 
         # Split shape diff in two and use those values as frame padding for data
         pre_pad = self._shape_diff // 2
-        post_pad = (self._shape_diff // 2) + np.mod(self._tile_overlap, 2)
+        post_pad = (self._shape_diff // 2) + np.mod(self._shape_diff, 2)
 
         # Adjust parameters for new data shape and
         self._recalculate(self._new_shape,
