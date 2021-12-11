@@ -18,9 +18,9 @@ tile_shape = tuple(tile_shape) + (3, )
 # Tile original image and merge it back
 tiler = Tiler(image.shape, tile_shape, overlap=0.4, channel_dimension=2, mode='reflect')
 tiles = np.array([tile for _, tile in tiler(image)])
-merger = Merger(tiler, dtype=tiles.dtype)
+merger = Merger(tiler)
 merger.add_batch(0, len(tiler), tiles)
-merged_image = merger.merge()
+merged_image = merger.merge(dtype=tiles.dtype)
 
 
 #### Plot images

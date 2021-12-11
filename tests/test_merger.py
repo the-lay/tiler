@@ -251,10 +251,6 @@ class TestMergingCommon(unittest.TestCase):
             merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0]))
         )
 
-        # Unmatching dtype should raise an exception
-        with self.assertRaises(ValueError):
-            merger.add(0, np.zeros((12,), dtype=np.int64))
-
         # Test without normalization by weights
         window = np.ones((12,)) * 2
         merger = Merger(tiler, window=window)

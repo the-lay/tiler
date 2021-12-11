@@ -59,9 +59,12 @@ class Merger:
         window: Union[None, str, np.ndarray] = None,
         logits: int = 0,
         save_visits: bool = True,
-        dtype: np.dtype = np.float64,
     ):
-        """Merger precomputes everything for merging together tiles created by given Tiler.
+        """Merger holds cumulative result buffers for merging tiles created by a given Tiler
+        and the window function that is applied to added tiles.
+
+        There are two required np.float64 buffers: `self.data` and `self.weights_sum`
+        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).
 
         TODO:
             - generate window depending on tile border type
@@ -78,8 +81,6 @@ class Merger:
             save_visits (bool): Specify whether to save which elements has been modified and how many times in
                 `self.data_visits`. Can be disabled to save some memory. Default is `True`.
 
-            dtype (np.dtype): Specify dtype of buffer that holds added tiles. Default is `np.float64`.
-
         """
 
         self.tiler = tiler
@@ -92,7 +93,6 @@ class Merger:
         self.logits = int(logits)
 
         # Generate data and normalization arrays
-        self.dtype = dtype
         self.data = self.data_visits = self.weights_sum = None
         self.reset(save_visits)
 
@@ -199,9 +199,9 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros((self.logits, *padded_data_shape), dtype=self.dtype)
+            self.data = np.zeros((self.logits, *padded_data_shape), dtype=np.float64)
         else:
-            self.data = np.zeros(padded_data_shape, dtype=self.dtype)
+            self.data = np.zeros(padded_data_shape, dtype=np.float64)
 
         # Data visits holds the number of times each element was assigned
         if save_visits:
@@ -246,12 +246,6 @@ class Merger:
                     f"Passed data shape ({data_shape}) "
                     f"must be less or equal than tile shape ({expected_tile_shape})."
                 )
-
-        # Check for dtype mismatch
-        if self.dtype != data.dtype:
-            raise ValueError(
-                f"Passed data dtype ({data.dtype}) must match Merger initialized dtype ({self.dtype})."
-            )
 
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
@@ -311,6 +305,7 @@ class Merger:
         unpad: bool = True,
         argmax: bool = False,
         normalize_by_weights: bool = True,
+        dtype: np.dtype = np.float64,
     ) -> np.ndarray:
         """Returns merged data array obtained from added tiles.
 
@@ -320,6 +315,8 @@ class Merger:
             argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
 
             normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.
+
+            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.
 
         Returns:
             np.ndarray: Final merged data array obtained from added tiles.
@@ -354,4 +351,4 @@ class Merger:
         if argmax:
             data = np.argmax(data, 0)
 
-        return data
+        return data.astype(dtype)

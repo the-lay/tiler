@@ -1669,9 +1669,12 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
+        <span class="sd">&quot;&quot;&quot;Merger holds cumulative result buffers for merging tiles created by a given Tiler</span>
+<span class="sd">        and the window function that is applied to added tiles.</span>
+
+<span class="sd">        There are two required np.float64 buffers: `self.data` and `self.weights_sum`</span>
+<span class="sd">        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).</span>
 
 <span class="sd">        TODO:</span>
 <span class="sd">            - generate window depending on tile border type</span>
@@ -1688,8 +1691,6 @@ Consider using this instead of relying on tile automatic padding (see example be
 <span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
 <span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
 
-<span class="sd">            dtype (np.dtype): Specify dtype of buffer that holds added tiles. Default is `np.float64`.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
@@ -1702,7 +1703,6 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="c1"># Generate data and normalization arrays</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_visits</span><span class="p">)</span>
 
@@ -1809,9 +1809,9 @@ Consider using this instead of relying on tile automatic padding (see example be
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="c1"># Data visits holds the number of times each element was assigned</span>
         <span class="k">if</span> <span class="n">save_visits</span><span class="p">:</span>
@@ -1856,12 +1856,6 @@ Consider using this instead of relying on tile automatic padding (see example be
                     <span class="sa">f</span><span class="s2">&quot;Passed data shape (</span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s2">) &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;must be less or equal than tile shape (</span><span class="si">{</span><span class="n">expected_tile_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
                 <span class="p">)</span>
-
-        <span class="c1"># Check for dtype mismatch</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Passed data dtype (</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">) must match Merger initialized dtype (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">).&quot;</span>
-            <span class="p">)</span>
 
         <span class="c1"># Select coordinates for data</span>
         <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">expected_tile_shape</span> <span class="o">-</span> <span class="n">data_shape</span>
@@ -1921,6 +1915,7 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
 
@@ -1930,6 +1925,8 @@ Consider using this instead of relying on tile automatic padding (see example be
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
 <span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+
+<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
@@ -1945,6 +1942,7 @@ Consider using this instead of relying on tile automatic padding (see example be
             <span class="c1">#  ignoring should be more precise without atol</span>
             <span class="c1">#  but can hide other errors</span>
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                <span class="c1"># cast to specified</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
@@ -1964,7 +1962,7 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -1979,8 +1977,7 @@ Consider using this instead of relying on tile automatic padding (see example be
     tiler: <a href="#tiler.Tiler">tiler.tiler.Tiler</a>,
     window: Union[NoneType, str, numpy.ndarray] = None,
     logits: int = 0,
-    save_visits: bool = True,
-    dtype: numpy.dtype = &lt;class &#39;numpy.float64&#39;&gt;
+    save_visits: bool = True
 )</span>
     </div>
 
@@ -1992,9 +1989,12 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
+        <span class="sd">&quot;&quot;&quot;Merger holds cumulative result buffers for merging tiles created by a given Tiler</span>
+<span class="sd">        and the window function that is applied to added tiles.</span>
+
+<span class="sd">        There are two required np.float64 buffers: `self.data` and `self.weights_sum`</span>
+<span class="sd">        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).</span>
 
 <span class="sd">        TODO:</span>
 <span class="sd">            - generate window depending on tile border type</span>
@@ -2011,8 +2011,6 @@ Consider using this instead of relying on tile automatic padding (see example be
 <span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
 <span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
 
-<span class="sd">            dtype (np.dtype): Specify dtype of buffer that holds added tiles. Default is `np.float64`.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
@@ -2025,7 +2023,6 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
 
         <span class="c1"># Generate data and normalization arrays</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_visits</span><span class="p">)</span>
 
@@ -2043,7 +2040,11 @@ Consider using this instead of relying on tile automatic padding (see example be
 
         </details>
 
-            <div class="docstring"><p>Merger precomputes everything for merging together tiles created by given Tiler.</p>
+            <div class="docstring"><p>Merger holds cumulative result buffers for merging tiles created by a given Tiler
+and the window function that is applied to added tiles.</p>
+
+<p>There are two required np.float64 buffers: <code>self.data</code> and <code>self.weights_sum</code>
+and one optional np.uint32 <code>self.data_visits</code> (see below <code>save_visits</code> argument).</p>
 
 <h6 id="todo">TODO</h6>
 
@@ -2063,7 +2064,6 @@ Default is None which creates a boxcar window (constant 1s).</li>
 <li><strong>logits (int):</strong>  Specify whether to add logits dimensions in front of the data array. Default is <code>0</code>.</li>
 <li><strong>save_visits (bool):</strong>  Specify whether to save which elements has been modified and how many times in
 <code>self.data_visits</code>. Can be disabled to save some memory. Default is <code>True</code>.</li>
-<li><strong>dtype (np.dtype):</strong>  Specify dtype of buffer that holds added tiles. Default is <code>np.float64</code>.</li>
 </ul>
 </div>
 
@@ -2206,9 +2206,9 @@ If passed None sets a boxcar window (constant 1s).</li>
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
         <span class="c1"># Data visits holds the number of times each element was assigned</span>
         <span class="k">if</span> <span class="n">save_visits</span><span class="p">:</span>
@@ -2286,12 +2286,6 @@ If passed None sets a boxcar window (constant 1s).</li>
                     <span class="sa">f</span><span class="s2">&quot;Passed data shape (</span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s2">) &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;must be less or equal than tile shape (</span><span class="si">{</span><span class="n">expected_tile_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
                 <span class="p">)</span>
-
-        <span class="c1"># Check for dtype mismatch</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Passed data dtype (</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">) must match Merger initialized dtype (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">).&quot;</span>
-            <span class="p">)</span>
 
         <span class="c1"># Select coordinates for data</span>
         <span class="n">shape_diff</span> <span class="o">=</span> <span class="n">expected_tile_shape</span> <span class="o">-</span> <span class="n">data_shape</span>
@@ -2408,7 +2402,8 @@ If passed None sets a boxcar window (constant 1s).</li>
     self,
     unpad: bool = True,
     argmax: bool = False,
-    normalize_by_weights: bool = True
+    normalize_by_weights: bool = True,
+    dtype: numpy.dtype = &lt;class &#39;numpy.float64&#39;&gt;
 ) -&gt; numpy.ndarray</span>:
     </div>
 
@@ -2419,6 +2414,7 @@ If passed None sets a boxcar window (constant 1s).</li>
         <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
 
@@ -2428,6 +2424,8 @@ If passed None sets a boxcar window (constant 1s).</li>
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
 <span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+
+<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
@@ -2443,6 +2441,7 @@ If passed None sets a boxcar window (constant 1s).</li>
             <span class="c1">#  ignoring should be more precise without atol</span>
             <span class="c1">#  but can hide other errors</span>
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                <span class="c1"># cast to specified</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
@@ -2462,7 +2461,7 @@ If passed None sets a boxcar window (constant 1s).</li>
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -2475,6 +2474,7 @@ If passed None sets a boxcar window (constant 1s).</li>
 <li><strong>unpad (bool):</strong>  If unpad is True, removes padded array elements. Default is True.</li>
 <li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed. Default is False.</li>
 <li><strong>normalize_by_weights (bool):</strong>  If normalize is True, the accumulated data will be divided by weights. Default is True.</li>
+<li><strong>dtype (np.dtype):</strong>  Specify dtype for the final . Default is <code>np.float64</code>.</li>
 </ul>
 
 <h6 id="returns">Returns</h6>
