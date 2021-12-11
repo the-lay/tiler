@@ -402,8 +402,13 @@ class TestTiling(unittest.TestCase):
         # Float overlap + channel dimension
         c_data = np.expand_dims(self.data, 0)
         tiler = Tiler(
-            data_shape=c_data.shape, tile_shape=(1, tile_size,),
-            overlap=overlap, channel_dimension=0
+            data_shape=c_data.shape,
+            tile_shape=(
+                1,
+                tile_size,
+            ),
+            overlap=overlap,
+            channel_dimension=0,
         )
         expected_split = np.expand_dims(expected_split, 0)
         calculated_split = np.expand_dims(calculated_split, 0)
@@ -557,16 +562,14 @@ class TestTiling(unittest.TestCase):
 
     def test_apply_padding(self):
 
-        t1 = Tiler(data_shape=self.data.shape,
-                   tile_shape=(3,),
-                   mode="reflect")
+        t1 = Tiler(data_shape=self.data.shape, tile_shape=(3,), mode="reflect")
 
         # without apply padding the padding is done based on data in the tile
         # last tile has only one 99, but when reflect padded becomes 99, 99, 99
         np.testing.assert_equal(t1.get_tile(self.data, 0), [0, 1, 2])
         np.testing.assert_equal(t1.get_tile(self.data, len(t1) - 1), [99, 99, 99])
 
-        # padding should now be correctly applied,
+        # with apply padding, padding should now correctly take into account data outside the tile
         data = t1.apply_padding(self.data, mode="reflect")
         np.testing.assert_equal(t1.get_tile(data, 0), [1, 0, 1])
         np.testing.assert_equal(t1.get_tile(data, len(t1) - 1), [98, 99, 98])

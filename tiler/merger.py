@@ -249,7 +249,9 @@ class Merger:
 
         # Check for dtype mismatch
         if self.dtype != data.dtype:
-            raise ValueError(f"Passed data dtype ({data.dtype}) must match Merger initialized dtype ({self.dtype}).")
+            raise ValueError(
+                f"Passed data dtype ({data.dtype}) must match Merger initialized dtype ({self.dtype})."
+            )
 
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
@@ -304,11 +306,12 @@ class Merger:
         ):
             self.add(tile_i, data[data_i])
 
-    def merge(self,
-              unpad: bool = True,
-              argmax: bool = False,
-              normalize_by_weights: bool = True,
-              ) -> np.ndarray:
+    def merge(
+        self,
+        unpad: bool = True,
+        argmax: bool = False,
+        normalize_by_weights: bool = True,
+    ) -> np.ndarray:
         """Returns merged data array obtained from added tiles.
 
         Args:
@@ -331,13 +334,16 @@ class Merger:
             # TODO check which way is better
             #  ignoring should be more precise without atol
             #  but can hide other errors
-            with np.errstate(divide='ignore', invalid='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 data = np.nan_to_num(data / self.weights_sum)
 
         if unpad:
-            sl = [slice(pad_from, shape - pad_to)
-                  for shape, (pad_from, pad_to)
-                  in zip(self.tiler.data_shape, self.tiler._padding)]
+            sl = [
+                slice(pad_from, shape - pad_to)
+                for shape, (pad_from, pad_to) in zip(
+                    self.tiler.data_shape, self.tiler._padding
+                )
+            ]
 
             # if merger has logits dimension, add another slicing in front
             if self.logits:
