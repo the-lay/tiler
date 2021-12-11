@@ -7,7 +7,7 @@ import os
 
 class TestMergingCommon(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = np.arange(0, 100)
+        self.data = np.arange(0, 100, dtype=np.float64)
 
     def test_init(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
@@ -240,7 +240,7 @@ class TestMergingCommon(unittest.TestCase):
 
     def test_merge(self):
 
-        # Test padding
+        # Test unpadding
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
         merger = Merger(tiler)
         for t_id, t in tiler(self.data):
@@ -250,6 +250,18 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(
             merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0]))
         )
+
+        # Unmatching dtype should raise an exception
+        with self.assertRaises(ValueError):
+            merger.add(0, np.zeros((12, ), dtype=np.int64))
+
+        # Test without normalization by weights
+        window = np.ones((12, )) * 2
+        merger = Merger(tiler, window=window)
+        for t_id, t in tiler(self.data):
+            merger.add(t_id, t)
+        np.testing.assert_equal(merger.merge(normalize_by_weights=False), self.data * 2)
+        np.testing.assert_equal(merger.merge(normalize_by_weights=True), self.data)
 
         # Test argmax
         merger = Merger(tiler, logits=3)
@@ -275,3 +287,12 @@ class TestMergingCommon(unittest.TestCase):
                 )
             ),
         )
+
+        # Test explicit unpadding
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
+        merger = Merger(tiler)
+        padded_data = tiler.apply_padding(self.data)
+        np.testing.assert_equal(tiler._padding, [(4, 4)])
+        for t_id, t in tiler(padded_data):
+            merger.add(t_id, t)
+        np.testing.assert_equal(merger.merge(unpad=True), self.data)
