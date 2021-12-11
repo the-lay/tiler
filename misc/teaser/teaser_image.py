@@ -3,25 +3,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tiler import Tiler, Merger
 
-# Warning: ugly code, but explicit.
-# Moreover, it is not really merging the tiles back together.
-# You can find example of actual 2D overlap tiling and merging in examples/2d_overlap_tile.py
-
 
 #### Generate images
 # Original image by Marco Bianchetti on Unsplash
 # https://unsplash.com/photos/8blA_V0MI9I
 image = np.array(Image.open('original_image.jpg'))
 
-# Calculate tile shape to have exactly 3x3 tiles
+# Calculate tile shape to have exactly 3x3 tiles with 0.4 overlap
 full_image_shape = np.array(image.shape)
 full_image_shape[:2] = full_image_shape[:2] * 1.4
 tile_shape = full_image_shape[:2] // 3
 tile_shape = tuple(tile_shape) + (3, )
 
-# Tile and merge
+# Tile original image and merge it back
 tiler = Tiler(image.shape, tile_shape, overlap=0.4, channel_dimension=2, mode='reflect')
-tiles = [tile.astype(np.uint8) for _, tile in tiler(image)]
+tiles = np.array([tile for _, tile in tiler(image)])
+merger = Merger(tiler, dtype=tiles.dtype)
+merger.add_batch(0, len(tiler), tiles)
+merged_image = merger.merge()
 
 
 #### Plot images
@@ -121,9 +120,7 @@ merged_img = fig.add_subplot(gs[:, 8:])
 merged_img.set_xticks([])
 merged_img.set_yticks([])
 merged_img.axis('off')
-merged_img.imshow(image)
+merged_img.imshow(merged_image)
 
 # fig.show()
 plt.savefig('tiler_teaser.png')
-
-
