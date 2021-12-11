@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: coverage run -m pytest -v
       - name: Submit coveralls
-        if: github.repository == 'the-lay/tiler'
+        if: github.event_name != 'pull_request'
         run: coveralls
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
