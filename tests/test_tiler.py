@@ -398,6 +398,18 @@ class TestTiling(unittest.TestCase):
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
 
+        # Case 2b
+        # Float overlap + channel dimension
+        c_data = np.expand_dims(self.data, 0)
+        tiler = Tiler(
+            data_shape=c_data.shape, tile_shape=(1, tile_size,),
+            overlap=overlap, channel_dimension=0
+        )
+        expected_split = np.expand_dims(expected_split, 0)
+        calculated_split = np.expand_dims(calculated_split, 0)
+        self.assertEqual(len(tiler), expected_split.shape[1])
+        np.testing.assert_equal(expected_split, calculated_split)
+
         # Case 3
         # Overlap is provided as tuple, list or np.ndarray
         # Let's try a slightly more complicated test case with a channel dimension
