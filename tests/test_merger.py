@@ -12,7 +12,7 @@ class TestMergingCommon(unittest.TestCase):
     def test_init(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
 
-        # logits test
+        # logits wrong values test
         with self.assertRaises(ValueError):
             Merger(tiler=tiler, logits=-1)
         with self.assertRaises(ValueError):
@@ -23,6 +23,9 @@ class TestMergingCommon(unittest.TestCase):
 
         merger2 = Merger(tiler=tiler, logits=99)
         np.testing.assert_equal(merger2.data.shape, (99,) + self.data.shape)
+
+        merger3 = Merger(tiler=tiler, save_visits=False)
+        self.assert_(merger3.data_visits is None)
 
     def test_add(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
