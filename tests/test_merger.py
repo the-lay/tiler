@@ -1,8 +1,6 @@
 import unittest
 import numpy as np
 from tiler import Tiler, Merger
-from contextlib import redirect_stderr
-import os
 
 
 class TestMergingCommon(unittest.TestCase):
@@ -284,11 +282,16 @@ class TestMergingCommon(unittest.TestCase):
             ),
         )
 
-        # Test explicit unpadding
+        # Test extra padding
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [112])
+        np.testing.assert_equal(padding, [(6, 6)])
+
+        tiler.recalculate(data_shape=new_shape)
+        padded_data = np.pad(self.data, pad_width=padding, mode="reflect")
         merger = Merger(tiler)
-        padded_data = tiler.apply_padding(self.data)
-        np.testing.assert_equal(tiler._padding, [(4, 4)])
         for t_id, t in tiler(padded_data):
             merger.add(t_id, t)
-        np.testing.assert_equal(merger.merge(unpad=True), self.data)
+        np.testing.assert_equal(merger.merge(), padded_data)
+        np.testing.assert_equal(merger.merge(extra_padding=padding), self.data)

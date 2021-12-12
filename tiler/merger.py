@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Optional
 import warnings
 
 import numpy as np
@@ -50,7 +50,8 @@ class Merger:
         Bartlett-Hann window.    
     - 'overlap-tile'  
         Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
-        (Ronneberger et al. 2015, U-Net paper)
+        Requires applying padding calculated with `Tiler.calculate_padding()` for correct results.
+        (based on Ronneberger et al. 2015, U-Net paper)
     """
 
     def __init__(
@@ -300,9 +301,42 @@ class Merger:
         ):
             self.add(tile_i, data[data_i])
 
+    def _unpad(
+        self, data: np.ndarray, extra_padding: Optional[List[Tuple[int, int]]] = None
+    ):
+        """Slices/unpads data according to merger and tiler settings, as well as additional padding.
+
+        Args:
+            data (np.ndarray): Data to be sliced.
+
+            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.
+                Number of values padded to the edges of each axis.
+                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+                Default is None.
+        """
+        if extra_padding:
+            sl = [
+                slice(pad_from, shape - pad_to)
+                for shape, (pad_from, pad_to) in zip(
+                    self.tiler.data_shape, extra_padding
+                )
+            ]
+        else:
+            sl = [
+                slice(None, self.tiler.data_shape[i])
+                for i in range(len(self.tiler.data_shape))
+            ]
+
+        # if merger has logits dimension, add another slicing in front
+        if self.logits:
+            sl = [slice(None, None, None)] + sl
+
+        return data[tuple(sl)]
+
     def merge(
         self,
         unpad: bool = True,
+        extra_padding: Optional[List[Tuple[int, int]]] = None,
         argmax: bool = False,
         normalize_by_weights: bool = True,
         dtype: np.dtype = np.float64,
@@ -311,6 +345,11 @@ class Merger:
 
         Args:
             unpad (bool): If unpad is True, removes padded array elements. Default is True.
+
+            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.
+                Number of values padded to the edges of each axis.
+                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+                Default is None.
 
             argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
 
@@ -335,18 +374,7 @@ class Merger:
                 data = np.nan_to_num(data / self.weights_sum)
 
         if unpad:
-            sl = [
-                slice(pad_from, shape - pad_to)
-                for shape, (pad_from, pad_to) in zip(
-                    self.tiler.data_shape, self.tiler._padding
-                )
-            ]
-
-            # if merger has logits dimension, add another slicing in front
-            if self.logits:
-                sl = [slice(None, None, None)] + sl
-
-            data = data[tuple(sl)]
+            data = self._unpad(data, extra_padding)
 
         if argmax:
             data = np.argmax(data, 0)

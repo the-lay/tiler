@@ -41,11 +41,6 @@ class Tiler:
         You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
         with `Tiler.iterate()` (or the alias `Tiler.__call__()`).
 
-        TODO:
-            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) < len(data_shape)
-            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)
-            - allow other numpy padding modes (maximum, minimum, mean, median)
-
         Args:
             data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
                 If there is a channel dimension, it should be included in the shape.
@@ -71,25 +66,36 @@ class Tiler:
                 Default is `0.0`.
         """
 
-        self._recalculate(
-            data_shape, tile_shape, overlap, channel_dimension, mode, constant_value
+        self.recalculate(
+            data_shape=data_shape,
+            tile_shape=tile_shape,
+            overlap=overlap,
+            channel_dimension=channel_dimension,
+            mode=mode,
+            constant_value=constant_value,
         )
 
-    def _recalculate(
+    def recalculate(
         self,
-        data_shape: Union[Tuple, List, np.ndarray],
-        tile_shape: Union[Tuple, List, np.ndarray],
-        overlap: Union[int, float, Tuple, List, np.ndarray] = 0,
+        data_shape: Optional[Union[Tuple, List, np.ndarray]] = None,
+        tile_shape: Optional[Union[Tuple, List, np.ndarray]] = None,
+        overlap: Optional[Union[int, float, Tuple, List, np.ndarray]] = None,
         channel_dimension: Optional[int] = None,
-        mode: str = "constant",
-        constant_value: float = 0.0,
+        mode: Optional[str] = None,
+        constant_value: Optional[float] = None,
     ) -> None:
+        """Recalculates tiling for new given settings.
+        If a passed value is None, use previously given value.
+
+        For more information about each argument see `Tiler.__init__()` documentation.
+        """
 
         # Data and tile shapes
-        self.data_shape = np.asarray(data_shape).astype(int)
-        self.tile_shape = np.asarray(tile_shape).astype(int)
+        if data_shape is not None:
+            self.data_shape = np.asarray(data_shape).astype(int)
+        if tile_shape is not None:
+            self.tile_shape = np.asarray(tile_shape).astype(int)
         self._n_dim: int = len(self.data_shape)
-        self._padding = tuple((0, 0) for _ in range(self._n_dim))
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError(
                 "Tile and data shapes must be tuple or lists of positive numbers."
@@ -102,17 +108,21 @@ class Tiler:
             )
 
         # Tiling mode
-        self.mode = mode
+        if mode is not None:
+            self.mode = mode
         if self.mode not in self.TILING_MODES:
             raise ValueError(
                 f"{self.mode} is an unsupported tiling mode, please check the documentation."
             )
 
         # Constant value used for constant tiling mode
-        self.constant_value = constant_value
+        if constant_value is not None:
+            self.constant_value = constant_value
 
         # Channel dimension
-        self.channel_dimension = channel_dimension
+        # Channel dimension can be None which means we need to check for init too
+        if not hasattr(self, "channel_dimension") or channel_dimension is not None:
+            self.channel_dimension = channel_dimension
         if self.channel_dimension:
             if (self.channel_dimension >= self._n_dim) or (
                 self.channel_dimension < -self._n_dim
@@ -126,7 +136,8 @@ class Tiler:
                 self.channel_dimension = self._n_dim + self.channel_dimension
 
         # Overlap and step
-        self.overlap = overlap
+        if overlap is not None:
+            self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap > 1.0:
                 raise ValueError(
@@ -162,7 +173,7 @@ class Tiler:
             if np.any(np.array(self.overlap) < 0) or np.any(
                 self.overlap >= self.tile_shape
             ):
-                raise ValueError("Overlap size much be smaller than tile_shape.")
+                raise ValueError("Overlap size must be smaller than tile_shape.")
 
             self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
 
@@ -496,64 +507,35 @@ class Tiler:
             ]
         return self._indexing_shape
 
-    def apply_padding(
-        self,
-        data: np.ndarray,
-        mode: str = "reflect",
-    ) -> np.ndarray:
-        """Applies difference between required data shape and original data shape as padding around data.
-        Automatically adjusts Tiler parameters and returns padded data.
-        Moreover, Merger (with `unpad=True`) will automatically remove padding created with this method.
-        Consider using this instead of relying on tile automatic padding (see example below).
+    def calculate_padding(self) -> Tuple[np.ndarray, List[Tuple[int, int]]]:
+        """Calculate a frame padding for the current Tiler parameters.
+        The padding is overlap//2 or tile_step//2, whichever is bigger.
+        The method returns a tuple (new_shape, padding) where padding is
+        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.
 
-        Example:
-            ```python
-            >>> data = np.arange(0, 10)  # [0 1 2 3 4 5 6 7 8 9]
-            >>> tiler = Tiler(data_shape=(10, ), tile_shape=(3, ), mode="reflect")
-            >>> # without apply_padding, padding in tiles is generated only looking at that tile
-            >>> tiler.get_tile(data, 0)  # [ 0 1 2]
-            >>> tiler.get_tile(data, 3)  # [ 9 9 9]
-            >>> # with apply_padding, the data is padded correctly
-            >>> data = tiler.apply_padding(data)  # [1 0 1 2 3 4 5 6 7 8 9 8]
-            >>> tiler.data_shape  # (12, )
-            >>> tiler.get_tile(data, 0)  # [ 1 0 1]
-            >>> tiler.get_tile(data, 3)  # [ 8 9 8]
-            ```
-
-        Args:
-            data (np.ndarray):
-                The data which will be padded.
-            mode (str):
-                Numpy padding mode. Defaults to "reflect".
-                [Read more on numpy docs](https://numpy.org/doc/stable/reference/generated/numpy.pad.html).
-
-        Returns:
-            np.ndarray: Padded data.
+        In the usual workflow, you'd recalculate tiling settings and then apply padding, prior to tiling.
+        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:
+        ```python
+        >>> tiler = Tiler(...)
+        >>> merger = Merger(tiler, ...)
+        >>> new_shape, padding = tiler.calculate_padding()
+        >>> tiler.recalculate(data_shape=new_shape)
+        >>> padded_data = np.pad(data, pad_width=padding, mode="reflect")
+        >>> for tile_id, tile in tiler(padded_data):
+        >>>     processed_tile = process(tile)
+        >>>     merger.add(tile_id, processed_tile)
+        >>> final_image = merger.merge(extra_padding=padding)
+        ```
+        Return:
+            np.ndarray: Resulting shape when padding is applied.
+            List[Tuple[int, int]]: Calculating padding.
         """
-        # Warn user if padding was already applied before
-        if np.any(self._padding):
-            warnings.warn(
-                f"Padding was already applied before! Overwriting old parameters."
-            )
 
-        # If user provided data that is different from initialized data shape, raise an error
-        if np.not_equal(self.data_shape, data.shape).any():
-            raise ValueError(
-                f"Provided data has a different shape (data.shape={data.shape}) than what Tiler "
-                f"was initialized with (self.data_shape={self.data_shape})."
-            )
+        # Choosing padding
+        pre_pad = np.maximum(self._tile_step // 2, self._tile_overlap // 2)
+        post_pad = pre_pad + np.mod(self._tile_step, 2)
 
-        # Split shape diff in two and use those values as frame padding for data
-        pre_pad = self._shape_diff // 2
-        post_pad = (self._shape_diff // 2) + np.mod(self._shape_diff, 2)
+        new_shape = pre_pad + self.data_shape + post_pad
+        padding = list(zip(pre_pad, post_pad))
 
-        # Adjust parameters for new data shape and
-        self._recalculate(
-            self._new_shape,
-            self.tile_shape,
-            self.overlap,
-        )
-        self._padding = list(zip(pre_pad, post_pad))
-
-        # Return padded input data
-        return np.pad(data, self._padding, mode)
+        return new_shape, padding

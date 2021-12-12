@@ -41,6 +41,9 @@
                                 <a class="variable" href="#Tiler.TILING_MODES">TILING_MODES</a>
                         </li>
                         <li>
+                                <a class="function" href="#Tiler.recalculate">recalculate</a>
+                        </li>
+                        <li>
                                 <a class="function" href="#Tiler.iterate">iterate</a>
                         </li>
                         <li>
@@ -56,7 +59,7 @@
                                 <a class="function" href="#Tiler.get_mosaic_shape">get_mosaic_shape</a>
                         </li>
                         <li>
-                                <a class="function" href="#Tiler.apply_padding">apply_padding</a>
+                                <a class="function" href="#Tiler.calculate_padding">calculate_padding</a>
                         </li>
                 </ul>
 
@@ -358,11 +361,6 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">        You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,</span>
 <span class="sd">        with `Tiler.iterate()` (or the alias `Tiler.__call__()`).</span>
 
-<span class="sd">        TODO:</span>
-<span class="sd">            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</span>
-<span class="sd">            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</span>
-<span class="sd">            - allow other numpy padding modes (maximum, minimum, mean, median)</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).</span>
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
@@ -388,25 +386,36 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">                Default is `0.0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recalculate</span><span class="p">(</span>
-            <span class="n">data_shape</span><span class="p">,</span> <span class="n">tile_shape</span><span class="p">,</span> <span class="n">overlap</span><span class="p">,</span> <span class="n">channel_dimension</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">constant_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span>
+            <span class="n">data_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
+            <span class="n">tile_shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">,</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+            <span class="n">channel_dimension</span><span class="o">=</span><span class="n">channel_dimension</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">constant_value</span><span class="o">=</span><span class="n">constant_value</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_recalculate</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">recalculate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
-        <span class="n">overlap</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
-        <span class="n">constant_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">constant_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recalculates tiling for new given settings.</span>
+<span class="sd">        If a passed value is None, use previously given value.</span>
+
+<span class="sd">        For more information about each argument see `Tiler.__init__()` documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Data and tile shapes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">))</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
@@ -419,17 +428,21 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="p">)</span>
 
         <span class="c1"># Tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TILING_MODES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2"> is an unsupported tiling mode, please check the documentation.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Constant value used for constant tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
+        <span class="k">if</span> <span class="n">constant_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
 
         <span class="c1"># Channel dimension</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
+        <span class="c1"># Channel dimension can be None which means we need to check for init too</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;channel_dimension&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span>
@@ -443,7 +456,8 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span>
 
         <span class="c1"># Overlap and step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -479,7 +493,7 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span>
             <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size much be smaller than tile_shape.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size must be smaller than tile_shape.&quot;</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
@@ -813,67 +827,38 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span>
 
-    <span class="k">def</span> <span class="nf">apply_padding</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reflect&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Applies difference between required data shape and original data shape as padding around data.</span>
-<span class="sd">        Automatically adjusts Tiler parameters and returns padded data.</span>
-<span class="sd">        Moreover, Merger (with `unpad=True`) will automatically remove padding created with this method.</span>
-<span class="sd">        Consider using this instead of relying on tile automatic padding (see example below).</span>
+    <span class="k">def</span> <span class="nf">calculate_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate a frame padding for the current Tiler parameters.</span>
+<span class="sd">        The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.</span>
+<span class="sd">        The method returns a tuple (new_shape, padding) where padding is</span>
+<span class="sd">        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</span>
 
-<span class="sd">        Example:</span>
-<span class="sd">            ```python</span>
-<span class="sd">            &gt;&gt;&gt; data = np.arange(0, 10)  # [0 1 2 3 4 5 6 7 8 9]</span>
-<span class="sd">            &gt;&gt;&gt; tiler = Tiler(data_shape=(10, ), tile_shape=(3, ), mode=&quot;reflect&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; # without apply_padding, padding in tiles is generated only looking at that tile</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 0)  # [ 0 1 2]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 3)  # [ 9 9 9]</span>
-<span class="sd">            &gt;&gt;&gt; # with apply_padding, the data is padded correctly</span>
-<span class="sd">            &gt;&gt;&gt; data = tiler.apply_padding(data)  # [1 0 1 2 3 4 5 6 7 8 9 8]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.data_shape  # (12, )</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 0)  # [ 1 0 1]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 3)  # [ 8 9 8]</span>
-<span class="sd">            ```</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray):</span>
-<span class="sd">                The data which will be padded.</span>
-<span class="sd">            mode (str):</span>
-<span class="sd">                Numpy padding mode. Defaults to &quot;reflect&quot;.</span>
-<span class="sd">                [Read more on numpy docs](https://numpy.org/doc/stable/reference/generated/numpy.pad.html).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Padded data.</span>
+<span class="sd">        In the usual workflow, you&#39;d recalculate tiling settings and then apply padding, prior to tiling.</span>
+<span class="sd">        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        &gt;&gt;&gt; tiler = Tiler(...)</span>
+<span class="sd">        &gt;&gt;&gt; merger = Merger(tiler, ...)</span>
+<span class="sd">        &gt;&gt;&gt; new_shape, padding = tiler.calculate_padding()</span>
+<span class="sd">        &gt;&gt;&gt; tiler.recalculate(data_shape=new_shape)</span>
+<span class="sd">        &gt;&gt;&gt; padded_data = np.pad(data, pad_width=padding, mode=&quot;reflect&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; for tile_id, tile in tiler(padded_data):</span>
+<span class="sd">        &gt;&gt;&gt;     processed_tile = process(tile)</span>
+<span class="sd">        &gt;&gt;&gt;     merger.add(tile_id, processed_tile)</span>
+<span class="sd">        &gt;&gt;&gt; final_image = merger.merge(extra_padding=padding)</span>
+<span class="sd">        ```</span>
+<span class="sd">        Return:</span>
+<span class="sd">            np.ndarray: Resulting shape when padding is applied.</span>
+<span class="sd">            List[Tuple[int, int]]: Calculating padding.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Warn user if padding was already applied before</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Padding was already applied before! Overwriting old parameters.&quot;</span>
-            <span class="p">)</span>
 
-        <span class="c1"># If user provided data that is different from initialized data shape, raise an error</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Provided data has a different shape (data.shape=</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) than what Tiler &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;was initialized with (self.data_shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># Choosing padding</span>
+        <span class="n">pre_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">post_pad</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="c1"># Split shape diff in two and use those values as frame padding for data</span>
-        <span class="n">pre_pad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="n">post_pad</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">+</span> <span class="n">post_pad</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
 
-        <span class="c1"># Adjust parameters for new data shape and</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recalculate</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_new_shape</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
-
-        <span class="c1"># Return padded input data</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span>
 </pre></div>
 
         </details>
@@ -909,11 +894,6 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">        You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,</span>
 <span class="sd">        with `Tiler.iterate()` (or the alias `Tiler.__call__()`).</span>
 
-<span class="sd">        TODO:</span>
-<span class="sd">            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</span>
-<span class="sd">            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</span>
-<span class="sd">            - allow other numpy padding modes (maximum, minimum, mean, median)</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).</span>
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
@@ -939,8 +919,13 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">                Default is `0.0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recalculate</span><span class="p">(</span>
-            <span class="n">data_shape</span><span class="p">,</span> <span class="n">tile_shape</span><span class="p">,</span> <span class="n">overlap</span><span class="p">,</span> <span class="n">channel_dimension</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">constant_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span>
+            <span class="n">data_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
+            <span class="n">tile_shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">,</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+            <span class="n">channel_dimension</span><span class="o">=</span><span class="n">channel_dimension</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">constant_value</span><span class="o">=</span><span class="n">constant_value</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
 
@@ -949,16 +934,6 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <div class="docstring"><p>Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
 You can access tiles individually with <code><a href="#Tiler.get_tile">Tiler.get_tile()</a></code> or with an iterator, both individually and in batches,
 with <code><a href="#Tiler.iterate">Tiler.iterate()</a></code> (or the alias <code>Tiler.__call__()</code>).</p>
-
-<h6 id="todo">TODO</h6>
-
-<blockquote>
-  <ul>
-  <li>it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</li>
-  <li>allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</li>
-  <li>allow other numpy padding modes (maximum, minimum, mean, median)</li>
-  </ul>
-</blockquote>
 
 <h6 id="args">Args</h6>
 
@@ -1012,6 +987,186 @@ If a tile is smaller than <code>tile_shape</code>,
 pad it with the wrap of the vector along each axis to match <code>tile_shape</code>.
 The first values are used to pad the end and the end values are used to pad the beginning.</li>
 </ul>
+</div>
+
+
+                            </div>
+                            <div id="Tiler.recalculate" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Tiler.recalculate">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">recalculate</span><span class="signature">(
+    self,
+    data_shape: Union[Tuple, List, numpy.ndarray, NoneType] = None,
+    tile_shape: Union[Tuple, List, numpy.ndarray, NoneType] = None,
+    overlap: Union[int, float, Tuple, List, numpy.ndarray, NoneType] = None,
+    channel_dimension: Union[int, NoneType] = None,
+    mode: Union[str, NoneType] = None,
+    constant_value: Union[float, NoneType] = None
+) -&gt; None</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">recalculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">constant_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recalculates tiling for new given settings.</span>
+<span class="sd">        If a passed value is None, use previously given value.</span>
+
+<span class="sd">        For more information about each argument see `Tiler.__init__()` documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Data and tile shapes</span>
+        <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Tile and data shapes must have the same length. &quot;</span>
+                <span class="s2">&quot;Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, &quot;</span>
+                <span class="s2">&quot;e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Tiling mode</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TILING_MODES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2"> is an unsupported tiling mode, please check the documentation.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Constant value used for constant tiling mode</span>
+        <span class="k">if</span> <span class="n">constant_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
+
+        <span class="c1"># Channel dimension</span>
+        <span class="c1"># Channel dimension can be None which means we need to check for init too</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;channel_dimension&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Specified channel dimension is out of bounds &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(should be None or an integer from </span><span class="si">{</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2">).&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># negative indexing</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span>
+
+        <span class="c1"># Overlap and step</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Float overlap must be in range of 0.0 (0%) to 1.0 (100%).&quot;</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">tile_shape_without_channel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="n">tile_shape_without_channel</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Integer overlap must be in range of 0 to </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">tile_shape_without_channel</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size must be smaller than tile_shape.&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Unsupported overlap mode (not float, int, list, tuple or np.ndarray).&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">int</span>
+        <span class="p">)</span>  <span class="c1"># tile step</span>
+
+        <span class="c1"># Calculate mosaic (collection of tiles) shape</span>
+        <span class="n">div</span><span class="p">,</span> <span class="n">mod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">divmod</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;drop&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span> <span class="o">=</span> <span class="n">div</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span> <span class="o">=</span> <span class="n">div</span> <span class="o">+</span> <span class="p">(</span><span class="n">mod</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Calculate new shape assuming tiles are padded</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;irregular&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_new_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_new_shape</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span>
+            <span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_shape</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># If channel dimension is given, set tile_step of that dimension to 0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Tile indexing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span><span class="p">],</span> <span class="n">indexing</span><span class="o">=</span><span class="s2">&quot;ij&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_index</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Tiler (mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">, overlap=</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) will split data_shape </span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
+            <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Recalculates tiling for new given settings.
+If a passed value is None, use previously given value.</p>
+
+<p>For more information about each argument see <code><a href="#Tiler.__init__">Tiler.__init__()</a></code> documentation.</p>
 </div>
 
 
@@ -1492,114 +1647,76 @@ Default is False.</li>
 
 
                             </div>
-                            <div id="Tiler.apply_padding" class="classattr">
-                                        <div class="attr function"><a class="headerlink" href="#Tiler.apply_padding">#&nbsp;&nbsp</a>
+                            <div id="Tiler.calculate_padding" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Tiler.calculate_padding">#&nbsp;&nbsp</a>
 
         
             <span class="def">def</span>
-            <span class="name">apply_padding</span><span class="signature">(self, data: numpy.ndarray, mode: str = &#39;reflect&#39;) -&gt; numpy.ndarray</span>:
+            <span class="name">calculate_padding</span><span class="signature">(self) -&gt; Tuple[numpy.ndarray, List[Tuple[int, int]]]</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">apply_padding</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reflect&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Applies difference between required data shape and original data shape as padding around data.</span>
-<span class="sd">        Automatically adjusts Tiler parameters and returns padded data.</span>
-<span class="sd">        Moreover, Merger (with `unpad=True`) will automatically remove padding created with this method.</span>
-<span class="sd">        Consider using this instead of relying on tile automatic padding (see example below).</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">calculate_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate a frame padding for the current Tiler parameters.</span>
+<span class="sd">        The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.</span>
+<span class="sd">        The method returns a tuple (new_shape, padding) where padding is</span>
+<span class="sd">        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</span>
 
-<span class="sd">        Example:</span>
-<span class="sd">            ```python</span>
-<span class="sd">            &gt;&gt;&gt; data = np.arange(0, 10)  # [0 1 2 3 4 5 6 7 8 9]</span>
-<span class="sd">            &gt;&gt;&gt; tiler = Tiler(data_shape=(10, ), tile_shape=(3, ), mode=&quot;reflect&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; # without apply_padding, padding in tiles is generated only looking at that tile</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 0)  # [ 0 1 2]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 3)  # [ 9 9 9]</span>
-<span class="sd">            &gt;&gt;&gt; # with apply_padding, the data is padded correctly</span>
-<span class="sd">            &gt;&gt;&gt; data = tiler.apply_padding(data)  # [1 0 1 2 3 4 5 6 7 8 9 8]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.data_shape  # (12, )</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 0)  # [ 1 0 1]</span>
-<span class="sd">            &gt;&gt;&gt; tiler.get_tile(data, 3)  # [ 8 9 8]</span>
-<span class="sd">            ```</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            data (np.ndarray):</span>
-<span class="sd">                The data which will be padded.</span>
-<span class="sd">            mode (str):</span>
-<span class="sd">                Numpy padding mode. Defaults to &quot;reflect&quot;.</span>
-<span class="sd">                [Read more on numpy docs](https://numpy.org/doc/stable/reference/generated/numpy.pad.html).</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Padded data.</span>
+<span class="sd">        In the usual workflow, you&#39;d recalculate tiling settings and then apply padding, prior to tiling.</span>
+<span class="sd">        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        &gt;&gt;&gt; tiler = Tiler(...)</span>
+<span class="sd">        &gt;&gt;&gt; merger = Merger(tiler, ...)</span>
+<span class="sd">        &gt;&gt;&gt; new_shape, padding = tiler.calculate_padding()</span>
+<span class="sd">        &gt;&gt;&gt; tiler.recalculate(data_shape=new_shape)</span>
+<span class="sd">        &gt;&gt;&gt; padded_data = np.pad(data, pad_width=padding, mode=&quot;reflect&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; for tile_id, tile in tiler(padded_data):</span>
+<span class="sd">        &gt;&gt;&gt;     processed_tile = process(tile)</span>
+<span class="sd">        &gt;&gt;&gt;     merger.add(tile_id, processed_tile)</span>
+<span class="sd">        &gt;&gt;&gt; final_image = merger.merge(extra_padding=padding)</span>
+<span class="sd">        ```</span>
+<span class="sd">        Return:</span>
+<span class="sd">            np.ndarray: Resulting shape when padding is applied.</span>
+<span class="sd">            List[Tuple[int, int]]: Calculating padding.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Warn user if padding was already applied before</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">):</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Padding was already applied before! Overwriting old parameters.&quot;</span>
-            <span class="p">)</span>
 
-        <span class="c1"># If user provided data that is different from initialized data shape, raise an error</span>
-        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Provided data has a different shape (data.shape=</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) than what Tiler &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;was initialized with (self.data_shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
-            <span class="p">)</span>
+        <span class="c1"># Choosing padding</span>
+        <span class="n">pre_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">post_pad</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="c1"># Split shape diff in two and use those values as frame padding for data</span>
-        <span class="n">pre_pad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="n">post_pad</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_shape_diff</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">+</span> <span class="n">post_pad</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
 
-        <span class="c1"># Adjust parameters for new data shape and</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_recalculate</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_new_shape</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
-
-        <span class="c1"># Return padded input data</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Applies difference between required data shape and original data shape as padding around data.
-Automatically adjusts Tiler parameters and returns padded data.
-Moreover, Merger (with <code>unpad=True</code>) will automatically remove padding created with this method.
-Consider using this instead of relying on tile automatic padding (see example below).</p>
+            <div class="docstring"><p>Calculate a frame padding for the current Tiler parameters.
+The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.
+The method returns a tuple (new_shape, padding) where padding is
+((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</p>
 
-<h6 id="example">Example</h6>
+<p>In the usual workflow, you'd recalculate tiling settings and then apply padding, prior to tiling.
+Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a>(extra_padding=padding, ...)</code>:</p>
 
-<blockquote>
-  <div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># [0 1 2 3 4 5 6 7 8 9]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">(</span><span class="n">data_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="p">),</span> <span class="n">tile_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;reflect&quot;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="c1"># without apply_padding, padding in tiles is generated only looking at that tile</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># [ 0 1 2]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># [ 9 9 9]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="c1"># with apply_padding, the data is padded correctly</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">data</span> <span class="o">=</span> <span class="n">tiler</span><span class="o">.</span><span class="n">apply_padding</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># [1 0 1 2 3 4 5 6 7 8 9 8]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span>  <span class="c1"># (12, )</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># [ 1 0 1]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">get_tile</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># [ 8 9 8]</span>
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">merger</span> <span class="o">=</span> <span class="n">Merger</span><span class="p">(</span><span class="n">tiler</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">tiler</span><span class="o">.</span><span class="n">calculate_padding</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span><span class="n">data_shape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">padded_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;reflect&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">tile_id</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiler</span><span class="p">(</span><span class="n">padded_data</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">processed_tile</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">merger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tile_id</span><span class="p">,</span> <span class="n">processed_tile</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">final_image</span> <span class="o">=</span> <span class="n">merger</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">extra_padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
 </code></pre></div>
-</blockquote>
 
-<h6 id="args">Args</h6>
-
-<ul>
-<li><strong>data (np.ndarray):</strong>  The data which will be padded.</li>
-<li><strong>mode (str):</strong>  Numpy padding mode. Defaults to "reflect".
-<a href="https://numpy.org/doc/stable/reference/generated/numpy.pad.html">Read more on numpy docs</a>.</li>
-</ul>
-
-<h6 id="returns">Returns</h6>
+<h6 id="return">Return</h6>
 
 <blockquote>
-  <p>np.ndarray: Padded data.</p>
+  <p>np.ndarray: Resulting shape when padding is applied.
+  List[Tuple[int, int]]: Calculating padding.</p>
 </blockquote>
 </div>
 
@@ -1660,7 +1777,8 @@ Consider using this instead of relying on tile automatic padding (see example be
 <span class="sd">        Bartlett-Hann window.    </span>
 <span class="sd">    - &#39;overlap-tile&#39;  </span>
 <span class="sd">        Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.</span>
-<span class="sd">        (Ronneberger et al. 2015, U-Net paper)</span>
+<span class="sd">        Requires applying padding calculated with `Tiler.calculate_padding()` for correct results.</span>
+<span class="sd">        (based on Ronneberger et al. 2015, U-Net paper)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -1910,9 +2028,42 @@ Consider using this instead of relying on tile automatic padding (see example be
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tile_i</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">data_i</span><span class="p">])</span>
 
+    <span class="k">def</span> <span class="nf">_unpad</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Slices/unpads data according to merger and tiler settings, as well as additional padding.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data (np.ndarray): Data to be sliced.</span>
+
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">extra_padding</span><span class="p">:</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">shape</span> <span class="o">-</span> <span class="n">pad_to</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">pad_to</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">extra_padding</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">))</span>
+            <span class="p">]</span>
+
+        <span class="c1"># if merger has logits dimension, add another slicing in front</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
+
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+
     <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
@@ -1921,6 +2072,11 @@ Consider using this instead of relying on tile automatic padding (see example be
 
 <span class="sd">        Args:</span>
 <span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
+
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
 
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
@@ -1942,22 +2098,10 @@ Consider using this instead of relying on tile automatic padding (see example be
             <span class="c1">#  ignoring should be more precise without atol</span>
             <span class="c1">#  but can hide other errors</span>
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
-                <span class="c1"># cast to specified</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
-            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nb">slice</span><span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">shape</span> <span class="o">-</span> <span class="n">pad_to</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">pad_to</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">_padding</span>
-                <span class="p">)</span>
-            <span class="p">]</span>
-
-            <span class="c1"># if merger has logits dimension, add another slicing in front</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-                <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
-
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -2103,7 +2247,8 @@ Minimum 4-term Blackman-Harris window according to Nuttall.</li>
 Bartlett-Hann window.    </li>
 <li>'overlap-tile' <br />
 Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
-(Ronneberger et al. 2015, U-Net paper)</li>
+Requires applying padding calculated with <code><a href="#Tiler.calculate_padding">Tiler.calculate_padding()</a></code> for correct results.
+(based on Ronneberger et al. 2015, U-Net paper)</li>
 </ul>
 </div>
 
@@ -2401,6 +2546,7 @@ If passed None sets a boxcar window (constant 1s).</li>
             <span class="name">merge</span><span class="signature">(
     self,
     unpad: bool = True,
+    extra_padding: Union[List[Tuple[int, int]], NoneType] = None,
     argmax: bool = False,
     normalize_by_weights: bool = True,
     dtype: numpy.dtype = &lt;class &#39;numpy.float64&#39;&gt;
@@ -2412,6 +2558,7 @@ If passed None sets a boxcar window (constant 1s).</li>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
@@ -2420,6 +2567,11 @@ If passed None sets a boxcar window (constant 1s).</li>
 
 <span class="sd">        Args:</span>
 <span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
+
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
 
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
 
@@ -2441,22 +2593,10 @@ If passed None sets a boxcar window (constant 1s).</li>
             <span class="c1">#  ignoring should be more precise without atol</span>
             <span class="c1">#  but can hide other errors</span>
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
-                <span class="c1"># cast to specified</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
-            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nb">slice</span><span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">shape</span> <span class="o">-</span> <span class="n">pad_to</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">pad_to</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">_padding</span>
-                <span class="p">)</span>
-            <span class="p">]</span>
-
-            <span class="c1"># if merger has logits dimension, add another slicing in front</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-                <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
-
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -2472,6 +2612,10 @@ If passed None sets a boxcar window (constant 1s).</li>
 
 <ul>
 <li><strong>unpad (bool):</strong>  If unpad is True, removes padded array elements. Default is True.</li>
+<li><strong>extra_padding (tuple of tuples of two ints, optional):</strong>  Specifies padding that was applied to the data.
+Number of values padded to the edges of each axis.
+((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+Default is None.</li>
 <li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed. Default is False.</li>
 <li><strong>normalize_by_weights (bool):</strong>  If normalize is True, the accumulated data will be divided by weights. Default is True.</li>
 <li><strong>dtype (np.dtype):</strong>  Specify dtype for the final . Default is <code>np.float64</code>.</li>

@@ -560,24 +560,28 @@ class TestTiling(unittest.TestCase):
             ([0, 90], [3, 100]), tiler2.get_tile_bbox_position(tile_id, True)
         )
 
-    def test_apply_padding(self):
+    def test_calculate_padding(self):
 
-        t1 = Tiler(data_shape=self.data.shape, tile_shape=(3,), mode="reflect")
+        # no overlap, even
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [110])
+        np.testing.assert_equal(padding, [(5, 5)])
 
-        # without apply padding the padding is done based on data in the tile
-        # last tile has only one 99, but when reflect padded becomes 99, 99, 99
-        np.testing.assert_equal(t1.get_tile(self.data, 0), [0, 1, 2])
-        np.testing.assert_equal(t1.get_tile(self.data, len(t1) - 1), [99, 99, 99])
+        # no overlap, odd
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(13,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [113])
+        np.testing.assert_equal(padding, [(6, 7)])
 
-        # with apply padding, padding should now correctly take into account data outside the tile
-        data = t1.apply_padding(self.data, mode="reflect")
-        np.testing.assert_equal(t1.get_tile(data, 0), [1, 0, 1])
-        np.testing.assert_equal(t1.get_tile(data, len(t1) - 1), [98, 99, 98])
+        # overlap, even
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,), overlap=0.2)
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [108])
+        np.testing.assert_equal(padding, [(4, 4)])
 
-        # giving data with wrong (in this case old) data shape should raise an exception
-        with self.assertRaises(ValueError):
-            t1.apply_padding(self.data)
-
-        # re applying padding should show a warning
-        with self.assertWarns(Warning):
-            t1.apply_padding(data, mode="reflect")
+        # overlap, odd
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,), overlap=0.3)
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [107])
+        np.testing.assert_equal(padding, [(3, 4)])
