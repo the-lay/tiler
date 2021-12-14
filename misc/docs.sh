@@ -11,4 +11,4 @@ rm docs/index.html
 mv docs/tiler.html docs/index.html
 
 # remove unused search index
-rm docs/search.js
+rm -f docs/search.js

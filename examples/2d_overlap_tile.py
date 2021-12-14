@@ -12,69 +12,68 @@ from tiler import Tiler, Merger
 
 # Loading image
 # Photo by Christian Holzinger on Unsplash: https://unsplash.com/photos/CUY_YHhCFl4
-image = np.array(Image.open('example_image.jpg'))  # 1280x1920x3
+image = np.array(Image.open("example_image.jpg"))  # 1280x1920x3
 
-# Padding image
-# Overlap tile strategy assumes we only use the small, non-overlapping, middle part of tile.
-# Assuming we want tiles of size 128x128 and we want to only use middle 64x64,
-# we should pad the image by 32 from each side, using reflect mode
-padded_image = np.pad(image, ((32, 32), (32, 32), (0, 0)), mode='reflect')
-
-# Specifying tiling parameters
+# Overlap tile strategy assumes we only use the small, non-overlapping, middle part of a tile.
+# Assuming we want to use centre 64x64 square, we should specify
 # The overlap should be 0.5, 64 or explicitly (64, 64, 0)
-tiler = Tiler(data_shape=padded_image.shape, tile_shape=(128, 128, 3),
-              overlap=(64, 64, 0), channel_dimension=2)
+tiler = Tiler(
+    data_shape=image.shape,
+    tile_shape=(128, 128, 3),
+    overlap=(64, 64, 0),
+    channel_dimension=2,
+)
+
+# Calculate and apply extra padding, as well as adjust tiling parameters
+new_shape, padding = tiler.calculate_padding()
+tiler.recalculate(data_shape=new_shape)
+padded_image = np.pad(image, padding, mode="reflect")
 
 # Specifying merging parameters
 # You can define overlap-tile window explicitly, i.e.
-# window = np.zeros((128, 128, 3))
-# window[32:-32, 32:-32, :] = 1
-# merger = Merger(tiler=tiler, window=window)
-# or you can use overlap-tile window which will do that automatically based on tiler.overlap
-merger = Merger(tiler=tiler, window='overlap-tile')
+# >>> window = np.zeros((128, 128, 3))
+# >>> window[32:-32, 32:-32, :] = 1
+# >>> merger = Merger(tiler=tiler, window=window)
+# or you can use window="overlap-tile"
+# it will automatically calculate such window based on tiler.overlap and applied padding
+merger = Merger(tiler=tiler, window="overlap-tile")
 
 # Let's define a function that will be applied to each tile
-def process(patch: np.ndarray, sanity_check: bool = True) -> np.ndarray:
+# For this example, let's black out the sides that should be "cropped" by window function
+# as a way to confirm that only the middle parts are being merged
+def process(patch: np.ndarray) -> np.ndarray:
+    patch[:32, :, :] = 0
+    patch[-32:, :, :] = 0
+    patch[:, :32, :] = 0
+    patch[:, -32:, :] = 0
+    return patch
 
-    # One example can be a sanity check
-    # Make the parts that should be removed black
-    # There should not appear any black spots in the final merged image
-    if sanity_check:
-        patch[:32, :, :] = 0
-        patch[-32:, :, :] = 0
-        patch[:, :32, :] = 0
-        patch[:, -32:, :] = 0
-        return patch
-
-    # Another example can be to just modify the whole patch
-    # Using PIL, we adjust the color balance
-    enhancer = ImageEnhance.Color(Image.fromarray(patch))
-    return np.array(enhancer.enhance(5.0))
 
 # Iterate through all the tile and apply the processing function
 # as well as add them back to the merger
-for tile_id, tile in tiler(padded_image):
+for tile_id, tile in tiler(padded_image, progress_bar=True):
     processed_tile = process(tile)
     merger.add(tile_id, processed_tile)
 
-# Merger.merge() returns unpadded from tiler image, but we still need to unpad line#21
-final_image = merger.merge().astype(np.uint8)
-final_unpadded_image = final_image[32:-32, 32:-32, :]
+# Merge processed tiles
+final_image = merger.merge(extra_padding=padding, dtype=image.dtype)
+
+print(f"Sanity check: {np.all(image == final_image)}")
 
 # Show the final merged image, weights and number of times each pixel was seen in tiles
-fig, ax = plt.subplots(3, 2, sharex=True, sharey=True)
-ax[0, 0].set_title('Original image')
+fig, ax = plt.subplots(3, 2)
+ax[0, 0].set_title("Original image")
 ax[0, 0].imshow(image)
-ax[0, 1].set_title('Final unpadded image')
-ax[0, 1].imshow(final_unpadded_image)
+ax[0, 1].set_title("Final merged image")
+ax[0, 1].imshow(final_image)
 
-ax[1, 0].set_title('Padded image')
+ax[1, 0].set_title("Padded image")
 ax[1, 0].imshow(padded_image)
-ax[1, 1].set_title('Merged image')
-ax[1, 1].imshow(final_image)
+ax[1, 1].set_title("Overlap-tile window")
+ax[1, 1].imshow(merger.window)
 
-ax[2, 0].set_title('Weights sum')
+ax[2, 0].set_title("Weights sum")
 ax[2, 0].imshow(merger.weights_sum[:, :, 0], vmin=0, vmax=merger.weights_sum.max())
-ax[2, 1].set_title('Pixel visits')
+ax[2, 1].set_title("Pixel visits")
 ax[2, 1].imshow(merger.data_visits[:, :, 0], vmin=0, vmax=merger.data_visits.max())
 plt.show()

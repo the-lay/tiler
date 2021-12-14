@@ -131,8 +131,7 @@ class TestTiling(unittest.TestCase):
             Tiler(data_shape=(2, 100), tile_shape=(1, 64), overlap=32, mode="drop")
 
         # Drop mode with tile shape bigger than data shape
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+        with self.assertWarns(Warning):
             tiler = Tiler(data_shape=(1, 63), tile_shape=(1, 64), mode="drop")
             self.assertEqual(tiler.n_tiles, 0)
 
@@ -289,6 +288,8 @@ class TestTiling(unittest.TestCase):
             tiler.get_tile(self.data, len(tiler))
         with self.assertRaises(IndexError):
             tiler.get_tile(self.data, -1)
+        with self.assertRaises(ValueError):
+            tiler.get_tile(np.zeros((self.n_elements + 1,)), 0)
 
         # copy test
         t = tiler.get_tile(self.data, 0, copy_data=True)
@@ -397,8 +398,25 @@ class TestTiling(unittest.TestCase):
         self.assertEqual(len(tiler), len(expected_split))
         np.testing.assert_equal(expected_split, calculated_split)
 
+        # Case 2b
+        # Float overlap + channel dimension
+        c_data = np.expand_dims(self.data, 0)
+        tiler = Tiler(
+            data_shape=c_data.shape,
+            tile_shape=(
+                1,
+                tile_size,
+            ),
+            overlap=overlap,
+            channel_dimension=0,
+        )
+        expected_split = np.expand_dims(expected_split, 0)
+        calculated_split = np.expand_dims(calculated_split, 0)
+        self.assertEqual(len(tiler), expected_split.shape[1])
+        np.testing.assert_equal(expected_split, calculated_split)
+
         # Case 3
-        # Overlap is provided as tuple or list
+        # Overlap is provided as tuple, list or np.ndarray
         # Let's try a slightly more complicated test case with a channel dimension
         tile_size = 10
         data = np.vstack((self.data, self.data * 2, self.data * 3))
@@ -541,3 +559,29 @@ class TestTiling(unittest.TestCase):
         np.testing.assert_equal(
             ([0, 90], [3, 100]), tiler2.get_tile_bbox_position(tile_id, True)
         )
+
+    def test_calculate_padding(self):
+
+        # no overlap, even
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [110])
+        np.testing.assert_equal(padding, [(5, 5)])
+
+        # no overlap, odd
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(13,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [113])
+        np.testing.assert_equal(padding, [(6, 7)])
+
+        # overlap, even
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,), overlap=0.2)
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [108])
+        np.testing.assert_equal(padding, [(4, 4)])
+
+        # overlap, odd
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,), overlap=0.3)
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [107])
+        np.testing.assert_equal(padding, [(3, 4)])

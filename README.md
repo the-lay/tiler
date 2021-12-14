@@ -15,7 +15,8 @@ _________________
 ⚠️ **Please note: work in progress, things will change and/or break!** ⚠️
 _________________
 
-This python package provides functions for tiling/patching and subsequent merging of NumPy arrays.
+This python package provides consistent and user-friendly
+functions for tiling/patching and subsequent merging of NumPy arrays.
 
 Such tiling is often required for various heavy image-processing tasks
 such as semantic segmentation in deep learning, especially in domains where images do not fit into GPU memory
@@ -24,12 +25,12 @@ such as semantic segmentation in deep learning, especially in domains where imag
 
 Features
 -------------
- - N-dimensional *(note: currently tile shape must have the same number of dimensions as the array)*
+ - N-dimensional
  - Optional in-place tiling
- - Optional channel dimension, dimension that is not tiled
- - Optional batching
+ - Optional channel dimension (dimension that is not tiled)
+ - Optional tile batching
  - Tile overlapping
- - Access individual tiles with iterator or a getter
+ - Access individual tiles with an iterator or a getter
  - Tile merging, with optional window functions/tapering
 
 

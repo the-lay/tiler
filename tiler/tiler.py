@@ -30,9 +30,9 @@ class Tiler:
 
     def __init__(
         self,
-        data_shape: Union[Tuple, List],
-        tile_shape: Union[Tuple, List],
-        overlap: Union[int, float, Tuple, List] = 0,
+        data_shape: Union[Tuple, List, np.ndarray],
+        tile_shape: Union[Tuple, List, np.ndarray],
+        overlap: Union[int, float, Tuple, List, np.ndarray] = 0,
         channel_dimension: Optional[int] = None,
         mode: str = "constant",
         constant_value: float = 0.0,
@@ -41,59 +41,88 @@ class Tiler:
         You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,
         with `Tiler.iterate()` (or the alias `Tiler.__call__()`).
 
-        TODO:
-            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) < len(data_shape)
-            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)
-            - allow other numpy padding modes (maximum, minimum, mean, median)
-
         Args:
-            data_shape (tuple or list): Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].
+            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
                 If there is a channel dimension, it should be included in the shape.
 
-            tile_shape (tuple or list): Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].
+            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
                 Tile must have the same number of dimensions as data.
 
-            overlap (int, float, tuple or list): Specifies overlap between tiles.
+            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.
                 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
                 If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
-                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
+                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).
                 Default is `0`.
 
             channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.
                 Usually it is the last or the first dimension of the array.
-                Negative indexing (`-len(data_shape)` to `-1` inclusive) is translated into corresponding indices.
+                Negative indexing (`-len(data_shape)` to `-1` inclusive) is allowed.
                 Default is `None`, no channel dimension in the data.
 
             mode (str): Defines how the data will be tiled.
-                Must be one of the supported `Tiler.TILING_MODES`.
+                Must be one of the supported `Tiler.TILING_MODES`. Defaults to `"constant"`.
 
             constant_value (float): Specifies the value of padding when `mode='constant'`.
                 Default is `0.0`.
         """
 
+        self.recalculate(
+            data_shape=data_shape,
+            tile_shape=tile_shape,
+            overlap=overlap,
+            channel_dimension=channel_dimension,
+            mode=mode,
+            constant_value=constant_value,
+        )
+
+    def recalculate(
+        self,
+        data_shape: Optional[Union[Tuple, List, np.ndarray]] = None,
+        tile_shape: Optional[Union[Tuple, List, np.ndarray]] = None,
+        overlap: Optional[Union[int, float, Tuple, List, np.ndarray]] = None,
+        channel_dimension: Optional[int] = None,
+        mode: Optional[str] = None,
+        constant_value: Optional[float] = None,
+    ) -> None:
+        """Recalculates tiling for new given settings.
+        If a passed value is None, use previously given value.
+
+        For more information about each argument see `Tiler.__init__()` documentation.
+        """
+
         # Data and tile shapes
-        self.data_shape = np.asarray(data_shape).astype(int)
-        self.tile_shape = np.asarray(tile_shape).astype(int)
+        if data_shape is not None:
+            self.data_shape = np.asarray(data_shape).astype(int)
+        if tile_shape is not None:
+            self.tile_shape = np.asarray(tile_shape).astype(int)
         self._n_dim: int = len(self.data_shape)
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError(
                 "Tile and data shapes must be tuple or lists of positive numbers."
             )
         if self.tile_shape.size != self.data_shape.size:
-            raise ValueError("Tile and data shapes must have the same length.")
+            raise ValueError(
+                "Tile and data shapes must have the same length. "
+                "Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, "
+                "e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1)."
+            )
 
         # Tiling mode
-        self.mode = mode
+        if mode is not None:
+            self.mode = mode
         if self.mode not in self.TILING_MODES:
             raise ValueError(
                 f"{self.mode} is an unsupported tiling mode, please check the documentation."
             )
 
         # Constant value used for constant tiling mode
-        self.constant_value = constant_value
+        if constant_value is not None:
+            self.constant_value = constant_value
 
         # Channel dimension
-        self.channel_dimension = channel_dimension
+        # Channel dimension can be None which means we need to check for init too
+        if not hasattr(self, "channel_dimension") or channel_dimension is not None:
+            self.channel_dimension = channel_dimension
         if self.channel_dimension:
             if (self.channel_dimension >= self._n_dim) or (
                 self.channel_dimension < -self._n_dim
@@ -107,7 +136,8 @@ class Tiler:
                 self.channel_dimension = self._n_dim + self.channel_dimension
 
         # Overlap and step
-        self.overlap = overlap
+        if overlap is not None:
+            self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap > 1.0:
                 raise ValueError(
@@ -135,17 +165,21 @@ class Tiler:
             if self.channel_dimension is not None:
                 self._tile_overlap[self.channel_dimension] = 0
 
-        elif isinstance(self.overlap, list) or isinstance(self.overlap, tuple):
+        elif (
+            isinstance(self.overlap, list)
+            or isinstance(self.overlap, tuple)
+            or isinstance(self.overlap, np.ndarray)
+        ):
             if np.any(np.array(self.overlap) < 0) or np.any(
                 self.overlap >= self.tile_shape
             ):
-                raise ValueError("Overlap size much be smaller than tile_shape.")
+                raise ValueError("Overlap size must be smaller than tile_shape.")
 
             self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
 
         else:
             raise ValueError(
-                "Unsupported overlap mode (not float, int, list or tuple)."
+                "Unsupported overlap mode (not float, int, list, tuple or np.ndarray)."
             )
 
         self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(
@@ -189,7 +223,7 @@ class Tiler:
         if self.n_tiles == 0:
             warnings.warn(
                 f"Tiler (mode={mode}, overlap={overlap}) will split data_shape {data_shape} "
-                f"into zero tiles (tile_shape={tile_shape})"
+                f"into zero tiles (tile_shape={tile_shape})."
             )
 
     def __len__(self) -> int:
@@ -213,6 +247,17 @@ class Tiler:
             f"\n\tMode: {self.mode}"
             f"\n\tChannel dimension: {self.channel_dimension}"
         )
+
+    def __call__(
+        self,
+        data: Union[np.ndarray, Callable[..., np.ndarray]],
+        progress_bar: bool = False,
+        batch_size: int = 0,
+        drop_last: bool = False,
+        copy_data: bool = True,
+    ) -> Generator[Tuple[int, np.ndarray], None, None]:
+        """Alias for `Tiler.iterate()`"""
+        return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
 
     def iterate(
         self,
@@ -298,17 +343,6 @@ class Tiler:
                 )
                 yield tile_i // batch_size, tiles
 
-    def __call__(
-        self,
-        data: Union[np.ndarray, Callable[..., np.ndarray]],
-        progress_bar: bool = False,
-        batch_size: int = 0,
-        drop_last: bool = False,
-        copy_data: bool = True,
-    ) -> Generator[Tuple[int, np.ndarray], None, None]:
-        """Alias for `Tiler.iterate()`"""
-        return self.iterate(data, progress_bar, batch_size, drop_last, copy_data)
-
     def get_tile(
         self,
         data: Union[np.ndarray, Callable[..., np.ndarray]],
@@ -352,6 +386,15 @@ class Tiler:
             raise IndexError(
                 f"Out of bounds, there is no tile {tile_id}."
                 f"There are {len(self) - 1} tiles, starting from index 0."
+            )
+
+        if (
+            isinstance(data, np.ndarray)
+            and np.not_equal(data.shape, self.data_shape).any()
+        ):
+            raise ValueError(
+                f"Shape of provided data array ({data.shape}) does not match "
+                f"same as Tiler's data_shape ({tuple(self.data_shape)})."
             )
 
         # get tile data
@@ -463,3 +506,36 @@ class Tiler:
                 ~(np.arange(self._n_dim) == self.channel_dimension)
             ]
         return self._indexing_shape
+
+    def calculate_padding(self) -> Tuple[np.ndarray, List[Tuple[int, int]]]:
+        """Calculate a frame padding for the current Tiler parameters.
+        The padding is overlap//2 or tile_step//2, whichever is bigger.
+        The method returns a tuple (new_shape, padding) where padding is
+        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.
+
+        In the usual workflow, you'd recalculate tiling settings and then apply padding, prior to tiling.
+        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:
+        ```python
+        >>> tiler = Tiler(...)
+        >>> merger = Merger(tiler, ...)
+        >>> new_shape, padding = tiler.calculate_padding()
+        >>> tiler.recalculate(data_shape=new_shape)
+        >>> padded_data = np.pad(data, pad_width=padding, mode="reflect")
+        >>> for tile_id, tile in tiler(padded_data):
+        >>>     processed_tile = process(tile)
+        >>>     merger.add(tile_id, processed_tile)
+        >>> final_image = merger.merge(extra_padding=padding)
+        ```
+        Return:
+            np.ndarray: Resulting shape when padding is applied.
+            List[Tuple[int, int]]: Calculating padding.
+        """
+
+        # Choosing padding
+        pre_pad = np.maximum(self._tile_step // 2, self._tile_overlap // 2)
+        post_pad = pre_pad + np.mod(self._tile_step, 2)
+
+        new_shape = pre_pad + self.data_shape + post_pad
+        padding = list(zip(pre_pad, post_pad))
+
+        return new_shape, padding

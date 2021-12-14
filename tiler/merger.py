@@ -1,4 +1,4 @@
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Optional
 import warnings
 
 import numpy as np
@@ -16,7 +16,6 @@ class Merger:
         "hamming",
         "hann",
         "bartlett",
-        "flattop",
         "parzen",
         "bohman",
         "blackmanharris",
@@ -39,8 +38,6 @@ class Merger:
         Hann window.
     - 'bartlett'  
         Bartlett window.
-    - 'flattop'  
-        Flat top window.
     - 'parzen'  
         Parzen window.
     - 'bohman'  
@@ -53,13 +50,22 @@ class Merger:
         Bartlett-Hann window.    
     - 'overlap-tile'  
         Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
-        (Ronneberger et al. 2015, U-Net paper)
+        Requires applying padding calculated with `Tiler.calculate_padding()` for correct results.
+        (based on Ronneberger et al. 2015, U-Net paper)
     """
 
     def __init__(
-        self, tiler: Tiler, window: Union[None, str, np.ndarray] = None, logits: int = 0
+        self,
+        tiler: Tiler,
+        window: Union[None, str, np.ndarray] = None,
+        logits: int = 0,
+        save_visits: bool = True,
     ):
-        """Merger precomputes everything for merging together tiles created by given Tiler.
+        """Merger holds cumulative result buffers for merging tiles created by a given Tiler
+        and the window function that is applied to added tiles.
+
+        There are two required np.float64 buffers: `self.data` and `self.weights_sum`
+        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).
 
         TODO:
             - generate window depending on tile border type
@@ -72,6 +78,10 @@ class Merger:
                 Default is None which creates a boxcar window (constant 1s).
 
             logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.
+
+            save_visits (bool): Specify whether to save which elements has been modified and how many times in
+                `self.data_visits`. Can be disabled to save some memory. Default is `True`.
+
         """
 
         self.tiler = tiler
@@ -85,7 +95,7 @@ class Merger:
 
         # Generate data and normalization arrays
         self.data = self.data_visits = self.weights_sum = None
-        self.reset()
+        self.reset(save_visits)
 
         # for the future borders generation
         # 1d = 3 types of tiles: 2 corners and middle
@@ -101,10 +111,10 @@ class Merger:
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
         """Generate n-dimensional window according to the given shape.
         Adapted from: https://stackoverflow.com/a/53588640/1668421
-        We use scipy to generate windows (scipy.signal.get_window()).
 
         Args:
             window (str): Specifies window function. Must be one of `Merger.SUPPORTED_WINDOWS`.
+
             shape (tuple or list): Shape of the requested window.
 
         Returns:
@@ -173,10 +183,14 @@ class Merger:
                 f"Unsupported type for window function ({type(window)}), expected str or np.ndarray."
             )
 
-    def reset(self) -> None:
-        """Reset data and normalization buffers.
+    def reset(self, save_visits: bool = True) -> None:
+        """Reset data, weights and optional data_visits buffers.
 
         Should be done after finishing merging full tile set and before starting processing the next tile set.
+
+        Args:
+            save_visits (bool): Specify whether to save which elements has been modified and how many times in
+                `self.data_visits`. Can be disabled to save some memory. Default is `True`.
 
         Returns:
             None
@@ -186,21 +200,23 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros((self.logits, *padded_data_shape))
+            self.data = np.zeros((self.logits, *padded_data_shape), dtype=np.float64)
         else:
-            self.data = np.zeros(padded_data_shape)
+            self.data = np.zeros(padded_data_shape, dtype=np.float64)
 
-        # Normalization array holds the number of times each element was visited
-        self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
+        # Data visits holds the number of times each element was assigned
+        if save_visits:
+            self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
 
         # Total data window (weight) coefficients
-        self.weights_sum = np.zeros(padded_data_shape)
+        self.weights_sum = np.zeros(padded_data_shape, dtype=np.float64)
 
     def add(self, tile_id: int, data: np.ndarray) -> None:
         """Adds `tile_id`-th tile into Merger.
 
         Args:
             tile_id (int): Specifies which tile it is.
+
             data (np.ndarray): Specifies tile data.
 
         Returns:
@@ -242,7 +258,6 @@ class Merger:
             for diff in shape_diff
         ]
 
-        # TODO check for self.data and data dtypes mismatch?
         if self.logits > 0:
             self.data[tuple([slice(None, None, None)] + sl)] += (
                 data * self.window[tuple(win_sl[1:])]
@@ -251,14 +266,18 @@ class Merger:
         else:
             self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
-        self.data_visits[tuple(sl)] += 1
+
+        if self.data_visits is not None:
+            self.data_visits[tuple(sl)] += 1
 
     def add_batch(self, batch_id: int, batch_size: int, data: np.ndarray) -> None:
         """Adds `batch_id`-th batch of `batch_size` tiles into Merger.
 
         Args:
             batch_id (int): Specifies batch number, must be >= 0.
+
             batch_size (int): Specifies batch size, must be >= 0.
+
             data (np.ndarray): Tile data array, must have shape `[batch, *tile_shape]
 
         Returns:
@@ -282,30 +301,82 @@ class Merger:
         ):
             self.add(tile_i, data[data_i])
 
-    def merge(self, unpad: bool = True, argmax: bool = False) -> np.ndarray:
-        """Returns final merged data array obtained from added tiles.
+    def _unpad(
+        self, data: np.ndarray, extra_padding: Optional[List[Tuple[int, int]]] = None
+    ):
+        """Slices/unpads data according to merger and tiler settings, as well as additional padding.
 
         Args:
-            unpad (bool): If unpad is True, removes padded array elements. Default is True.
-            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
+            data (np.ndarray): Data to be sliced.
 
-        Returns:
-            np.ndarray: Final merged data array obtained from added tiles.
+            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.
+                Number of values padded to the edges of each axis.
+                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+                Default is None.
         """
-        data = self.data
-
-        if unpad:
+        if extra_padding:
+            sl = [
+                slice(pad_from, shape - pad_to)
+                for shape, (pad_from, pad_to) in zip(
+                    self.tiler.data_shape, extra_padding
+                )
+            ]
+        else:
             sl = [
                 slice(None, self.tiler.data_shape[i])
                 for i in range(len(self.tiler.data_shape))
             ]
 
-            if self.logits:
-                sl = [slice(None, None, None)] + sl
+        # if merger has logits dimension, add another slicing in front
+        if self.logits:
+            sl = [slice(None, None, None)] + sl
 
-            data = data[tuple(sl)]
+        return data[tuple(sl)]
+
+    def merge(
+        self,
+        unpad: bool = True,
+        extra_padding: Optional[List[Tuple[int, int]]] = None,
+        argmax: bool = False,
+        normalize_by_weights: bool = True,
+        dtype: np.dtype = np.float64,
+    ) -> np.ndarray:
+        """Returns merged data array obtained from added tiles.
+
+        Args:
+            unpad (bool): If unpad is True, removes padded array elements. Default is True.
+
+            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.
+                Number of values padded to the edges of each axis.
+                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+                Default is None.
+
+            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
+
+            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.
+
+            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.
+
+        Returns:
+            np.ndarray: Final merged data array obtained from added tiles.
+        """
+
+        data = self.data
+
+        if normalize_by_weights:
+            # ignoring division by zero
+            # alternatively, set values < atol to 1
+            # https://github.com/the-lay/tiler/blob/46e948bb2bd7a909e954baf87a0c15b384109fde/tiler/merger.py#L314
+            # TODO check which way is better
+            #  ignoring should be more precise without atol
+            #  but can hide other errors
+            with np.errstate(divide="ignore", invalid="ignore"):
+                data = np.nan_to_num(data / self.weights_sum)
+
+        if unpad:
+            data = self._unpad(data, extra_padding)
 
         if argmax:
             data = np.argmax(data, 0)
 
-        return data
+        return data.astype(dtype)

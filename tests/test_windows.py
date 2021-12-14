@@ -160,33 +160,6 @@ class TestBlackmanHarris(unittest.TestCase):
         )
 
 
-class TestFlatTop(unittest.TestCase):
-    def test_basic(self):
-        np.testing.assert_allclose(
-            _windows._flattop(6),
-            [
-                -0.000421051,
-                -0.0677142520762119,
-                0.6068721525762117,
-                0.6068721525762117,
-                -0.0677142520762119,
-                -0.000421051,
-            ],
-        )
-        np.testing.assert_allclose(
-            _windows._flattop(7),
-            [
-                -0.000421051,
-                -0.051263156,
-                0.19821053,
-                1.0,
-                0.19821053,
-                -0.051263156,
-                -0.000421051,
-            ],
-        )
-
-
 class TestBartlett(unittest.TestCase):
     def test_basic(self):
         np.testing.assert_allclose(_windows._bartlett(6), [0, 0.4, 0.8, 0.8, 0.4, 0])

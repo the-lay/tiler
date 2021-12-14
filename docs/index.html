@@ -3,20 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="pdoc 8.0.1" />
+    <meta name="generator" content="pdoc 6.4.2" />
     <title>tiler API documentation</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%2244.5%202.5%2015%2015%22%3E%3Cpath%20d%3D%22M49.351%2021.041c-.233-.721-.546-2.408-.772-4.076-.042-.09-.067-.187-.046-.288-.166-1.347-.277-2.625-.241-3.351-1.378-1.008-2.271-2.586-2.271-4.362%200-.976.272-1.935.788-2.774.057-.094.122-.18.184-.268-.033-.167-.052-.339-.052-.516%200-1.477%201.202-2.679%202.679-2.679.791%200%201.496.352%201.987.9a6.3%206.3%200%200%201%201.001.029c.492-.564%201.207-.929%202.012-.929%201.477%200%202.679%201.202%202.679%202.679a2.65%202.65%200%200%201-.269%201.148c.383.747.595%201.572.595%202.41%200%202.311-1.507%204.29-3.635%205.107.037.699.147%202.27.423%203.294l.137.461c.156%202.136-4.612%205.166-5.199%203.215zm.127-4.919a4.78%204.78%200%200%200%20.775-.584c-.172-.115-.505-.254-.88-.378zm.331%202.302l.828-.502c-.202-.143-.576-.328-.984-.49zm.45%202.157l.701-.403c-.214-.115-.536-.249-.891-.376l.19.779zM49.13%204.141c0%20.152.123.276.276.276s.275-.124.275-.276-.123-.276-.276-.276-.275.124-.275.276zm.735-.389a1.15%201.15%200%200%201%20.314.783%201.16%201.16%200%200%201-1.162%201.162c-.457%200-.842-.27-1.032-.653-.026.117-.042.238-.042.362a1.68%201.68%200%200%200%201.679%201.679%201.68%201.68%200%200%200%201.679-1.679c0-.843-.626-1.535-1.436-1.654zm3.076%201.654a1.68%201.68%200%200%200%201.679%201.679%201.68%201.68%200%200%200%201.679-1.679c0-.037-.009-.072-.011-.109-.21.3-.541.508-.935.508a1.16%201.16%200%200%201-1.162-1.162%201.14%201.14%200%200%201%20.474-.912c-.015%200-.03-.005-.045-.005-.926.001-1.679.754-1.679%201.68zm1.861-1.265c0%20.152.123.276.276.276s.275-.124.275-.276-.123-.276-.276-.276-.275.124-.275.276zm1.823%204.823c0-.52-.103-1.035-.288-1.52-.466.394-1.06.64-1.717.64-1.144%200-2.116-.725-2.499-1.738-.383%201.012-1.355%201.738-2.499%201.738-.867%200-1.631-.421-2.121-1.062-.307.605-.478%201.267-.478%201.942%200%202.486%202.153%204.51%204.801%204.51s4.801-2.023%204.801-4.51zm-3.032%209.156l-.146-.492c-.276-1.02-.395-2.457-.444-3.268a6.11%206.11%200%200%201-1.18.115%206.01%206.01%200%200%201-2.536-.562l.006.175c.802.215%201.848.612%202.021%201.25.079.295-.021.601-.274.837l-.598.501c.667.304%201.243.698%201.311%201.179.02.144.022.507-.393.787l-.564.365c1.285.521%201.361.96%201.381%201.126.018.142.011.496-.427.746l-.854.489c.064-1.19%201.985-2.585%202.697-3.248zM49.34%209.925c0-.667%201-.667%201%200%200%20.653.818%201.205%201.787%201.205s1.787-.552%201.787-1.205c0-.667%201-.667%201%200%200%201.216-1.25%202.205-2.787%202.205s-2.787-.989-2.787-2.205zm-.887-7.633c-.093.077-.205.114-.317.114a.5.5%200%200%201-.318-.886L49.183.397a.5.5%200%200%201%20.703.068.5.5%200%200%201-.069.703zm7.661-.065c-.086%200-.173-.022-.253-.068l-1.523-.893c-.575-.337-.069-1.2.506-.863l1.523.892a.5.5%200%200%201%20.179.685c-.094.158-.261.247-.432.247z%22%20fill%3D%22%233bb300%22/%3E%3C/svg%3E"/>
 
 
-<style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
-<style>/*! pygments syntax highlighting */pre{line-height:125%;}td.linenos pre{color:#000000; background-color:#f0f0f0; padding-left:5px; padding-right:5px;}span.linenos{color:#000000; background-color:#f0f0f0; padding-left:5px; padding-right:5px;}td.linenos pre.special{color:#000000; background-color:#ffffc0; padding-left:5px; padding-right:5px;}span.linenos.special{color:#000000; background-color:#ffffc0; padding-left:5px; padding-right:5px;}.pdoc .hll{background-color:#ffffcc}.pdoc{background:#f8f8f8;}.pdoc .c{color:#408080; font-style:italic}.pdoc .err{border:1px solid #FF0000}.pdoc .k{color:#008000; font-weight:bold}.pdoc .o{color:#666666}.pdoc .ch{color:#408080; font-style:italic}.pdoc .cm{color:#408080; font-style:italic}.pdoc .cp{color:#BC7A00}.pdoc .cpf{color:#408080; font-style:italic}.pdoc .c1{color:#408080; font-style:italic}.pdoc .cs{color:#408080; font-style:italic}.pdoc .gd{color:#A00000}.pdoc .ge{font-style:italic}.pdoc .gr{color:#FF0000}.pdoc .gh{color:#000080; font-weight:bold}.pdoc .gi{color:#00A000}.pdoc .go{color:#888888}.pdoc .gp{color:#000080; font-weight:bold}.pdoc .gs{font-weight:bold}.pdoc .gu{color:#800080; font-weight:bold}.pdoc .gt{color:#0044DD}.pdoc .kc{color:#008000; font-weight:bold}.pdoc .kd{color:#008000; font-weight:bold}.pdoc .kn{color:#008000; font-weight:bold}.pdoc .kp{color:#008000}.pdoc .kr{color:#008000; font-weight:bold}.pdoc .kt{color:#B00040}.pdoc .m{color:#666666}.pdoc .s{color:#BA2121}.pdoc .na{color:#7D9029}.pdoc .nb{color:#008000}.pdoc .nc{color:#0000FF; font-weight:bold}.pdoc .no{color:#880000}.pdoc .nd{color:#AA22FF}.pdoc .ni{color:#999999; font-weight:bold}.pdoc .ne{color:#D2413A; font-weight:bold}.pdoc .nf{color:#0000FF}.pdoc .nl{color:#A0A000}.pdoc .nn{color:#0000FF; font-weight:bold}.pdoc .nt{color:#008000; font-weight:bold}.pdoc .nv{color:#19177C}.pdoc .ow{color:#AA22FF; font-weight:bold}.pdoc .w{color:#bbbbbb}.pdoc .mb{color:#666666}.pdoc .mf{color:#666666}.pdoc .mh{color:#666666}.pdoc .mi{color:#666666}.pdoc .mo{color:#666666}.pdoc .sa{color:#BA2121}.pdoc .sb{color:#BA2121}.pdoc .sc{color:#BA2121}.pdoc .dl{color:#BA2121}.pdoc .sd{color:#BA2121; font-style:italic}.pdoc .s2{color:#BA2121}.pdoc .se{color:#BB6622; font-weight:bold}.pdoc .sh{color:#BA2121}.pdoc .si{color:#BB6688; font-weight:bold}.pdoc .sx{color:#008000}.pdoc .sr{color:#BB6688}.pdoc .s1{color:#BA2121}.pdoc .ss{color:#19177C}.pdoc .bp{color:#008000}.pdoc .fm{color:#0000FF}.pdoc .vc{color:#19177C}.pdoc .vg{color:#19177C}.pdoc .vi{color:#19177C}.pdoc .vm{color:#19177C}.pdoc .il{color:#666666}</style>
-<style>/*! pdoc */:root{--pdoc-background:#fff;}.pdoc{--text:#212529;--muted:#6c757d;--link:#3660a5;--link-hover:#1659c5;--code:#f7f7f7;--active:#fff598;--accent:#eee;--accent2:#c1c1c1;--nav-hover:rgba(255, 255, 255, 0.5);--name:#0066BB;--def:#008800;--annotation:#007020;}body{background-color:var(--pdoc-background);}html, body{width:100%;height:100%;}@media (max-width:769px){#navtoggle{cursor:pointer;position:absolute;width:50px;height:40px;top:1rem;right:1rem;border-color:var(--text);color:var(--text);display:flex;opacity:0.8;}#navtoggle:hover{opacity:1;}#togglestate + div{display:none;}#togglestate:checked + div{display:inherit;}main, header{padding:2rem 3vw;}.git-button{display:none !important;}nav input[type="search"]:valid ~ *{display:none !important;}}@media (min-width:770px){:root{--sidebar-width:clamp(12.5rem, 28vw, 22rem);}nav{position:fixed;overflow:auto;height:100vh;width:var(--sidebar-width);}main, header{padding:3rem 2rem 3rem calc(var(--sidebar-width) + 3rem);width:calc(54rem + var(--sidebar-width));max-width:100%;}#navtoggle{display:none;}}#togglestate{display:none;}nav.pdoc{--pad:1.75rem;--indent:1.5rem;background-color:var(--accent);border-right:1px solid var(--accent2);box-shadow:0 0 20px rgba(50, 50, 50, .2) inset;padding:0 0 0 var(--pad);overflow-wrap:anywhere;scrollbar-width:thin; scrollbar-color:var(--accent2) transparent }nav.pdoc::-webkit-scrollbar{width:.4rem; }nav.pdoc::-webkit-scrollbar-thumb{background-color:var(--accent2); }nav.pdoc > div{padding:var(--pad) 0;}nav.pdoc .module-list-button{display:inline-flex;align-items:center;color:var(--text);border-color:var(--muted);margin-bottom:1rem;}nav.pdoc .module-list-button:hover{border-color:var(--text);}nav.pdoc input[type=search]{display:block;outline-offset:0;width:calc(100% - var(--pad));}nav.pdoc .logo{max-width:calc(100% - var(--pad));max-height:35vh;display:block;margin:0 auto 1rem;transform:translate(calc(-.5 * var(--pad)), 0);}nav.pdoc ul{list-style:none;padding-left:0;}nav.pdoc li{display:block;margin:0;padding:.2rem 0 .2rem var(--indent);transition:all 100ms;}nav.pdoc > div > ul > li{padding-left:0;}nav.pdoc li:hover{background-color:var(--nav-hover);}nav.pdoc a, nav.pdoc a:hover{color:var(--text);}nav.pdoc a{display:block;}nav.pdoc > h2:first-of-type{margin-top:1.5rem;}nav.pdoc .class:before{content:"class ";color:var(--muted);}nav.pdoc .function:after{content:"()";color:var(--muted);}nav.pdoc footer:before{content:"";display:block;width:calc(100% - var(--pad));border-top:solid var(--accent2) 1px;margin-top:1.5rem;padding-top:.5rem;}nav.pdoc footer{font-size:small;}html, main{scroll-behavior:smooth;}.pdoc{color:var(--text);box-sizing:border-box;line-height:1.5;background:none;}.pdoc .pdoc-button{display:inline-block;border:solid black 1px;border-radius:2px;font-size:.75rem;padding:calc(0.5em - 1px) 1em;transition:100ms all;}.pdoc .visually-hidden{position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;margin:-1px !important;overflow:hidden !important;clip:rect(0, 0, 0, 0) !important;white-space:nowrap !important;border:0 !important;}.pdoc h1, .pdoc h2, .pdoc h3{font-weight:300;margin:.3em 0;padding:.2em 0;}.pdoc a{text-decoration:none;color:var(--link);}.pdoc a:hover{color:var(--link-hover);}.pdoc blockquote{margin-left:2rem;}.pdoc pre{background-color:var(--code);border-top:1px solid var(--accent2);border-bottom:1px solid var(--accent2);margin-bottom:1em;padding:.5rem 0 .5rem .5rem;overflow-x:auto;}.pdoc code{color:var(--text);padding:.2em .4em;margin:0;font-size:85%;background-color:var(--code);border-radius:6px;}.pdoc a > code{color:inherit;}.pdoc pre > code{display:inline-block;font-size:inherit;background:none;border:none;padding:0;}.pdoc .modulename{margin-top:0;font-weight:bold;}.pdoc .modulename a{color:var(--link);transition:100ms all;}.pdoc .git-button{float:right;border:solid var(--link) 1px;}.pdoc .git-button:hover{background-color:var(--link);color:var(--pdoc-background);}.pdoc details{--shift:-40px;text-align:right;margin-top:var(--shift);margin-bottom:calc(0px - var(--shift));clear:both;filter:opacity(1);}.pdoc details:not([open]){height:0;overflow:visible;}.pdoc details > summary{font-size:.75rem;cursor:pointer;color:var(--muted);border-width:0;padding:0 .7em;display:inline-block;display:inline list-item;user-select:none;}.pdoc details > summary:focus{outline:0;}.pdoc details > div{margin-top:calc(0px - var(--shift) / 2);text-align:left;}.pdoc .docstring{margin-bottom:1.5rem;}.pdoc > section:first-of-type > .docstring{margin-bottom:3rem;}.pdoc .docstring pre{margin-left:1em;margin-right:1em;}.pdoc h1:target,.pdoc h2:target,.pdoc h3:target,.pdoc h4:target,.pdoc h5:target,.pdoc h6:target{background-color:var(--active);box-shadow:-1rem 0 0 0 var(--active);}.pdoc div:target > .attr,.pdoc section:target > .attr,.pdoc dd:target > a{background-color:var(--active);}.pdoc .attr:hover{filter:contrast(0.95);}.pdoc .headerlink{position:absolute;width:0;margin-left:-1.5rem;line-height:1.4rem;font-size:1.5rem;font-weight:normal;transition:all 100ms ease-in-out;opacity:0;}.pdoc .attr > .headerlink{margin-left:-2.5rem;}.pdoc *:hover > .headerlink,.pdoc *:target > .attr > .headerlink{opacity:1;}.pdoc .attr{display:block;color:var(--text);margin:1rem 0 .5rem;padding:.4rem 5rem .4rem 1rem;background-color:var(--accent);}.pdoc .classattr{margin-left:2rem;}.pdoc .name{color:var(--name);font-weight:bold;}.pdoc .def{color:var(--def);font-weight:bold;}.pdoc .signature{white-space:pre-wrap;}.pdoc .annotation{color:var(--annotation);}.pdoc .inherited{margin-left:2rem;}.pdoc .inherited dt{font-weight:700;}.pdoc .inherited dt, .pdoc .inherited dd{display:inline;margin-left:0;margin-bottom:.5rem;}.pdoc .inherited dd:not(:last-child):after{content:", ";}.pdoc .inherited .class:before{content:"class ";}.pdoc .inherited .function a:after{content:"()";}.pdoc .search-result .docstring{overflow:auto;max-height:25vh;}.pdoc .search-result.focused > .attr{background-color:var(--active);}.pdoc .attribution{margin-top:2rem;display:block;opacity:0.5;transition:all 200ms;filter:grayscale(100%);}.pdoc .attribution:hover{opacity:1;filter:grayscale(0%);}.pdoc .attribution img{margin-left:5px;height:35px;vertical-align:middle;width:70px;transition:all 200ms;}</style>
+<style type="text/css">/*! * Bootstrap Reboot v5.0.0-beta1 (https://getbootstrap.com/) * Copyright 2011-2020 The Bootstrap Authors * Copyright 2011-2020 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}[tabindex="-1"]:focus:not(:focus-visible){outline:0!important}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{text-decoration:underline;-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus{outline:dotted 1px;outline:-webkit-focus-ring-color auto 5px}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
+<style type="text/css">/*! pygments syntax highlighting */pre{line-height:125%;}td.linenos pre{color:#000000; background-color:#f0f0f0; padding-left:5px; padding-right:5px;}span.linenos{color:#000000; background-color:#f0f0f0; padding-left:5px; padding-right:5px;}td.linenos pre.special{color:#000000; background-color:#ffffc0; padding-left:5px; padding-right:5px;}span.linenos.special{color:#000000; background-color:#ffffc0; padding-left:5px; padding-right:5px;}.pdoc .hll{background-color:#ffffcc}.pdoc{background:#f8f8f8;}.pdoc .c{color:#408080; font-style:italic}.pdoc .err{border:1px solid #FF0000}.pdoc .k{color:#008000; font-weight:bold}.pdoc .o{color:#666666}.pdoc .ch{color:#408080; font-style:italic}.pdoc .cm{color:#408080; font-style:italic}.pdoc .cp{color:#BC7A00}.pdoc .cpf{color:#408080; font-style:italic}.pdoc .c1{color:#408080; font-style:italic}.pdoc .cs{color:#408080; font-style:italic}.pdoc .gd{color:#A00000}.pdoc .ge{font-style:italic}.pdoc .gr{color:#FF0000}.pdoc .gh{color:#000080; font-weight:bold}.pdoc .gi{color:#00A000}.pdoc .go{color:#888888}.pdoc .gp{color:#000080; font-weight:bold}.pdoc .gs{font-weight:bold}.pdoc .gu{color:#800080; font-weight:bold}.pdoc .gt{color:#0044DD}.pdoc .kc{color:#008000; font-weight:bold}.pdoc .kd{color:#008000; font-weight:bold}.pdoc .kn{color:#008000; font-weight:bold}.pdoc .kp{color:#008000}.pdoc .kr{color:#008000; font-weight:bold}.pdoc .kt{color:#B00040}.pdoc .m{color:#666666}.pdoc .s{color:#BA2121}.pdoc .na{color:#7D9029}.pdoc .nb{color:#008000}.pdoc .nc{color:#0000FF; font-weight:bold}.pdoc .no{color:#880000}.pdoc .nd{color:#AA22FF}.pdoc .ni{color:#999999; font-weight:bold}.pdoc .ne{color:#D2413A; font-weight:bold}.pdoc .nf{color:#0000FF}.pdoc .nl{color:#A0A000}.pdoc .nn{color:#0000FF; font-weight:bold}.pdoc .nt{color:#008000; font-weight:bold}.pdoc .nv{color:#19177C}.pdoc .ow{color:#AA22FF; font-weight:bold}.pdoc .w{color:#bbbbbb}.pdoc .mb{color:#666666}.pdoc .mf{color:#666666}.pdoc .mh{color:#666666}.pdoc .mi{color:#666666}.pdoc .mo{color:#666666}.pdoc .sa{color:#BA2121}.pdoc .sb{color:#BA2121}.pdoc .sc{color:#BA2121}.pdoc .dl{color:#BA2121}.pdoc .sd{color:#BA2121; font-style:italic}.pdoc .s2{color:#BA2121}.pdoc .se{color:#BB6622; font-weight:bold}.pdoc .sh{color:#BA2121}.pdoc .si{color:#BB6688; font-weight:bold}.pdoc .sx{color:#008000}.pdoc .sr{color:#BB6688}.pdoc .s1{color:#BA2121}.pdoc .ss{color:#19177C}.pdoc .bp{color:#008000}.pdoc .fm{color:#0000FF}.pdoc .vc{color:#19177C}.pdoc .vg{color:#19177C}.pdoc .vi{color:#19177C}.pdoc .vm{color:#19177C}.pdoc .il{color:#666666}</style>
+<style type="text/css">/*! pdoc */:root{--pdoc-background:#fff;}.pdoc{--text:#212529;--muted:#6c757d;--link:#3660a5;--link-hover:#1659c5;--code:#f7f7f7;--active:#fff598;--accent:#eee;--accent2:#c1c1c1;--nav-hover:rgba(255, 255, 255, 0.5);--name:#0066BB;--def:#008800;--annotation:#007020;}body{background-color:var(--pdoc-background);}html, body{width:100%;height:100%;}@media (max-width:769px){#navtoggle{cursor:pointer;position:absolute;width:50px;height:40px;top:1rem;right:1rem;border-color:var(--text);color:var(--text);display:flex;opacity:0.8;}#navtoggle:hover{opacity:1;}#togglestate + div{display:none;}#togglestate:checked + div{display:inherit;}main{padding:2rem 3vw;}.git-button{display:none !important;}}@media (min-width:770px){:root{--sidebar-width:clamp(12.5rem, 28vw, 22rem);}nav{position:fixed;overflow:auto;height:100vh;width:var(--sidebar-width);}main{padding:3rem 2rem 3rem calc(var(--sidebar-width) + 3rem);width:calc(54rem + var(--sidebar-width));max-width:100%;}#navtoggle{display:none;}}#togglestate{display:none;}nav.pdoc{--pad:1.75rem;--indent:1.5rem;background-color:var(--accent);border-right:1px solid var(--accent2);box-shadow:0 0 20px rgba(50, 50, 50, .2) inset;padding:0 0 0 var(--pad);overflow-wrap:anywhere;scrollbar-width:thin; scrollbar-color:var(--accent2) transparent }nav.pdoc::-webkit-scrollbar{width:.4rem; }nav.pdoc::-webkit-scrollbar-thumb{background-color:var(--accent2); }nav.pdoc > div{padding:var(--pad) 0;}nav.pdoc .module-list-button{display:inline-flex;align-items:center;color:var(--text);border-color:var(--muted);margin-bottom:1rem;}nav.pdoc .module-list-button:hover{border-color:var(--text);}nav.pdoc ul{list-style:none;padding-left:0;}nav.pdoc li{display:block;margin:0;padding:.2rem 0 .2rem var(--indent);transition:all 100ms;}nav.pdoc > div > ul > li{padding-left:0;}nav.pdoc li:hover{background-color:var(--nav-hover);}nav.pdoc a, nav.pdoc a:hover{color:var(--text);}nav.pdoc a{display:block;}nav.pdoc > h2:first-of-type{margin-top:1.5rem;}nav.pdoc .class:before{content:"class ";color:var(--muted);}nav.pdoc .function:after{content:"()";color:var(--muted);}html, main{scroll-behavior:smooth;}.pdoc{color:var(--text);box-sizing:border-box;line-height:1.5;background:none;}.pdoc .pdoc-button{display:inline-block;border:solid black 1px;border-radius:2px;font-size:.75rem;padding:calc(0.5em - 1px) 1em;transition:100ms all;}.pdoc .visually-hidden{position:absolute !important;width:1px !important;height:1px !important;padding:0 !important;margin:-1px !important;overflow:hidden !important;clip:rect(0, 0, 0, 0) !important;white-space:nowrap !important;border:0 !important;}.pdoc h1, .pdoc h2, .pdoc h3, .pdoc h4{font-weight:300;margin:.3em 0;padding:.2em 0;}.pdoc a{text-decoration:none;color:var(--link);}.pdoc a:hover{color:var(--link-hover);}.pdoc blockquote{margin-left:2rem;}.pdoc pre{background-color:var(--code);border-top:1px solid var(--accent2);border-bottom:1px solid var(--accent2);margin-bottom:1em;padding:.5rem 0 .5rem .5rem;overflow-x:auto;}.pdoc code{color:var(--text);padding:.2em .4em;margin:0;font-size:85%;background-color:var(--code);border-radius:6px;}.pdoc a > code{color:inherit;}.pdoc pre > code{display:inline-block;font-size:inherit;background:none;border:none;padding:0;}.pdoc .modulename{margin-top:0;font-weight:bold;}.pdoc .modulename a{color:var(--link);transition:100ms all;}.pdoc .git-button{float:right;border:solid var(--link) 1px;}.pdoc .git-button:hover{background-color:var(--link);color:var(--pdoc-background);}.pdoc details{--shift:-40px;text-align:right;margin-top:var(--shift);margin-bottom:calc(0px - var(--shift));clear:both;filter:opacity(1);}.pdoc details:not([open]){height:0;overflow:visible;}.pdoc details > summary{font-size:.75rem;cursor:pointer;color:var(--muted);border-width:0;padding:0 .7em;display:inline-block;display:inline list-item;user-select:none;}.pdoc details > summary:focus{outline:0;}.pdoc details > div{margin-top:calc(0px - var(--shift) / 2);text-align:left;}.pdoc .docstring{margin-bottom:1.5rem;}.pdoc > section:first-of-type > .docstring{margin-bottom:3rem;}.pdoc .docstring pre{margin-left:1em;margin-right:1em;}.pdoc h1:target,.pdoc h2:target,.pdoc h3:target,.pdoc h4:target,.pdoc h5:target,.pdoc h6:target{background-color:var(--active);box-shadow:-1rem 0 0 0 var(--active);}.pdoc div:target > .attr,.pdoc section:target > .attr,.pdoc dd:target > a{background-color:var(--active);}.pdoc .attr:hover{filter:contrast(0.95);}.pdoc .headerlink{position:absolute;width:0;margin-left:-1.5rem;line-height:1.4rem;font-size:1.5rem;font-weight:normal;transition:all 100ms ease-in-out;opacity:0;}.pdoc .attr > .headerlink{margin-left:-2.5rem;}.pdoc *:hover > .headerlink,.pdoc *:target > .attr > .headerlink{opacity:1;}.pdoc .attr{color:var(--text);margin:1rem 0 .5rem;padding:.4rem 5rem .4rem 1rem;background-color:var(--accent);}.pdoc .classattr{margin-left:2rem;}.pdoc .name{color:var(--name);font-weight:bold;}.pdoc .def{color:var(--def);font-weight:bold;}.pdoc .signature{white-space:pre-wrap;}.pdoc .annotation{color:var(--annotation);}.pdoc .inherited{margin-left:2rem;}.pdoc .inherited dt{font-weight:700;}.pdoc .inherited dt, .pdoc .inherited dd{display:inline;margin-left:0;margin-bottom:.5rem;}.pdoc .inherited dd:not(:last-child):after{content:", ";}.pdoc .inherited .class:before{content:"class ";}.pdoc .inherited .function a:after{content:"()";}.pdoc .attribution{margin-top:2rem;display:block;opacity:0.5;transition:all 200ms;filter:grayscale(100%);}.pdoc .attribution:hover{opacity:1;filter:grayscale(0%);}.pdoc .attribution img{margin-left:5px;height:35px;vertical-align:middle;width:70px;transition:all 200ms;}</style>
 </head>
 <body>        <nav class="pdoc">
             <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
             <input id="togglestate" type="checkbox">
             <div>
-
 
 
                     <h2>Contents</h2>
@@ -42,6 +41,9 @@
                                 <a class="variable" href="#Tiler.TILING_MODES">TILING_MODES</a>
                         </li>
                         <li>
+                                <a class="function" href="#Tiler.recalculate">recalculate</a>
+                        </li>
+                        <li>
                                 <a class="function" href="#Tiler.iterate">iterate</a>
                         </li>
                         <li>
@@ -55,6 +57,9 @@
                         </li>
                         <li>
                                 <a class="function" href="#Tiler.get_mosaic_shape">get_mosaic_shape</a>
+                        </li>
+                        <li>
+                                <a class="function" href="#Tiler.calculate_padding">calculate_padding</a>
                         </li>
                 </ul>
 
@@ -89,7 +94,6 @@
     </ul>
 
 
-
                     <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev">
                         built with <span class="visually-hidden">pdoc</span><img
                             alt="pdoc logo"
@@ -119,7 +123,8 @@ tiler    </h1>
 
 <hr />
 
-<p>This python package provides functions for tiling/patching and subsequent merging of NumPy arrays.</p>
+<p>This python package provides consistent and user-friendly
+functions for tiling/patching and subsequent merging of NumPy arrays.</p>
 
 <p>Such tiling is often required for various heavy image-processing tasks
 such as semantic segmentation in deep learning, especially in domains where images do not fit into GPU memory
@@ -128,12 +133,12 @@ such as semantic segmentation in deep learning, especially in domains where imag
 <h2 id="features">Features</h2>
 
 <ul>
-<li>N-dimensional <em>(note: currently tile shape must have the same number of dimensions as the array)</em></li>
+<li>N-dimensional</li>
 <li>Optional in-place tiling</li>
-<li>Optional channel dimension, dimension that is not tiled</li>
-<li>Optional batching</li>
+<li>Optional channel dimension (dimension that is not tiled)</li>
+<li>Optional tile batching</li>
 <li>Tile overlapping</li>
-<li>Access individual tiles with iterator or a getter</li>
+<li>Access individual tiles with an iterator or a getter</li>
 <li>Tile merging, with optional window functions/tapering</li>
 </ul>
 
@@ -345,9 +350,9 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">],</span>
-        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">],</span>
-        <span class="n">overlap</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
         <span class="n">constant_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
@@ -356,59 +361,88 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">        You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,</span>
 <span class="sd">        with `Tiler.iterate()` (or the alias `Tiler.__call__()`).</span>
 
-<span class="sd">        TODO:</span>
-<span class="sd">            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</span>
-<span class="sd">            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</span>
-<span class="sd">            - allow other numpy padding modes (maximum, minimum, mean, median)</span>
-
 <span class="sd">        Args:</span>
-<span class="sd">            data_shape (tuple or list): Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].</span>
+<span class="sd">            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).</span>
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
 
-<span class="sd">            tile_shape (tuple or list): Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].</span>
+<span class="sd">            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).</span>
 <span class="sd">                Tile must have the same number of dimensions as data.</span>
 
-<span class="sd">            overlap (int, float, tuple or list): Specifies overlap between tiles.</span>
+<span class="sd">            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.</span>
 <span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
 <span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.</span>
-<span class="sd">                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).</span>
+<span class="sd">                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).</span>
 <span class="sd">                Default is `0`.</span>
 
 <span class="sd">            channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.</span>
 <span class="sd">                Usually it is the last or the first dimension of the array.</span>
-<span class="sd">                Negative indexing (`-len(data_shape)` to `-1` inclusive) is translated into corresponding indices.</span>
+<span class="sd">                Negative indexing (`-len(data_shape)` to `-1` inclusive) is allowed.</span>
 <span class="sd">                Default is `None`, no channel dimension in the data.</span>
 
 <span class="sd">            mode (str): Defines how the data will be tiled.</span>
-<span class="sd">                Must be one of the supported `Tiler.TILING_MODES`.</span>
+<span class="sd">                Must be one of the supported `Tiler.TILING_MODES`. Defaults to `&quot;constant&quot;`.</span>
 
 <span class="sd">            constant_value (float): Specifies the value of padding when `mode=&#39;constant&#39;`.</span>
 <span class="sd">                Default is `0.0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span>
+            <span class="n">data_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
+            <span class="n">tile_shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">,</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+            <span class="n">channel_dimension</span><span class="o">=</span><span class="n">channel_dimension</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">constant_value</span><span class="o">=</span><span class="n">constant_value</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recalculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">constant_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recalculates tiling for new given settings.</span>
+<span class="sd">        If a passed value is None, use previously given value.</span>
+
+<span class="sd">        For more information about each argument see `Tiler.__init__()` documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># Data and tile shapes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tile and data shapes must have the same length.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Tile and data shapes must have the same length. &quot;</span>
+                <span class="s2">&quot;Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, &quot;</span>
+                <span class="s2">&quot;e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TILING_MODES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2"> is an unsupported tiling mode, please check the documentation.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Constant value used for constant tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
+        <span class="k">if</span> <span class="n">constant_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
 
         <span class="c1"># Channel dimension</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
+        <span class="c1"># Channel dimension can be None which means we need to check for init too</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;channel_dimension&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span>
@@ -422,7 +456,8 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span>
 
         <span class="c1"># Overlap and step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -450,17 +485,21 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span>
             <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size much be smaller than tile_shape.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size must be smaller than tile_shape.&quot;</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Unsupported overlap mode (not float, int, list or tuple).&quot;</span>
+                <span class="s2">&quot;Unsupported overlap mode (not float, int, list, tuple or np.ndarray).&quot;</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
@@ -504,7 +543,7 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Tiler (mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">, overlap=</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) will split data_shape </span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -528,6 +567,17 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">Mode: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\t</span><span class="s2">Channel dimension: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+        <span class="n">progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">drop_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Alias for `Tiler.iterate()`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">drop_last</span><span class="p">,</span> <span class="n">copy_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -613,17 +663,6 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
                 <span class="p">)</span>
                 <span class="k">yield</span> <span class="n">tile_i</span> <span class="o">//</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">tiles</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
-        <span class="n">progress_bar</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-        <span class="n">drop_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="n">copy_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Alias for `Tiler.iterate()`&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterate</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">drop_last</span><span class="p">,</span> <span class="n">copy_data</span><span class="p">)</span>
-
     <span class="k">def</span> <span class="nf">get_tile</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
@@ -667,6 +706,15 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Out of bounds, there is no tile </span><span class="si">{</span><span class="n">tile_id</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> tiles, starting from index 0.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Shape of provided data array (</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) does not match &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;same as Tiler&#39;s data_shape (</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># get tile data</span>
@@ -778,6 +826,39 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
                 <span class="o">~</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">)</span>
             <span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indexing_shape</span>
+
+    <span class="k">def</span> <span class="nf">calculate_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate a frame padding for the current Tiler parameters.</span>
+<span class="sd">        The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.</span>
+<span class="sd">        The method returns a tuple (new_shape, padding) where padding is</span>
+<span class="sd">        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</span>
+
+<span class="sd">        In the usual workflow, you&#39;d recalculate tiling settings and then apply padding, prior to tiling.</span>
+<span class="sd">        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        &gt;&gt;&gt; tiler = Tiler(...)</span>
+<span class="sd">        &gt;&gt;&gt; merger = Merger(tiler, ...)</span>
+<span class="sd">        &gt;&gt;&gt; new_shape, padding = tiler.calculate_padding()</span>
+<span class="sd">        &gt;&gt;&gt; tiler.recalculate(data_shape=new_shape)</span>
+<span class="sd">        &gt;&gt;&gt; padded_data = np.pad(data, pad_width=padding, mode=&quot;reflect&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; for tile_id, tile in tiler(padded_data):</span>
+<span class="sd">        &gt;&gt;&gt;     processed_tile = process(tile)</span>
+<span class="sd">        &gt;&gt;&gt;     merger.add(tile_id, processed_tile)</span>
+<span class="sd">        &gt;&gt;&gt; final_image = merger.merge(extra_padding=padding)</span>
+<span class="sd">        ```</span>
+<span class="sd">        Return:</span>
+<span class="sd">            np.ndarray: Resulting shape when padding is applied.</span>
+<span class="sd">            List[Tuple[int, int]]: Calculating padding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Choosing padding</span>
+        <span class="n">pre_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">post_pad</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">+</span> <span class="n">post_pad</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span>
 </pre></div>
 
         </details>
@@ -789,9 +870,9 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 
         
             <span class="name">Tiler</span><span class="signature">(
-    data_shape: Union[Tuple, List],
-    tile_shape: Union[Tuple, List],
-    overlap: Union[int, float, Tuple, List] = 0,
+    data_shape: Union[Tuple, List, numpy.ndarray],
+    tile_shape: Union[Tuple, List, numpy.ndarray],
+    overlap: Union[int, float, Tuple, List, numpy.ndarray] = 0,
     channel_dimension: Union[int, NoneType] = None,
     mode: str = &#39;constant&#39;,
     constant_value: float = 0.0
@@ -802,9 +883,9 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">],</span>
-        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">],</span>
-        <span class="n">overlap</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;constant&quot;</span><span class="p">,</span>
         <span class="n">constant_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
@@ -813,59 +894,169 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 <span class="sd">        You can access tiles individually with `Tiler.get_tile()` or with an iterator, both individually and in batches,</span>
 <span class="sd">        with `Tiler.iterate()` (or the alias `Tiler.__call__()`).</span>
 
-<span class="sd">        TODO:</span>
-<span class="sd">            - it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</span>
-<span class="sd">            - allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</span>
-<span class="sd">            - allow other numpy padding modes (maximum, minimum, mean, median)</span>
-
 <span class="sd">        Args:</span>
-<span class="sd">            data_shape (tuple or list): Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].</span>
+<span class="sd">            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).</span>
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
 
-<span class="sd">            tile_shape (tuple or list): Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].</span>
+<span class="sd">            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).</span>
 <span class="sd">                Tile must have the same number of dimensions as data.</span>
 
-<span class="sd">            overlap (int, float, tuple or list): Specifies overlap between tiles.</span>
+<span class="sd">            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.</span>
 <span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
 <span class="sd">                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.</span>
-<span class="sd">                If tuple or list, explicit size of the overlap (must be smaller than tile_shape).</span>
+<span class="sd">                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).</span>
 <span class="sd">                Default is `0`.</span>
 
 <span class="sd">            channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.</span>
 <span class="sd">                Usually it is the last or the first dimension of the array.</span>
-<span class="sd">                Negative indexing (`-len(data_shape)` to `-1` inclusive) is translated into corresponding indices.</span>
+<span class="sd">                Negative indexing (`-len(data_shape)` to `-1` inclusive) is allowed.</span>
 <span class="sd">                Default is `None`, no channel dimension in the data.</span>
 
 <span class="sd">            mode (str): Defines how the data will be tiled.</span>
-<span class="sd">                Must be one of the supported `Tiler.TILING_MODES`.</span>
+<span class="sd">                Must be one of the supported `Tiler.TILING_MODES`. Defaults to `&quot;constant&quot;`.</span>
 
 <span class="sd">            constant_value (float): Specifies the value of padding when `mode=&#39;constant&#39;`.</span>
 <span class="sd">                Default is `0.0`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span>
+            <span class="n">data_shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
+            <span class="n">tile_shape</span><span class="o">=</span><span class="n">tile_shape</span><span class="p">,</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">,</span>
+            <span class="n">channel_dimension</span><span class="o">=</span><span class="n">channel_dimension</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">constant_value</span><span class="o">=</span><span class="n">constant_value</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
+You can access tiles individually with <code><a href="#Tiler.get_tile">Tiler.get_tile()</a></code> or with an iterator, both individually and in batches,
+with <code><a href="#Tiler.iterate">Tiler.iterate()</a></code> (or the alias <code>Tiler.__call__()</code>).</p>
+
+<h6 id="args">Args</h6>
+
+<ul>
+<li><strong>data_shape (tuple, list or np.ndarray):</strong>  Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
+If there is a channel dimension, it should be included in the shape.</li>
+<li><strong>tile_shape (tuple, list or np.ndarray):</strong>  Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
+Tile must have the same number of dimensions as data.</li>
+<li><strong>overlap (int, float, tuple, list or np.ndarray):</strong>  Specifies overlap between tiles.
+If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
+If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
+If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).
+Default is <code>0</code>.</li>
+<li><strong>channel_dimension (int, optional):</strong>  Specifies which axis is the channel dimension that will not be tiled.
+Usually it is the last or the first dimension of the array.
+Negative indexing (<code>-len(data_shape)</code> to <code>-1</code> inclusive) is allowed.
+Default is <code>None</code>, no channel dimension in the data.</li>
+<li><strong>mode (str):</strong>  Defines how the data will be tiled.
+Must be one of the supported <code><a href="#Tiler.TILING_MODES">Tiler.TILING_MODES</a></code>. Defaults to <code>"constant"</code>.</li>
+<li><strong>constant_value (float):</strong>  Specifies the value of padding when <code>mode='constant'</code>.
+Default is <code>0.0</code>.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="Tiler.TILING_MODES" class="classattr">
+                                            <div class="attr variable"><a class="headerlink" href="#Tiler.TILING_MODES">#&nbsp;&nbsp</a>
+
+        <span class="name">TILING_MODES</span><span class="default_value"> = [&#39;constant&#39;, &#39;drop&#39;, &#39;irregular&#39;, &#39;reflect&#39;, &#39;edge&#39;, &#39;wrap&#39;]</span>
+    </div>
+
+            <div class="docstring"><p>Supported tiling modes:</p>
+
+<ul>
+<li><code>constant</code> (default) <br />
+If a tile is smaller than <code>tile_shape</code>, pad it with the constant value along each axis to match <code>tile_shape</code>.
+Set the value with the keyword <code>constant_value</code>.  </li>
+<li><code>drop</code> <br />
+If a tile is smaller than <code>tile_shape</code> in any of the dimensions, ignore it. Can result in zero tiles.</li>
+<li><code>irregular</code> <br />
+Allow tiles to be smaller than <code>tile_shape</code>.</li>
+<li><code>reflect</code> <br />
+If a tile is smaller than <code>tile_shape</code>,
+pad it with the reflection of values along each axis to match <code>tile_shape</code>.</li>
+<li><code>edge</code> <br />
+If a tile is smaller than <code>tile_shape</code>,
+pad it with the edge values of data along each axis to match <code>tile_shape</code>.</li>
+<li><code>wrap</code> <br />
+If a tile is smaller than <code>tile_shape</code>,
+pad it with the wrap of the vector along each axis to match <code>tile_shape</code>.
+The first values are used to pad the end and the end values are used to pad the beginning.</li>
+</ul>
+</div>
+
+
+                            </div>
+                            <div id="Tiler.recalculate" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Tiler.recalculate">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">recalculate</span><span class="signature">(
+    self,
+    data_shape: Union[Tuple, List, numpy.ndarray, NoneType] = None,
+    tile_shape: Union[Tuple, List, numpy.ndarray, NoneType] = None,
+    overlap: Union[int, float, Tuple, List, numpy.ndarray, NoneType] = None,
+    channel_dimension: Union[int, NoneType] = None,
+    mode: Union[str, NoneType] = None,
+    constant_value: Union[float, NoneType] = None
+) -&gt; None</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">recalculate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tile_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overlap</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">channel_dimension</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">constant_value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Recalculates tiling for new given settings.</span>
+<span class="sd">        If a passed value is None, use previously given value.</span>
+
+<span class="sd">        For more information about each argument see `Tiler.__init__()` documentation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="c1"># Data and tile shapes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tile and data shapes must have the same length.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Tile and data shapes must have the same length. &quot;</span>
+                <span class="s2">&quot;Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, &quot;</span>
+                <span class="s2">&quot;e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">TILING_MODES</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2"> is an unsupported tiling mode, please check the documentation.&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Constant value used for constant tiling mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
+        <span class="k">if</span> <span class="n">constant_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constant_value</span> <span class="o">=</span> <span class="n">constant_value</span>
 
         <span class="c1"># Channel dimension</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
+        <span class="c1"># Channel dimension can be None which means we need to check for init too</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;channel_dimension&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="n">channel_dimension</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">&lt;</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span>
@@ -879,7 +1070,8 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
                 <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span>
 
         <span class="c1"># Overlap and step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">=</span> <span class="n">overlap</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -907,17 +1099,21 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">channel_dimension</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+        <span class="p">):</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">overlap</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span>
             <span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size much be smaller than tile_shape.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Overlap size must be smaller than tile_shape.&quot;</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Unsupported overlap mode (not float, int, list or tuple).&quot;</span>
+                <span class="s2">&quot;Unsupported overlap mode (not float, int, list, tuple or np.ndarray).&quot;</span>
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
@@ -961,78 +1157,16 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_tiles</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Tiler (mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">, overlap=</span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2">) will split data_shape </span><span class="si">{</span><span class="n">data_shape</span><span class="si">}</span><span class="s2"> &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;into zero tiles (tile_shape=</span><span class="si">{</span><span class="n">tile_shape</span><span class="si">}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Tiler class precomputes everything for tiling with specified parameters, without actually slicing data.
-You can access tiles individually with <code><a href="#Tiler.get_tile">Tiler.get_tile()</a></code> or with an iterator, both individually and in batches,
-with <code><a href="#Tiler.iterate">Tiler.iterate()</a></code> (or the alias <code>Tiler.__call__()</code>).</p>
+            <div class="docstring"><p>Recalculates tiling for new given settings.
+If a passed value is None, use previously given value.</p>
 
-<h6 id="todo">TODO</h6>
-
-<blockquote>
-  <ul>
-  <li>it should be possible to create tiles with fewer dimensions then data (len(tile_shape) &lt; len(data_shape)</li>
-  <li>allow a user supplied padding function, Callable (input: tile, tile_shape; output: padded_tile)</li>
-  <li>allow other numpy padding modes (maximum, minimum, mean, median)</li>
-  </ul>
-</blockquote>
-
-<h6 id="args">Args</h6>
-
-<ul>
-<li><strong>data_shape (tuple or list):</strong>  Input data shape, e.g. (1920, 1080, 3) or [512, 512, 512].
-If there is a channel dimension, it should be included in the shape.</li>
-<li><strong>tile_shape (tuple or list):</strong>  Shape of a tile, e.g. (256, 256, 3) or [64, 64, 64].
-Tile must have the same number of dimensions as data.</li>
-<li><strong>overlap (int, float, tuple or list):</strong>  Specifies overlap between tiles.
-If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
-If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
-If tuple or list, explicit size of the overlap (must be smaller than tile_shape).
-Default is <code>0</code>.</li>
-<li><strong>channel_dimension (int, optional):</strong>  Specifies which axis is the channel dimension that will not be tiled.
-Usually it is the last or the first dimension of the array.
-Negative indexing (<code>-len(data_shape)</code> to <code>-1</code> inclusive) is translated into corresponding indices.
-Default is <code>None</code>, no channel dimension in the data.</li>
-<li><strong>mode (str):</strong>  Defines how the data will be tiled.
-Must be one of the supported <code><a href="#Tiler.TILING_MODES">Tiler.TILING_MODES</a></code>.</li>
-<li><strong>constant_value (float):</strong>  Specifies the value of padding when <code>mode='constant'</code>.
-Default is <code>0.0</code>.</li>
-</ul>
-</div>
-
-
-                            </div>
-                            <div id="Tiler.TILING_MODES" class="classattr">
-                                            <div class="attr variable"><a class="headerlink" href="#Tiler.TILING_MODES">#&nbsp;&nbsp</a>
-
-        <span class="name">TILING_MODES</span><span class="default_value"> = [&#39;constant&#39;, &#39;drop&#39;, &#39;irregular&#39;, &#39;reflect&#39;, &#39;edge&#39;, &#39;wrap&#39;]</span>
-    </div>
-
-            <div class="docstring"><p>Supported tiling modes:</p>
-
-<ul>
-<li><code>constant</code> (default) <br />
-If a tile is smaller than <code>tile_shape</code>, pad it with the constant value along each axis to match <code>tile_shape</code>.
-Set the value with the keyword <code>constant_value</code>.  </li>
-<li><code>drop</code> <br />
-If a tile is smaller than <code>tile_shape</code> in any of the dimensions, ignore it. Can result in zero tiles.</li>
-<li><code>irregular</code> <br />
-Allow tiles to be smaller than <code>tile_shape</code>.</li>
-<li><code>reflect</code> <br />
-If a tile is smaller than <code>tile_shape</code>,
-pad it with the reflection of values along each axis to match <code>tile_shape</code>.</li>
-<li><code>edge</code> <br />
-If a tile is smaller than <code>tile_shape</code>,
-pad it with the edge values of data along each axis to match <code>tile_shape</code>.</li>
-<li><code>wrap</code> <br />
-If a tile is smaller than <code>tile_shape</code>,
-pad it with the wrap of the vector along each axis to match <code>tile_shape</code>.
-The first values are used to pad the end and the end values are used to pad the beginning.</li>
-</ul>
+<p>For more information about each argument see <code><a href="#Tiler.__init__">Tiler.__init__()</a></code> documentation.</p>
 </div>
 
 
@@ -1250,6 +1384,15 @@ Default is True.</li>
             <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Out of bounds, there is no tile </span><span class="si">{</span><span class="n">tile_id</span><span class="si">}</span><span class="s2">.&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> tiles, starting from index 0.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Shape of provided data array (</span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">) does not match &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;same as Tiler&#39;s data_shape (</span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">).&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># get tile data</span>
@@ -1504,6 +1647,81 @@ Default is False.</li>
 
 
                             </div>
+                            <div id="Tiler.calculate_padding" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Tiler.calculate_padding">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">calculate_padding</span><span class="signature">(self) -&gt; Tuple[numpy.ndarray, List[Tuple[int, int]]]</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">calculate_padding</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]:</span>
+        <span class="sd">&quot;&quot;&quot;Calculate a frame padding for the current Tiler parameters.</span>
+<span class="sd">        The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.</span>
+<span class="sd">        The method returns a tuple (new_shape, padding) where padding is</span>
+<span class="sd">        ((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</span>
+
+<span class="sd">        In the usual workflow, you&#39;d recalculate tiling settings and then apply padding, prior to tiling.</span>
+<span class="sd">        Then when merging, pass padding to `Merger.merge(extra_padding=padding, ...)`:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        &gt;&gt;&gt; tiler = Tiler(...)</span>
+<span class="sd">        &gt;&gt;&gt; merger = Merger(tiler, ...)</span>
+<span class="sd">        &gt;&gt;&gt; new_shape, padding = tiler.calculate_padding()</span>
+<span class="sd">        &gt;&gt;&gt; tiler.recalculate(data_shape=new_shape)</span>
+<span class="sd">        &gt;&gt;&gt; padded_data = np.pad(data, pad_width=padding, mode=&quot;reflect&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; for tile_id, tile in tiler(padded_data):</span>
+<span class="sd">        &gt;&gt;&gt;     processed_tile = process(tile)</span>
+<span class="sd">        &gt;&gt;&gt;     merger.add(tile_id, processed_tile)</span>
+<span class="sd">        &gt;&gt;&gt; final_image = merger.merge(extra_padding=padding)</span>
+<span class="sd">        ```</span>
+<span class="sd">        Return:</span>
+<span class="sd">            np.ndarray: Resulting shape when padding is applied.</span>
+<span class="sd">            List[Tuple[int, int]]: Calculating padding.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Choosing padding</span>
+        <span class="n">pre_pad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tile_overlap</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">post_pad</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tile_step</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">new_shape</span> <span class="o">=</span> <span class="n">pre_pad</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">+</span> <span class="n">post_pad</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pre_pad</span><span class="p">,</span> <span class="n">post_pad</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Calculate a frame padding for the current Tiler parameters.
+The padding will be max(overlap//2, (tilable_shape-data_shape)//2, tile_step//2), whichever is bigger.
+The method returns a tuple (new_shape, padding) where padding is
+((before_1, after_1), … (before_N, after_N)), unique pad widths for each axis N.</p>
+
+<p>In the usual workflow, you'd recalculate tiling settings and then apply padding, prior to tiling.
+Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a>(extra_padding=padding, ...)</code>:</p>
+
+<div class="codehilite"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span> <span class="o">=</span> <span class="n">Tiler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">merger</span> <span class="o">=</span> <span class="n">Merger</span><span class="p">(</span><span class="n">tiler</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">new_shape</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">tiler</span><span class="o">.</span><span class="n">calculate_padding</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tiler</span><span class="o">.</span><span class="n">recalculate</span><span class="p">(</span><span class="n">data_shape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">padded_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;reflect&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">tile_id</span><span class="p">,</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">tiler</span><span class="p">(</span><span class="n">padded_data</span><span class="p">):</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">processed_tile</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>     <span class="n">merger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tile_id</span><span class="p">,</span> <span class="n">processed_tile</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">final_image</span> <span class="o">=</span> <span class="n">merger</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">extra_padding</span><span class="o">=</span><span class="n">padding</span><span class="p">)</span>
+</code></pre></div>
+
+<h6 id="return">Return</h6>
+
+<blockquote>
+  <p>np.ndarray: Resulting shape when padding is applied.
+  List[Tuple[int, int]]: Calculating padding.</p>
+</blockquote>
+</div>
+
+
+                            </div>
                 </section>
                 <section id="Merger">
                                 <div class="attr class">
@@ -1525,7 +1743,6 @@ Default is False.</li>
         <span class="s2">&quot;hamming&quot;</span><span class="p">,</span>
         <span class="s2">&quot;hann&quot;</span><span class="p">,</span>
         <span class="s2">&quot;bartlett&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flattop&quot;</span><span class="p">,</span>
         <span class="s2">&quot;parzen&quot;</span><span class="p">,</span>
         <span class="s2">&quot;bohman&quot;</span><span class="p">,</span>
         <span class="s2">&quot;blackmanharris&quot;</span><span class="p">,</span>
@@ -1548,8 +1765,6 @@ Default is False.</li>
 <span class="sd">        Hann window.</span>
 <span class="sd">    - &#39;bartlett&#39;  </span>
 <span class="sd">        Bartlett window.</span>
-<span class="sd">    - &#39;flattop&#39;  </span>
-<span class="sd">        Flat top window.</span>
 <span class="sd">    - &#39;parzen&#39;  </span>
 <span class="sd">        Parzen window.</span>
 <span class="sd">    - &#39;bohman&#39;  </span>
@@ -1562,13 +1777,22 @@ Default is False.</li>
 <span class="sd">        Bartlett-Hann window.    </span>
 <span class="sd">    - &#39;overlap-tile&#39;  </span>
 <span class="sd">        Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.</span>
-<span class="sd">        (Ronneberger et al. 2015, U-Net paper)</span>
+<span class="sd">        Requires applying padding calculated with `Tiler.calculate_padding()` for correct results.</span>
+<span class="sd">        (based on Ronneberger et al. 2015, U-Net paper)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span>
+        <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
+        <span class="sd">&quot;&quot;&quot;Merger holds cumulative result buffers for merging tiles created by a given Tiler</span>
+<span class="sd">        and the window function that is applied to added tiles.</span>
+
+<span class="sd">        There are two required np.float64 buffers: `self.data` and `self.weights_sum`</span>
+<span class="sd">        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).</span>
 
 <span class="sd">        TODO:</span>
 <span class="sd">            - generate window depending on tile border type</span>
@@ -1581,6 +1805,10 @@ Default is False.</li>
 <span class="sd">                Default is None which creates a boxcar window (constant 1s).</span>
 
 <span class="sd">            logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.</span>
+
+<span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
+<span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
@@ -1594,7 +1822,7 @@ Default is False.</li>
 
         <span class="c1"># Generate data and normalization arrays</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_visits</span><span class="p">)</span>
 
         <span class="c1"># for the future borders generation</span>
         <span class="c1"># 1d = 3 types of tiles: 2 corners and middle</span>
@@ -1610,10 +1838,10 @@ Default is False.</li>
     <span class="k">def</span> <span class="nf">_generate_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Generate n-dimensional window according to the given shape.</span>
 <span class="sd">        Adapted from: https://stackoverflow.com/a/53588640/1668421</span>
-<span class="sd">        We use scipy to generate windows (scipy.signal.get_window()).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            window (str): Specifies window function. Must be one of `Merger.SUPPORTED_WINDOWS`.</span>
+
 <span class="sd">            shape (tuple or list): Shape of the requested window.</span>
 
 <span class="sd">        Returns:</span>
@@ -1682,10 +1910,14 @@ Default is False.</li>
                 <span class="sa">f</span><span class="s2">&quot;Unsupported type for window function (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">window</span><span class="p">)</span><span class="si">}</span><span class="s2">), expected str or np.ndarray.&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Reset data and normalization buffers.</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reset data, weights and optional data_visits buffers.</span>
 
 <span class="sd">        Should be done after finishing merging full tile set and before starting processing the next tile set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
+<span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
@@ -1695,21 +1927,23 @@ Default is False.</li>
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="c1"># Normalization array holds the number of times each element was visited</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="c1"># Data visits holds the number of times each element was assigned</span>
+        <span class="k">if</span> <span class="n">save_visits</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
 
         <span class="c1"># Total data window (weight) coefficients</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tile_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds `tile_id`-th tile into Merger.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tile_id (int): Specifies which tile it is.</span>
+
 <span class="sd">            data (np.ndarray): Specifies tile data.</span>
 
 <span class="sd">        Returns:</span>
@@ -1751,7 +1985,6 @@ Default is False.</li>
             <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">shape_diff</span>
         <span class="p">]</span>
 
-        <span class="c1"># TODO check for self.data and data dtypes mismatch?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="p">(</span>
                 <span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
@@ -1760,14 +1993,18 @@ Default is False.</li>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">)]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
 
     <span class="k">def</span> <span class="nf">add_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Adds `batch_id`-th batch of `batch_size` tiles into Merger.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_id (int): Specifies batch number, must be &gt;= 0.</span>
+
 <span class="sd">            batch_size (int): Specifies batch size, must be &gt;= 0.</span>
+
 <span class="sd">            data (np.ndarray): Tile data array, must have shape `[batch, *tile_shape]</span>
 
 <span class="sd">        Returns:</span>
@@ -1791,33 +2028,85 @@ Default is False.</li>
         <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">tile_i</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">data_i</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Returns final merged data array obtained from added tiles.</span>
+    <span class="k">def</span> <span class="nf">_unpad</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Slices/unpads data according to merger and tiler settings, as well as additional padding.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
-<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
+<span class="sd">            data (np.ndarray): Data to be sliced.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
-
-        <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">extra_padding</span><span class="p">:</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">slice</span><span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">shape</span> <span class="o">-</span> <span class="n">pad_to</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">pad_from</span><span class="p">,</span> <span class="n">pad_to</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">extra_padding</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">))</span>
             <span class="p">]</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-                <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
+        <span class="c1"># if merger has logits dimension, add another slicing in front</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
+            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
 
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
+
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
+
+<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
+
+<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+
+<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+
+        <span class="k">if</span> <span class="n">normalize_by_weights</span><span class="p">:</span>
+            <span class="c1"># ignoring division by zero</span>
+            <span class="c1"># alternatively, set values &lt; atol to 1</span>
+            <span class="c1"># https://github.com/the-lay/tiler/blob/46e948bb2bd7a909e954baf87a0c15b384109fde/tiler/merger.py#L314</span>
+            <span class="c1"># TODO check which way is better</span>
+            <span class="c1">#  ignoring should be more precise without atol</span>
+            <span class="c1">#  but can hide other errors</span>
+            <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -1831,16 +2120,25 @@ Default is False.</li>
             <span class="name">Merger</span><span class="signature">(
     tiler: <a href="#tiler.Tiler">tiler.tiler.Tiler</a>,
     window: Union[NoneType, str, numpy.ndarray] = None,
-    logits: int = 0
+    logits: int = 0,
+    save_visits: bool = True
 )</span>
     </div>
 
                 <details>
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span> <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tiler</span><span class="p">:</span> <span class="n">Tiler</span><span class="p">,</span>
+        <span class="n">window</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">logits</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Merger precomputes everything for merging together tiles created by given Tiler.</span>
+        <span class="sd">&quot;&quot;&quot;Merger holds cumulative result buffers for merging tiles created by a given Tiler</span>
+<span class="sd">        and the window function that is applied to added tiles.</span>
+
+<span class="sd">        There are two required np.float64 buffers: `self.data` and `self.weights_sum`</span>
+<span class="sd">        and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).</span>
 
 <span class="sd">        TODO:</span>
 <span class="sd">            - generate window depending on tile border type</span>
@@ -1853,6 +2151,10 @@ Default is False.</li>
 <span class="sd">                Default is None which creates a boxcar window (constant 1s).</span>
 
 <span class="sd">            logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.</span>
+
+<span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
+<span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span> <span class="o">=</span> <span class="n">tiler</span>
@@ -1866,7 +2168,7 @@ Default is False.</li>
 
         <span class="c1"># Generate data and normalization arrays</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">save_visits</span><span class="p">)</span>
 
         <span class="c1"># for the future borders generation</span>
         <span class="c1"># 1d = 3 types of tiles: 2 corners and middle</span>
@@ -1882,7 +2184,11 @@ Default is False.</li>
 
         </details>
 
-            <div class="docstring"><p>Merger precomputes everything for merging together tiles created by given Tiler.</p>
+            <div class="docstring"><p>Merger holds cumulative result buffers for merging tiles created by a given Tiler
+and the window function that is applied to added tiles.</p>
+
+<p>There are two required np.float64 buffers: <code>self.data</code> and <code>self.weights_sum</code>
+and one optional np.uint32 <code>self.data_visits</code> (see below <code>save_visits</code> argument).</p>
 
 <h6 id="todo">TODO</h6>
 
@@ -1900,6 +2206,8 @@ Default is False.</li>
 Must be one of <code><a href="#Merger.SUPPORTED_WINDOWS">Merger.SUPPORTED_WINDOWS</a></code> or a numpy array with the same size as the tile.
 Default is None which creates a boxcar window (constant 1s).</li>
 <li><strong>logits (int):</strong>  Specify whether to add logits dimensions in front of the data array. Default is <code>0</code>.</li>
+<li><strong>save_visits (bool):</strong>  Specify whether to save which elements has been modified and how many times in
+<code>self.data_visits</code>. Can be disabled to save some memory. Default is <code>True</code>.</li>
 </ul>
 </div>
 
@@ -1908,7 +2216,7 @@ Default is None which creates a boxcar window (constant 1s).</li>
                             <div id="Merger.SUPPORTED_WINDOWS" class="classattr">
                                             <div class="attr variable"><a class="headerlink" href="#Merger.SUPPORTED_WINDOWS">#&nbsp;&nbsp</a>
 
-        <span class="name">SUPPORTED_WINDOWS</span><span class="default_value"> = [&#39;boxcar&#39;, &#39;triang&#39;, &#39;blackman&#39;, &#39;hamming&#39;, &#39;hann&#39;, &#39;bartlett&#39;, &#39;flattop&#39;, &#39;parzen&#39;, &#39;bohman&#39;, &#39;blackmanharris&#39;, &#39;nuttall&#39;, &#39;barthann&#39;, &#39;overlap-tile&#39;]</span>
+        <span class="name">SUPPORTED_WINDOWS</span><span class="default_value"> = [&#39;boxcar&#39;, &#39;triang&#39;, &#39;blackman&#39;, &#39;hamming&#39;, &#39;hann&#39;, &#39;bartlett&#39;, &#39;parzen&#39;, &#39;bohman&#39;, &#39;blackmanharris&#39;, &#39;nuttall&#39;, &#39;barthann&#39;, &#39;overlap-tile&#39;]</span>
     </div>
 
             <div class="docstring"><p>Supported windows:</p>
@@ -1927,8 +2235,6 @@ Hamming window.</li>
 Hann window.</li>
 <li>'bartlett' <br />
 Bartlett window.</li>
-<li>'flattop' <br />
-Flat top window.</li>
 <li>'parzen' <br />
 Parzen window.</li>
 <li>'bohman' <br />
@@ -1941,7 +2247,8 @@ Minimum 4-term Blackman-Harris window according to Nuttall.</li>
 Bartlett-Hann window.    </li>
 <li>'overlap-tile' <br />
 Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
-(Ronneberger et al. 2015, U-Net paper)</li>
+Requires applying padding calculated with <code><a href="#Tiler.calculate_padding">Tiler.calculate_padding()</a></code> for correct results.
+(based on Ronneberger et al. 2015, U-Net paper)</li>
 </ul>
 </div>
 
@@ -2022,15 +2329,19 @@ If passed None sets a boxcar window (constant 1s).</li>
 
         
             <span class="def">def</span>
-            <span class="name">reset</span><span class="signature">(self) -&gt; None</span>:
+            <span class="name">reset</span><span class="signature">(self, save_visits: bool = True) -&gt; None</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Reset data and normalization buffers.</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_visits</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reset data, weights and optional data_visits buffers.</span>
 
 <span class="sd">        Should be done after finishing merging full tile set and before starting processing the next tile set.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            save_visits (bool): Specify whether to save which elements has been modified and how many times in</span>
+<span class="sd">                `self.data_visits`. Can be disabled to save some memory. Default is `True`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
@@ -2040,22 +2351,30 @@ If passed None sets a boxcar window (constant 1s).</li>
 
         <span class="c1"># Image holds sum of all processed tiles multiplied by the window</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">,</span> <span class="o">*</span><span class="n">padded_data_shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
-        <span class="c1"># Normalization array holds the number of times each element was visited</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="c1"># Data visits holds the number of times each element was assigned</span>
+        <span class="k">if</span> <span class="n">save_visits</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
 
         <span class="c1"># Total data window (weight) coefficients</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">padded_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Reset data and normalization buffers.</p>
+            <div class="docstring"><p>Reset data, weights and optional data_visits buffers.</p>
 
 <p>Should be done after finishing merging full tile set and before starting processing the next tile set.</p>
+
+<h6 id="args">Args</h6>
+
+<ul>
+<li><strong>save_visits (bool):</strong>  Specify whether to save which elements has been modified and how many times in
+<code>self.data_visits</code>. Can be disabled to save some memory. Default is <code>True</code>.</li>
+</ul>
 
 <h6 id="returns">Returns</h6>
 
@@ -2081,6 +2400,7 @@ If passed None sets a boxcar window (constant 1s).</li>
 
 <span class="sd">        Args:</span>
 <span class="sd">            tile_id (int): Specifies which tile it is.</span>
+
 <span class="sd">            data (np.ndarray): Specifies tile data.</span>
 
 <span class="sd">        Returns:</span>
@@ -2122,7 +2442,6 @@ If passed None sets a boxcar window (constant 1s).</li>
             <span class="k">for</span> <span class="n">diff</span> <span class="ow">in</span> <span class="n">shape_diff</span>
         <span class="p">]</span>
 
-        <span class="c1"># TODO check for self.data and data dtypes mismatch?</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">([</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="p">(</span>
                 <span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span>
@@ -2131,7 +2450,9 @@ If passed None sets a boxcar window (constant 1s).</li>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">data</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">)]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">win_sl</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_visits</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
 </pre></div>
 
         </details>
@@ -2169,7 +2490,9 @@ If passed None sets a boxcar window (constant 1s).</li>
 
 <span class="sd">        Args:</span>
 <span class="sd">            batch_id (int): Specifies batch number, must be &gt;= 0.</span>
+
 <span class="sd">            batch_size (int): Specifies batch size, must be &gt;= 0.</span>
+
 <span class="sd">            data (np.ndarray): Tile data array, must have shape `[batch, *tile_shape]</span>
 
 <span class="sd">        Returns:</span>
@@ -2220,49 +2543,82 @@ If passed None sets a boxcar window (constant 1s).</li>
 
         
             <span class="def">def</span>
-            <span class="name">merge</span><span class="signature">(self, unpad: bool = True, argmax: bool = False) -&gt; numpy.ndarray</span>:
+            <span class="name">merge</span><span class="signature">(
+    self,
+    unpad: bool = True,
+    extra_padding: Union[List[Tuple[int, int]], NoneType] = None,
+    argmax: bool = False,
+    normalize_by_weights: bool = True,
+    dtype: numpy.dtype = &lt;class &#39;numpy.float64&#39;&gt;
+) -&gt; numpy.ndarray</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Returns final merged data array obtained from added tiles.</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">unpad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            unpad (bool): If unpad is True, removes padded array elements. Default is True.</span>
+
+<span class="sd">            extra_padding (tuple of tuples of two ints, optional): Specifies padding that was applied to the data.</span>
+<span class="sd">                Number of values padded to the edges of each axis.</span>
+<span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
+<span class="sd">                Default is None.</span>
+
 <span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
+
+<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+
+<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
 
+        <span class="k">if</span> <span class="n">normalize_by_weights</span><span class="p">:</span>
+            <span class="c1"># ignoring division by zero</span>
+            <span class="c1"># alternatively, set values &lt; atol to 1</span>
+            <span class="c1"># https://github.com/the-lay/tiler/blob/46e948bb2bd7a909e954baf87a0c15b384109fde/tiler/merger.py#L314</span>
+            <span class="c1"># TODO check which way is better</span>
+            <span class="c1">#  ignoring should be more precise without atol</span>
+            <span class="c1">#  but can hide other errors</span>
+            <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">data</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_sum</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">unpad</span><span class="p">:</span>
-            <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiler</span><span class="o">.</span><span class="n">data_shape</span><span class="p">))</span>
-            <span class="p">]</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logits</span><span class="p">:</span>
-                <span class="n">sl</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span> <span class="n">sl</span>
-
-            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">sl</span><span class="p">)]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extra_padding</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
 
-            <div class="docstring"><p>Returns final merged data array obtained from added tiles.</p>
+            <div class="docstring"><p>Returns merged data array obtained from added tiles.</p>
 
 <h6 id="args">Args</h6>
 
 <ul>
 <li><strong>unpad (bool):</strong>  If unpad is True, removes padded array elements. Default is True.</li>
+<li><strong>extra_padding (tuple of tuples of two ints, optional):</strong>  Specifies padding that was applied to the data.
+Number of values padded to the edges of each axis.
+((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
+Default is None.</li>
 <li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed. Default is False.</li>
+<li><strong>normalize_by_weights (bool):</strong>  If normalize is True, the accumulated data will be divided by weights. Default is True.</li>
+<li><strong>dtype (np.dtype):</strong>  Specify dtype for the final . Default is <code>np.float64</code>.</li>
 </ul>
 
 <h6 id="returns">Returns</h6>

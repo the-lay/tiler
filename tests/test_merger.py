@@ -1,18 +1,16 @@
 import unittest
 import numpy as np
 from tiler import Tiler, Merger
-from contextlib import redirect_stderr
-import os
 
 
 class TestMergingCommon(unittest.TestCase):
     def setUp(self) -> None:
-        self.data = np.arange(0, 100)
+        self.data = np.arange(0, 100, dtype=np.float64)
 
     def test_init(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
 
-        # logits test
+        # logits wrong values test
         with self.assertRaises(ValueError):
             Merger(tiler=tiler, logits=-1)
         with self.assertRaises(ValueError):
@@ -23,6 +21,9 @@ class TestMergingCommon(unittest.TestCase):
 
         merger2 = Merger(tiler=tiler, logits=99)
         np.testing.assert_equal(merger2.data.shape, (99,) + self.data.shape)
+
+        merger3 = Merger(tiler=tiler, save_visits=False)
+        self.assert_(merger3.data_visits is None)
 
     def test_add(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
@@ -237,7 +238,7 @@ class TestMergingCommon(unittest.TestCase):
 
     def test_merge(self):
 
-        # Test padding
+        # Test unpadding
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
         merger = Merger(tiler)
         for t_id, t in tiler(self.data):
@@ -247,6 +248,14 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(
             merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0]))
         )
+
+        # Test without normalization by weights
+        window = np.ones((12,)) * 2
+        merger = Merger(tiler, window=window)
+        for t_id, t in tiler(self.data):
+            merger.add(t_id, t)
+        np.testing.assert_equal(merger.merge(normalize_by_weights=False), self.data * 2)
+        np.testing.assert_equal(merger.merge(normalize_by_weights=True), self.data)
 
         # Test argmax
         merger = Merger(tiler, logits=3)
@@ -272,3 +281,17 @@ class TestMergingCommon(unittest.TestCase):
                 )
             ),
         )
+
+        # Test extra padding
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
+        new_shape, padding = tiler.calculate_padding()
+        np.testing.assert_equal(new_shape, [112])
+        np.testing.assert_equal(padding, [(6, 6)])
+
+        tiler.recalculate(data_shape=new_shape)
+        padded_data = np.pad(self.data, pad_width=padding, mode="reflect")
+        merger = Merger(tiler)
+        for t_id, t in tiler(padded_data):
+            merger.add(t_id, t)
+        np.testing.assert_equal(merger.merge(), padded_data)
+        np.testing.assert_equal(merger.merge(extra_padding=padding), self.data)
