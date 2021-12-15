@@ -528,7 +528,8 @@ class Tiler:
         ```
         Return:
             np.ndarray: Resulting shape when padding is applied.
-            List[Tuple[int, int]]: Calculating padding.
+
+            List[Tuple[int, int]]: Calculated padding.
         """
 
         # Choosing padding

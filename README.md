@@ -95,21 +95,8 @@ cd tiler
 pip install
 ```
 
-Roadmap
-------------
- - Easy generation of tiling for a specific window in mind
-   (i.e. so that every element has the window weight sum of 1.0)
- - Add border windows generation (like in Pielawski et. al - see references))
- - PyTorch Tensors support
-   - merging on GPU like in pytorch-toolbelt?
- - More examples
- - PyTorch Dataset class convenience wrapper?
- - Arbitrary sized tiles (m-dim window over n-dim array, m <= n)?
-    - [Some leads here](https://stackoverflow.com/questions/45960192/using-numpy-as-strided-function-to-create-patches-tiles-rolling-or-sliding-w)
- - Optional augmentation modes for smoother segmentations?
-    - D4 rotation group
-    - Mirroring
- - Benchmark with plain for loops, determine overhead
+If you are planning to contribute, please take a look at the [contribution instructions](.github/CONTRIBUTING.md).
+
  
 Motivation & other packages
 -------------
@@ -117,7 +104,7 @@ I work on semantic segmentation of patched 3D data and
 I often found myself reusing tiling functions that I wrote for the previous projects.
 No existing libraries listed below fit my use case, so that's why I wrote this library.
 
-However, other libraries might fit you better:
+However, other libraries/examples might fit you better:
  - [vfdev-5/ImageTilingUtils](https://github.com/vfdev-5/ImageTilingUtils)
     - Minimalistic image reader agnostic 2D tiling tools
 
@@ -134,8 +121,20 @@ However, other libraries might fit you better:
     - Tile and merge 2D, 3D images defined by tile shapes and step between tiles
    
  - Do you know any other similar packages?
-    - [Please make a PR](https://github.com/the-lay/tiler/pulls) or [open a new issue](https://github.com/the-lay/tiler/issues).
+    - Please let me know by contacting me, [making a PR]((https://github.com/the-lay/tiler/pulls)) or [opening a new issue](https://github.com/the-lay/tiler/issues).
 
 Moreover, some related approaches have been described in the literature:
  - [Introducing Hann windows for reducing edge-effects in patch-based image segmentation](https://doi.org/10.1371/journal.pone.0229839
 ), Pielawski and Wählby, March 2020
+
+
+Frequently asked questions
+-------------
+This section is a work in progress.
+
+**How do I create tiles with less dimensions than the data array?**
+
+Tiler expects `tile_shape` to have the same length as `data_shape`.
+However you can specify the unwanted dimension as just 1.
+For example, if you want to get 2d tiles out from 3d array you can specify depth dimension of 1:
+`Tiler(data_shape=(128,128,128), tile_shape=(1, 128, 128))`.
