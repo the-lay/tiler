@@ -250,7 +250,7 @@ class Merger:
 
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
-        a, b = self.tiler.get_tile_bbox_position(tile_id, with_channel_dim=True)
+        a, b = self.tiler.get_tile_bbox(tile_id, with_channel_dim=True)
 
         sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
         win_sl = [

@@ -67,7 +67,7 @@ class TestTilingCommon(unittest.TestCase):
                 tiler.get_tile(fn, i)
             np.testing.assert_equal(
                 cm.exception.args[0],
-                (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape),
+                (*tiler.get_tile_bbox(i)[0], *tiler.tile_shape),
             )
 
         # 2D test
@@ -77,7 +77,7 @@ class TestTilingCommon(unittest.TestCase):
                 tiler.get_tile(fn, i)
             np.testing.assert_equal(
                 cm.exception.args[0],
-                (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape),
+                (*tiler.get_tile_bbox(i)[0], *tiler.tile_shape),
             )
 
         # 3D test
@@ -87,7 +87,7 @@ class TestTilingCommon(unittest.TestCase):
                 tiler.get_tile(fn, i)
             np.testing.assert_equal(
                 cm.exception.args[0],
-                (*tiler.get_tile_bbox_position(i)[0], *tiler.tile_shape),
+                (*tiler.get_tile_bbox(i)[0], *tiler.tile_shape),
             )
 
         # channel dimension test
@@ -100,7 +100,7 @@ class TestTilingCommon(unittest.TestCase):
             np.testing.assert_equal(
                 cm.exception.args[0],
                 (
-                    *tiler.get_tile_bbox_position(i, with_channel_dim=True)[0],
+                    *tiler.get_tile_bbox(i, with_channel_dim=True)[0],
                     *tiler.tile_shape,
                 ),
             )
@@ -484,7 +484,7 @@ class TestTiling(unittest.TestCase):
         with self.assertRaises(IndexError):
             tiler.get_tile_mosaic_position(len(tiler))
 
-    def test_mosaic_shape(self):
+    def test_get_mosaic_shape(self):
         tile_size = 10
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,))
         tiler2 = Tiler(
@@ -523,45 +523,125 @@ class TestTiling(unittest.TestCase):
         np.testing.assert_equal([3, 10], tiler4.get_mosaic_shape())
         np.testing.assert_equal([3, 10], tiler4.get_mosaic_shape(with_channel_dim=True))
 
-    def test_tile_bbox_position(self):
-        tile_size = 10
-        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,))
-        tiler2 = Tiler(
+    def test_get_tile_bbox(self):
+        tiler1d = Tiler(data_shape=self.data.shape, tile_shape=(10,))
+        tiler2d = Tiler(
             data_shape=(3,) + self.data.shape,
             tile_shape=(
                 3,
-                tile_size,
+                10,
             ),
             channel_dimension=0,
         )
+        tiler3d = Tiler(
+            data_shape=(
+                100,
+                3,
+            )
+            + self.data.shape,
+            tile_shape=(
+                10,
+                3,
+                10,
+            ),
+            channel_dimension=1,
+        )
 
+        tiler1d.get_tile_bbox(0)
         with self.assertRaises(IndexError):
-            tiler.get_tile_bbox_position(-1)
+            tiler1d.get_tile_bbox(-1)
         with self.assertRaises(IndexError):
-            tiler.get_tile_bbox_position(len(tiler))
+            tiler1d.get_tile_bbox(len(tiler1d))
 
-        tile_id = 0
-        np.testing.assert_equal(([0], [10]), tiler.get_tile_bbox_position(tile_id))
+        # first tile
+        np.testing.assert_equal(tiler1d.get_tile_bbox(0), ([0], [10]))
         np.testing.assert_equal(
-            ([0], [10]), tiler.get_tile_bbox_position(tile_id, True)
+            tiler1d.get_tile_bbox(0, with_channel_dim=True), ([0], [10])
         )
-        np.testing.assert_equal(([0], [10]), tiler2.get_tile_bbox_position(tile_id))
+        np.testing.assert_equal(tiler1d.get_tile_bbox(0, all_corners=True), [[0], [10]])
         np.testing.assert_equal(
-            ([0, 0], [3, 10]), tiler2.get_tile_bbox_position(tile_id, True)
+            tiler1d.get_tile_bbox(0, with_channel_dim=True, all_corners=True), [[0], [10]]
         )
 
-        tile_id = len(tiler) - 1
-        np.testing.assert_equal(([90], [100]), tiler.get_tile_bbox_position(tile_id))
+        np.testing.assert_equal(tiler2d.get_tile_bbox(0), ([0], [10]))
         np.testing.assert_equal(
-            ([90], [100]), tiler.get_tile_bbox_position(tile_id, True)
+            tiler2d.get_tile_bbox(0, with_channel_dim=True), ([0, 0], [3, 10])
         )
-        np.testing.assert_equal(([90], [100]), tiler2.get_tile_bbox_position(tile_id))
+        np.testing.assert_equal(tiler2d.get_tile_bbox(0, all_corners=True), [[0], [10]])
         np.testing.assert_equal(
-            ([0, 90], [3, 100]), tiler2.get_tile_bbox_position(tile_id, True)
+            tiler2d.get_tile_bbox(0, with_channel_dim=True, all_corners=True),
+            [[0, 0], [0, 10], [3, 0], [3, 10]],
+        )
+
+        np.testing.assert_equal(tiler3d.get_tile_bbox(0), ([0, 0], [10, 10]))
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(0, with_channel_dim=True), ([0, 0, 0], [10, 3, 10])
+        )
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(0, all_corners=True),
+            [[0, 0], [0, 10], [10, 0], [10, 10]],
+        )
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(0, with_channel_dim=True, all_corners=True),
+            [
+                [0, 0, 0],
+                [0, 0, 10],
+                [0, 3, 0],
+                [0, 3, 10],
+                [10, 0, 0],
+                [10, 0, 10],
+                [10, 3, 0],
+                [10, 3, 10],
+            ],
+        )
+
+        # last tile
+        np.testing.assert_equal(tiler1d.get_tile_bbox(9), ([90], [100]))
+        np.testing.assert_equal(
+            tiler1d.get_tile_bbox(9, with_channel_dim=True), ([90], [100])
+        )
+        np.testing.assert_equal(tiler1d.get_tile_bbox(9, all_corners=True), [[90], [100]])
+        np.testing.assert_equal(
+            tiler1d.get_tile_bbox(9, with_channel_dim=True, all_corners=True),
+            [[90], [100]],
+        )
+
+        np.testing.assert_equal(tiler2d.get_tile_bbox(9), ([90], [100]))
+        np.testing.assert_equal(
+            tiler2d.get_tile_bbox(9, with_channel_dim=True), ([0, 90], [3, 100])
+        )
+        np.testing.assert_equal(
+            tiler2d.get_tile_bbox(9, all_corners=True), [[90], [100]]
+        )
+        np.testing.assert_equal(
+            tiler2d.get_tile_bbox(9, with_channel_dim=True, all_corners=True),
+            [[0, 90], [0, 100], [3, 90], [3, 100]],
+        )
+
+        np.testing.assert_equal(tiler3d.get_tile_bbox(99), ([90, 90], [100, 100]))
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(99, with_channel_dim=True),
+            ([90, 0, 90], [100, 3, 100]),
+        )
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(99, all_corners=True),
+            [[90, 90], [90, 100], [100, 90], [100, 100]],
+        )
+        np.testing.assert_equal(
+            tiler3d.get_tile_bbox(99, with_channel_dim=True, all_corners=True),
+            [
+                [90, 0, 90],
+                [90, 0, 100],
+                [90, 3, 90],
+                [90, 3, 100],
+                [100, 0, 90],
+                [100, 0, 100],
+                [100, 3, 90],
+                [100, 3, 100],
+            ],
         )
 
     def test_calculate_padding(self):
-
         # no overlap, even
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
         new_shape, padding = tiler.calculate_padding()
@@ -585,3 +665,14 @@ class TestTiling(unittest.TestCase):
         new_shape, padding = tiler.calculate_padding()
         np.testing.assert_equal(new_shape, [107])
         np.testing.assert_equal(padding, [(3, 4)])
+
+    def test_get_all_tiles(self):
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(8,))
+        all_tiles_first = tiler.get_all_tiles(self.data, 0)
+        np.testing.assert_equal(all_tiles_first.shape, [13, 8])
+        all_tiles_last = tiler.get_all_tiles(self.data, -1)
+        np.testing.assert_equal(all_tiles_last.shape, [8, 13])
+
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(8,), mode="irregular")
+        with self.assertRaises(ValueError):
+            _ = tiler.get_all_tiles(self.data)

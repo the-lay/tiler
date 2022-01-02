@@ -1,4 +1,5 @@
 import warnings
+import itertools
 
 import numpy as np
 from tqdm.auto import tqdm
@@ -433,20 +434,64 @@ class Tiler:
 
         return tile_data
 
-    def get_tile_bbox_position(
-        self, tile_id: int, with_channel_dim: bool = False
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Returns opposite corners coordinates of bounding hyperrectangle of the tile on padded data.
+    def get_all_tiles(
+        self,
+        data: Union[np.ndarray, Callable[..., np.ndarray]],
+        axis: int = 0,
+        copy_data: bool = True,
+    ) -> np.ndarray:
+        """Returns all tiles joined along a new axis. Does not work for `Tiler.mode = 'irregular'`.
+
+        The `axis` parameter specifies the index of the new axis in the dimensions of the result.
+        For example, if `axis=0` it will be the first dimension and if `axis=-1` it will be the last dimension.
+
+        For more information about `data` and `copy_data` parameters, see `Tiler.get_tile()`.
+
+        Args:
+            data (np.ndarray or callable): Data which will be tiled. A callable can be supplied to load data into memory
+                instead of slicing from an array. The callable should take integers as input, the smallest tile corner
+                coordinates and tile size in each dimension, and output numpy array.
+
+            axis (int): The axis in the result array along which the tiles are stacked.
+
+            copy_data (bool): Specifies whether returned tile is a copy.
+                If `copy_data == False` returns a view.
+                Default is True.
+
+        Returns:
+            np.ndarray: All tiles stacked along a new axis.
+        """
+
+        if self.mode == "irregular":
+            raise ValueError("get_all_tiles does not support irregular mode")
+
+        return np.stack(
+            [self.get_tile(data, x, copy_data=copy_data) for x in range(self.n_tiles)],
+            axis=axis,
+        )
+
+    def get_tile_bbox(
+        self,
+        tile_id: int,
+        with_channel_dim: bool = False,
+        all_corners: bool = False,
+    ) -> Union[Tuple[np.ndarray, np.ndarray], np.ndarray]:
+        """Returns coordinates of the opposite corners of the bounding box (hyperrectangle?) of the tile on padded data.
 
         Args:
             tile_id (int): Specifies which tile's bounding coordinates will be returned.
-                Must be smaller than the total number of tiles.
+                Must be between 0 and the total number of tiles.
 
             with_channel_dim (bool): Specifies whether to return shape with channel dimension or without.
                 Default is False.
 
+            all_corners (bool): If True, returns all vertices of the bounding box.
+                Default is False.
+
         Returns:
-            (np.ndarray, np.ndarray): Smallest and largest corners of the bounding box.
+            (np.ndarray, np.ndarray): Smallest (bottom-left) and largest (top-right) corners of the bounding box.
+
+            np.ndarray: All corners of the bounding box, if `all_corners=True`.
         """
 
         if (tile_id < 0) or (tile_id >= self.n_tiles):
@@ -455,15 +500,36 @@ class Tiler:
                 f"There are {len(self) - 1} tiles, starting from index 0."
             )
 
-        starting_corner = self._tile_step * self.get_tile_mosaic_position(tile_id, True)
-        finish_corner = starting_corner + self.tile_shape
+        # find min and max vertices
+        bottom_left_corner = self._tile_step * self.get_tile_mosaic_position(
+            tile_id, True
+        )
+        top_right_corner = bottom_left_corner + self.tile_shape
+
+        # remove channel dimension if not required
         if self.channel_dimension is not None and not with_channel_dim:
             dim_indices = list(range(self.channel_dimension)) + list(
                 range(self.channel_dimension + 1, len(self._tile_step))
             )
-            starting_corner = starting_corner[dim_indices]
-            finish_corner = finish_corner[dim_indices]
-        return starting_corner, finish_corner
+            bottom_left_corner = bottom_left_corner[dim_indices]
+            top_right_corner = top_right_corner[dim_indices]
+
+        # by default, return only min/max vertices
+        if not all_corners:
+            return bottom_left_corner, top_right_corner
+
+        # otherwise, return all vertices of the bbox
+        # inspired by https://stackoverflow.com/a/57065356/1668421
+        # but instead create an indexing array from cartesian product of bits
+        # and use it to sample intervals
+        else:
+            n_dim: int = len(bottom_left_corner)  # already channel_dimension adjusted
+            mins = np.minimum(bottom_left_corner, top_right_corner)
+            maxs = np.maximum(bottom_left_corner, top_right_corner)
+            intervals = np.stack([mins, maxs], -1)
+            indexing = np.array(list(itertools.product([0, 1], repeat=n_dim)))
+            corners = np.stack([intervals[x][indexing.T[x]] for x in range(n_dim)], -1)
+            return corners
 
     def get_tile_mosaic_position(
         self, tile_id: int, with_channel_dim: bool = False
@@ -473,6 +539,7 @@ class Tiler:
         Args:
           tile_id (int): Specifies which tile's mosaic position will be returned. \
             Must be smaller than the total number of tiles.
+
           with_channel_dim (bool): Specifies whether to return position with channel dimension or without.
             Default is False.
 
