@@ -560,7 +560,8 @@ class TestTiling(unittest.TestCase):
         )
         np.testing.assert_equal(tiler1d.get_tile_bbox(0, all_corners=True), [[0], [10]])
         np.testing.assert_equal(
-            tiler1d.get_tile_bbox(0, with_channel_dim=True, all_corners=True), [[0], [10]]
+            tiler1d.get_tile_bbox(0, with_channel_dim=True, all_corners=True),
+            [[0], [10]],
         )
 
         np.testing.assert_equal(tiler2d.get_tile_bbox(0), ([0], [10]))
@@ -600,7 +601,9 @@ class TestTiling(unittest.TestCase):
         np.testing.assert_equal(
             tiler1d.get_tile_bbox(9, with_channel_dim=True), ([90], [100])
         )
-        np.testing.assert_equal(tiler1d.get_tile_bbox(9, all_corners=True), [[90], [100]])
+        np.testing.assert_equal(
+            tiler1d.get_tile_bbox(9, all_corners=True), [[90], [100]]
+        )
         np.testing.assert_equal(
             tiler1d.get_tile_bbox(9, with_channel_dim=True, all_corners=True),
             [[90], [100]],
