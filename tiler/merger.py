@@ -94,7 +94,7 @@ class Merger:
             data_dtype (np.dtype): Specify data type for data buffer that stores cumulative result.
                 Default is `np.float32`.
 
-            weights_dtype (np.dtype): Specify data type for weights buffer that stores cumulative weights.
+            weights_dtype (np.dtype): Specify data type for weights buffer that stores cumulative weights and window array.
                 If you don't need precision but would rather save memory you can use `np.float16`.
                 Likewise, on the opposite, you can use `np.float64`.
                 Default is `np.float32`.
@@ -133,7 +133,7 @@ class Merger:
             np.ndarray: n-dimensional window of the given shape and function
         """
 
-        w = np.ones(shape)
+        w = np.ones(shape, dtype=self.weights_dtype)
         overlap = self.tiler._tile_overlap
         for axis, length in enumerate(shape):
             if axis == self.tiler.channel_dimension:
@@ -189,7 +189,7 @@ class Merger:
                 raise ValueError(
                     f"Window function must have the same shape as tile shape."
                 )
-            self.window = window
+            self.window = window.astype(self.weights_dtype)
         else:
             raise ValueError(
                 f"Unsupported type for window function ({type(window)}), expected str or np.ndarray."
