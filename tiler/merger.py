@@ -153,7 +153,7 @@ class Merger:
                 else:
                     win = np.stack([win] * shape[i], axis=i)
 
-            w *= win
+            w *= win.astype(self.weights_dtype)
 
         return w
 

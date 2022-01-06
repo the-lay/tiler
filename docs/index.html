@@ -2059,7 +2059,7 @@ Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">win</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">win</span><span class="p">]</span> <span class="o">*</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
 
-            <span class="n">w</span> <span class="o">*=</span> <span class="n">win</span>
+            <span class="n">w</span> <span class="o">*=</span> <span class="n">win</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights_dtype</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">w</span>
 

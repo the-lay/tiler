@@ -32,14 +32,14 @@ class TestMergingCommon(unittest.TestCase):
         merger4 = Merger(
             tiler=tiler,
             data_dtype=np.float32,
-            weights_dtype=np.float32,
+            weights_dtype=np.int16,
             window="boxcar",
         )
         self.assertEqual(merger4.data.dtype, np.float32)
         self.assertEqual(merger4.data_dtype, np.float32)
-        self.assertEqual(merger4.weights_sum.dtype, np.float32)
-        self.assertEqual(merger4.weights_dtype, np.float32)
-        self.assertEqual(merger4.window.dtype, np.float32)
+        self.assertEqual(merger4.weights_sum.dtype, np.int16)
+        self.assertEqual(merger4.weights_dtype, np.int16)
+        self.assertEqual(merger4.window.dtype, np.int16)
 
     def test_add(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
