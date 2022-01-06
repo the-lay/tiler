@@ -2,6 +2,7 @@ from typing import Union, Tuple, List, Optional
 import warnings
 
 import numpy as np
+import numpy.typing as npt
 
 from tiler import Tiler
 from tiler._windows import get_window
@@ -60,6 +61,8 @@ class Merger:
         window: Union[None, str, np.ndarray] = None,
         logits: int = 0,
         save_visits: bool = True,
+        data_dtype: npt.DTypeLike = np.float32,
+        weights_dtype: npt.DTypeLike = np.float32,
     ):
         """Merger holds cumulative result buffers for merging tiles created by a given Tiler
         and the window function that is applied to added tiles.
@@ -69,6 +72,12 @@ class Merger:
 
         TODO:
             - generate window depending on tile border type
+                # some reference for the future borders generation
+                # 1d = 3 types of tiles: 2 corners and middle
+                # 2d = 9 types of tiles: 4 corners, 4 tiles with 1 edge and middle
+                # 3d = 25 types of tiles: 8 corners, 12 tiles with 2 edges, 6 tiles with one edge and middle
+                # corners: 2^ndim
+                # tiles: 2*ndim*nedges
 
         Args:
             tiler (Tiler): Tiler with which the tiles were originally created.
@@ -81,6 +90,14 @@ class Merger:
 
             save_visits (bool): Specify whether to save which elements has been modified and how many times in
                 `self.data_visits`. Can be disabled to save some memory. Default is `True`.
+
+            data_dtype (np.dtype): Specify data type for data buffer that stores cumulative result.
+                Default is `np.float32`.
+
+            weights_dtype (np.dtype): Specify data type for weights buffer that stores cumulative weights.
+                If you don't need precision but would rather save memory you can use `np.float16`.
+                Likewise, on the opposite, you can use `np.float64`.
+                Default is `np.float32`.
 
         """
 
@@ -95,14 +112,9 @@ class Merger:
 
         # Generate data and normalization arrays
         self.data = self.data_visits = self.weights_sum = None
+        self.data_dtype = data_dtype
+        self.weights_dtype = weights_dtype
         self.reset(save_visits)
-
-        # for the future borders generation
-        # 1d = 3 types of tiles: 2 corners and middle
-        # 2d = 9 types of tiles: 4 corners, 4 tiles with 1 edge and middle
-        # 3d = 25 types of tiles: 8 corners, 12 tiles with 2 edges, 6 tiles with one edge and middle
-        # corners: 2^ndim
-        # tiles: 2*ndim*nedges
 
         # Generate window function
         self.window = None
@@ -200,16 +212,20 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros((self.logits, *padded_data_shape), dtype=np.float64)
+            self.data = np.zeros(
+                (self.logits, *padded_data_shape), dtype=self.data_dtype
+            )
         else:
-            self.data = np.zeros(padded_data_shape, dtype=np.float64)
+            self.data = np.zeros(padded_data_shape, dtype=self.data_dtype)
 
         # Data visits holds the number of times each element was assigned
         if save_visits:
-            self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)
+            self.data_visits = np.zeros(
+                padded_data_shape, dtype=np.uint32
+            )  # uint32 ought to be enough for anyone :)
 
         # Total data window (weight) coefficients
-        self.weights_sum = np.zeros(padded_data_shape, dtype=np.float64)
+        self.weights_sum = np.zeros(padded_data_shape, dtype=self.weights_dtype)
 
     def add(self, tile_id: int, data: np.ndarray) -> None:
         """Adds `tile_id`-th tile into Merger.

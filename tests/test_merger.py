@@ -22,8 +22,18 @@ class TestMergingCommon(unittest.TestCase):
         merger2 = Merger(tiler=tiler, logits=99)
         np.testing.assert_equal(merger2.data.shape, (99,) + self.data.shape)
 
+        # Check save_visits
         merger3 = Merger(tiler=tiler, save_visits=False)
         self.assert_(merger3.data_visits is None)
+        merger3 = Merger(tiler=tiler, save_visits=True)
+        self.assert_(merger3.data_visits is not None)
+
+        # Check data and weights dtypes
+        merger4 = Merger(tiler=tiler, data_dtype=np.float32, weights_dtype=np.float32)
+        self.assertEqual(merger4.data.dtype, np.float32)
+        self.assertEqual(merger4.data_dtype, np.float32)
+        self.assertEqual(merger4.weights_sum.dtype, np.float32)
+        self.assertEqual(merger4.weights_dtype, np.float32)
 
     def test_add(self):
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(10,))
@@ -257,8 +267,8 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(merger.merge(normalize_by_weights=False), self.data * 2)
         np.testing.assert_equal(merger.merge(normalize_by_weights=True), self.data)
 
-        # Test argmax
-        merger = Merger(tiler, logits=3)
+        # Test argmax, using float64 dtype for extra precision, float32 fails here
+        merger = Merger(tiler, logits=3, data_dtype=np.float64)
         for t_id, t in tiler(self.data):
             merger.add(t_id, np.vstack((t, t / 2, t / 3)))
 
