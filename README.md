@@ -22,6 +22,9 @@ Such tiling is often required for various heavy image-processing tasks
 such as semantic segmentation in deep learning, especially in domains where images do not fit into GPU memory
 (e.g., hyperspectral satellite images, whole slide images, videos, tomography data).
 
+Please see [Quick start section](https://github.com/the-lay/tiler#quick-start).   
+If you want to use tiler interactively, I highly recommend [napari](https://github.com/napari/napari) and [napari-tiler plugin](https://github.com/tdmorello/napari-tiler).
+
 
 Features
 -------------
@@ -35,8 +38,7 @@ Features
 
 
 Quick start
-------------
-This is an example of basic functionality.  
+------------ 
 You can find more examples in [examples](https://github.com/the-lay/tiler/tree/master/examples).  
 For more Tiler and Merger functionality, please check [documentation](https://the-lay.github.io/tiler).
 
