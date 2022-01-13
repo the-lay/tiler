@@ -35,6 +35,10 @@ class TestTilingCommon(unittest.TestCase):
                 overlap="unsupported_overlap",
             )
 
+        # test tile shape broadcasting
+        tiler = Tiler(data_shape=(300, 300), tile_shape=(10))
+        assert np.allclose(tiler.tile_shape, (1, 10))
+
     def test_repr(self):
         # gotta get that coverage
         tiler = Tiler(

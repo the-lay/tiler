@@ -95,7 +95,7 @@ class Tiler:
         if data_shape is not None:
             self.data_shape = np.asarray(data_shape).astype(int)
         if tile_shape is not None:
-            self.tile_shape = np.asarray(tile_shape).astype(int)
+            self.tile_shape = np.atleast_1d(np.asarray(tile_shape).astype(int))
         self._n_dim: int = len(self.data_shape)
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError(
