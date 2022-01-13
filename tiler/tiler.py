@@ -101,11 +101,20 @@ class Tiler:
             raise ValueError(
                 "Tile and data shapes must be tuple or lists of positive numbers."
             )
+        if self.tile_shape.size <= self.data_shape.size:
+            size_difference = self.data_shape.size - self.tile_shape.size
+            self.tile_shape = np.insert(
+                arr=self.tile_shape,
+                obj=0,
+                values=np.ones(size_difference),
+                axis=0
+            )
         if self.tile_shape.size != self.data_shape.size:
             raise ValueError(
-                "Tile and data shapes must have the same length. "
-                "Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, "
-                "e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1)."
+                "Tile shape must have less elements than the data shape."
+                "Hint: your tile shape will be prepended with ones to match the data shape,"
+                "following numpy broadcasting semantics."
+                "e.g. data_shape=(28, 28), tile_shape=(28) -> tile_shape=(1, 28)"
             )
 
         # Tiling mode
