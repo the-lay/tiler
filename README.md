@@ -136,7 +136,11 @@ This section is a work in progress.
 
 **How do I create tiles with less dimensions than the data array?**
 
-Tiler expects `tile_shape` to have the same length as `data_shape`.
-However you can specify the unwanted dimension as just 1.
-For example, if you want to get 2d tiles out from 3d array you can specify depth dimension of 1:
+Tiler expects `tile_shape` to have less than or the same number of elements as `data_shape`.
+If `tile_shape` has less elements than `data_shape`, `tile_shape` will be prepended with 
+ones to match the size of `data_shape`.
+For example, if you want to get 2d tiles out from 3d array:
+`Tiler(data_shape=(128,128,128), tile_shape=(128, 128))`.
+
+This is equivalent to:
 `Tiler(data_shape=(128,128,128), tile_shape=(1, 128, 128))`.
