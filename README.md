@@ -138,9 +138,6 @@ This section is a work in progress.
 
 Tiler expects `tile_shape` to have less than or the same number of elements as `data_shape`.
 If `tile_shape` has less elements than `data_shape`, `tile_shape` will be prepended with 
-ones to match the size of `data_shape`.
-For example, if you want to get 2d tiles out from 3d array:
-`Tiler(data_shape=(128,128,128), tile_shape=(128, 128))`.
-
-This is equivalent to:
+ones to match the size of `data_shape`.  
+For example, if you want to get 2d tiles out from 3d array you can initialize Tiler like this: `Tiler(data_shape=(128,128,128), tile_shape=(128, 128))` and it will be equivalent to
 `Tiler(data_shape=(128,128,128), tile_shape=(1, 128, 128))`.
