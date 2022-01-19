@@ -1,4 +1,4 @@
-# ![tiler_logo](https://user-images.githubusercontent.com/1889128/148645934-2b1545bc-e7ea-4f02-88fb-10100b6aa9be.png) tiler
+# ![tiler_baby_logo](misc/baby_logo.png) tiler
 
 ![Tiler teaser image](misc/teaser/tiler_teaser.png)
 
