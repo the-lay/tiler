@@ -1,4 +1,4 @@
-cd $(dirname "$file_name")/..
+cd "$(dirname "$file_name")"/.. || exit
 
 # build docs
 pdoc -o docs -d google tiler

@@ -47,7 +47,8 @@ class Tiler:
                 If there is a channel dimension, it should be included in the shape.
 
             tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
-                Tile must have the same number of dimensions as data.
+                Tile must have the same number of dimensions as data or less.
+                If less, the shape will be automatically prepended with ones to match data_shape size.
 
             overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.
                 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
@@ -93,19 +94,29 @@ class Tiler:
 
         # Data and tile shapes
         if data_shape is not None:
-            self.data_shape = np.asarray(data_shape).astype(int)
+            self.data_shape = np.asarray(data_shape, dtype=np.int64)
         if tile_shape is not None:
-            self.tile_shape = np.asarray(tile_shape).astype(int)
+            self.tile_shape = np.atleast_1d(np.asarray(tile_shape, dtype=np.int64))
+
+            # Append ones to match data_shape size
+            if self.tile_shape.size <= self.data_shape.size:
+                size_difference = self.data_shape.size - self.tile_shape.size
+                self.tile_shape = np.insert(
+                    arr=self.tile_shape, obj=0, values=np.ones(size_difference), axis=0
+                )
+                warnings.warn(
+                    f"Tiler automatically adjusted tile_shape from {tuple(tile_shape)} to {tuple(self.tile_shape)}."
+                )
         self._n_dim: int = len(self.data_shape)
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
             raise ValueError(
-                "Tile and data shapes must be tuple or lists of positive numbers."
+                "Tile and data shapes must be tuple, list or ndarray of positive integers."
             )
         if self.tile_shape.size != self.data_shape.size:
             raise ValueError(
-                "Tile and data shapes must have the same length. "
-                "Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, "
-                "e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1)."
+                "Tile shape must have less or equal number of elements compared to the data shape. "
+                "If less, your tile shape will be prepended with ones to match the data shape, "
+                "e.g. data_shape=(28, 28), tile_shape=(28) -> tile_shape=(1, 28)."
             )
 
         # Tiling mode

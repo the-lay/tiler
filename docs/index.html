@@ -135,6 +135,9 @@ functions for tiling/patching and subsequent merging of NumPy arrays.</p>
 such as semantic segmentation in deep learning, especially in domains where images do not fit into GPU memory
 (e.g., hyperspectral satellite images, whole slide images, videos, tomography data).</p>
 
+<p>Please see <a href="https://github.com/the-lay/tiler#quick-start">Quick start section</a>. <br />
+If you want to use tiler interactively, I highly recommend <a href="https://github.com/napari/napari">napari</a> and <a href="https://github.com/tdmorello/napari-tiler">napari-tiler plugin</a>.</p>
+
 <h2 id="features">Features</h2>
 
 <ul>
@@ -149,8 +152,7 @@ such as semantic segmentation in deep learning, especially in domains where imag
 
 <h2 id="quick-start">Quick start</h2>
 
-<p>This is an example of basic functionality. <br />
-You can find more examples in <a href="https://github.com/the-lay/tiler/tree/master/examples">examples</a>. <br />
+<p>You can find more examples in <a href="https://github.com/the-lay/tiler/tree/master/examples">examples</a>. <br />
 For more Tiler and Merger functionality, please check <a href="https://the-lay.github.io/tiler">documentation</a>.</p>
 
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -263,9 +265,10 @@ No existing libraries listed below fit my use case, so that's why I wrote this l
 
 <p><strong>How do I create tiles with less dimensions than the data array?</strong></p>
 
-<p>Tiler expects <code>tile_shape</code> to have the same length as <code>data_shape</code>.
-However you can specify the unwanted dimension as just 1.
-For example, if you want to get 2d tiles out from 3d array you can specify depth dimension of 1:
+<p>Tiler expects <code>tile_shape</code> to have less than or the same number of elements as <code>data_shape</code>.
+If <code>tile_shape</code> has less elements than <code>data_shape</code>, <code>tile_shape</code> will be prepended with 
+ones to match the size of <code>data_shape</code>. <br />
+For example, if you want to get 2d tiles out from 3d array you can initialize Tiler like this: <code>Tiler(data_shape=(128,128,128), tile_shape=(128, 128))</code> and it will be equivalent to
 <code>Tiler(data_shape=(128,128,128), tile_shape=(1, 128, 128))</code>.</p>
 </div>
 
@@ -298,10 +301,13 @@ For example, if you want to get 2d tiles out from 3d array you can specify depth
 <span class="k">if</span> <span class="s2">&quot;pdoc&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;README.md&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">_readme</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        <span class="n">_readme</span> <span class="o">=</span> <span class="n">_readme</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;# tiler&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># remove header</span>
-        <span class="n">_readme</span> <span class="o">=</span> <span class="n">_readme</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-            <span class="s2">&quot;misc/teaser/tiler_teaser.png&quot;</span><span class="p">,</span> <span class="s2">&quot;tiler_teaser.png&quot;</span>
-        <span class="p">)</span>  <span class="c1"># replace image path</span>
+
+        <span class="c1"># remove baby logo and header</span>
+        <span class="n">_readme</span> <span class="o">=</span> <span class="n">_readme</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># replace teaser image path</span>
+        <span class="n">_readme</span> <span class="o">=</span> <span class="n">_readme</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;misc/teaser/tiler_teaser.png&quot;</span><span class="p">,</span> <span class="s2">&quot;tiler_teaser.png&quot;</span><span class="p">)</span>
+        <span class="n">_readme</span> <span class="o">=</span> <span class="n">_readme</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;misc/baby_logo.png&quot;</span><span class="p">,</span> <span class="s2">&quot;baby_logo.png&quot;</span><span class="p">)</span>
         <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">_readme</span>
 </pre></div>
 
@@ -360,7 +366,8 @@ For example, if you want to get 2d tiles out from 3d array you can specify depth
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
 
 <span class="sd">            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).</span>
-<span class="sd">                Tile must have the same number of dimensions as data.</span>
+<span class="sd">                Tile must have the same number of dimensions as data or less.</span>
+<span class="sd">                If less, the shape will be automatically prepended with ones to match data_shape size.</span>
 
 <span class="sd">            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.</span>
 <span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
@@ -406,19 +413,29 @@ For example, if you want to get 2d tiles out from 3d array you can specify depth
 
         <span class="c1"># Data and tile shapes</span>
         <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+
+            <span class="c1"># Append ones to match data_shape size</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">size_difference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                    <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size_difference</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Tiler automatically adjusted tile_shape from </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
+                <span class="s2">&quot;Tile and data shapes must be tuple, list or ndarray of positive integers.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Tile and data shapes must have the same length. &quot;</span>
-                <span class="s2">&quot;Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, &quot;</span>
-                <span class="s2">&quot;e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).&quot;</span>
+                <span class="s2">&quot;Tile shape must have less or equal number of elements compared to the data shape. &quot;</span>
+                <span class="s2">&quot;If less, your tile shape will be prepended with ones to match the data shape, &quot;</span>
+                <span class="s2">&quot;e.g. data_shape=(28, 28), tile_shape=(28) -&gt; tile_shape=(1, 28).&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Tiling mode</span>
@@ -960,7 +977,8 @@ For example, if you want to get 2d tiles out from 3d array you can specify depth
 <span class="sd">                If there is a channel dimension, it should be included in the shape.</span>
 
 <span class="sd">            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).</span>
-<span class="sd">                Tile must have the same number of dimensions as data.</span>
+<span class="sd">                Tile must have the same number of dimensions as data or less.</span>
+<span class="sd">                If less, the shape will be automatically prepended with ones to match data_shape size.</span>
 
 <span class="sd">            overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.</span>
 <span class="sd">                If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.</span>
@@ -1002,7 +1020,8 @@ with <code><a href="#Tiler.iterate">Tiler.iterate()</a></code> (or the alias <co
 <li><strong>data_shape (tuple, list or np.ndarray):</strong>  Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
 If there is a channel dimension, it should be included in the shape.</li>
 <li><strong>tile_shape (tuple, list or np.ndarray):</strong>  Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
-Tile must have the same number of dimensions as data.</li>
+Tile must have the same number of dimensions as data or less.
+If less, the shape will be automatically prepended with ones to match data_shape size.</li>
 <li><strong>overlap (int, float, tuple, list or np.ndarray):</strong>  Specifies overlap between tiles.
 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
 If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
@@ -1087,19 +1106,29 @@ The first values are used to pad the end and the end values are used to pad the 
 
         <span class="c1"># Data and tile shapes</span>
         <span class="k">if</span> <span class="n">data_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">tile_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+
+            <span class="c1"># Append ones to match data_shape size</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+                <span class="n">size_difference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                    <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size_difference</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Tiler automatically adjusted tile_shape from </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">)</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Tile and data shapes must be tuple or lists of positive numbers.&quot;</span>
+                <span class="s2">&quot;Tile and data shapes must be tuple, list or ndarray of positive integers.&quot;</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Tile and data shapes must have the same length. &quot;</span>
-                <span class="s2">&quot;Hint: if you require tiles with less dimensions than data, put 1 in sliced dimensions, &quot;</span>
-                <span class="s2">&quot;e.g. to get 1d 64px lines of 2d 64x64px image would mean tile_shape of (64, 1).&quot;</span>
+                <span class="s2">&quot;Tile shape must have less or equal number of elements compared to the data shape. &quot;</span>
+                <span class="s2">&quot;If less, your tile shape will be prepended with ones to match the data shape, &quot;</span>
+                <span class="s2">&quot;e.g. data_shape=(28, 28), tile_shape=(28) -&gt; tile_shape=(1, 28).&quot;</span>
             <span class="p">)</span>
 
         <span class="c1"># Tiling mode</span>
