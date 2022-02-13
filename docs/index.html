@@ -418,7 +418,7 @@ For example, if you want to get 2d tiles out from 3d array you can initialize Ti
             <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
 
             <span class="c1"># Append ones to match data_shape size</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
                 <span class="n">size_difference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
                     <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size_difference</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
@@ -1111,7 +1111,7 @@ The first values are used to pad the end and the end values are used to pad the 
             <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
 
             <span class="c1"># Append ones to match data_shape size</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
                 <span class="n">size_difference</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_shape</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="o">.</span><span class="n">size</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
                     <span class="n">arr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tile_shape</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">size_difference</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
@@ -2290,7 +2290,7 @@ Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a
         <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
 
@@ -2302,11 +2302,16 @@ Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a
 <span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
 <span class="sd">                Default is None.</span>
 
-<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
+<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed.</span>
+<span class="sd">                Useful when merger is initialized with `logits=True`.</span>
+<span class="sd">                Default is False.</span>
 
-<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights.</span>
+<span class="sd">                Default is True.</span>
 
-<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
+<span class="sd">            dtype (np.dtype, optional): Specify dtype for the final merged output.</span>
+<span class="sd">                If None, uses `data_dtype` specified when Merger was initialized.</span>
+<span class="sd">                Default is None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
@@ -2330,7 +2335,10 @@ Then when merging, pass padding to <code><a href="#Merger.merge">Merger.merge</a
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -2802,7 +2810,7 @@ If passed None sets a boxcar window (constant 1s).</li>
     extra_padding: Union[List[Tuple[int, int]], NoneType] = None,
     argmax: bool = False,
     normalize_by_weights: bool = True,
-    dtype: numpy.dtype = &lt;class &#39;numpy.float64&#39;&gt;
+    dtype: Union[numpy.dtype, NoneType, type, numpy._dtype_like._SupportsDType, str, Tuple[Any, int], Tuple[Any, Union[int, Sequence[int]]], List[Any], numpy._dtype_like._DTypeDict, Tuple[Any, Any]] = None
 ) -&gt; numpy.ndarray</span>:
     </div>
 
@@ -2814,7 +2822,7 @@ If passed None sets a boxcar window (constant 1s).</li>
         <span class="n">extra_padding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">argmax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">normalize_by_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Returns merged data array obtained from added tiles.</span>
 
@@ -2826,11 +2834,16 @@ If passed None sets a boxcar window (constant 1s).</li>
 <span class="sd">                ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.</span>
 <span class="sd">                Default is None.</span>
 
-<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.</span>
+<span class="sd">            argmax (bool): If argmax is True, the first dimension will be argmaxed.</span>
+<span class="sd">                Useful when merger is initialized with `logits=True`.</span>
+<span class="sd">                Default is False.</span>
 
-<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.</span>
+<span class="sd">            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights.</span>
+<span class="sd">                Default is True.</span>
 
-<span class="sd">            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.</span>
+<span class="sd">            dtype (np.dtype, optional): Specify dtype for the final merged output.</span>
+<span class="sd">                If None, uses `data_dtype` specified when Merger was initialized.</span>
+<span class="sd">                Default is None.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: Final merged data array obtained from added tiles.</span>
@@ -2854,7 +2867,10 @@ If passed None sets a boxcar window (constant 1s).</li>
         <span class="k">if</span> <span class="n">argmax</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_dtype</span><span class="p">)</span>
 </pre></div>
 
         </details>
@@ -2869,9 +2885,14 @@ If passed None sets a boxcar window (constant 1s).</li>
 Number of values padded to the edges of each axis.
 ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
 Default is None.</li>
-<li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed. Default is False.</li>
-<li><strong>normalize_by_weights (bool):</strong>  If normalize is True, the accumulated data will be divided by weights. Default is True.</li>
-<li><strong>dtype (np.dtype):</strong>  Specify dtype for the final . Default is <code>np.float64</code>.</li>
+<li><strong>argmax (bool):</strong>  If argmax is True, the first dimension will be argmaxed.
+Useful when merger is initialized with <code>logits=True</code>.
+Default is False.</li>
+<li><strong>normalize_by_weights (bool):</strong>  If normalize is True, the accumulated data will be divided by weights.
+Default is True.</li>
+<li><strong>dtype (np.dtype, optional):</strong>  Specify dtype for the final merged output.
+If None, uses <code>data_dtype</code> specified when Merger was initialized.
+Default is None.</li>
 </ul>
 
 <h6 id="returns">Returns</h6>
