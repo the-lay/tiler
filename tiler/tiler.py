@@ -99,7 +99,7 @@ class Tiler:
             self.tile_shape = np.atleast_1d(np.asarray(tile_shape, dtype=np.int64))
 
             # Append ones to match data_shape size
-            if self.tile_shape.size <= self.data_shape.size:
+            if self.tile_shape.size < self.data_shape.size:
                 size_difference = self.data_shape.size - self.tile_shape.size
                 self.tile_shape = np.insert(
                     arr=self.tile_shape, obj=0, values=np.ones(size_difference), axis=0

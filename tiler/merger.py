@@ -355,7 +355,7 @@ class Merger:
         extra_padding: Optional[List[Tuple[int, int]]] = None,
         argmax: bool = False,
         normalize_by_weights: bool = True,
-        dtype: np.dtype = np.float64,
+        dtype: Optional[npt.DTypeLike] = None,
     ) -> np.ndarray:
         """Returns merged data array obtained from added tiles.
 
@@ -367,11 +367,16 @@ class Merger:
                 ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
                 Default is None.
 
-            argmax (bool): If argmax is True, the first dimension will be argmaxed. Default is False.
+            argmax (bool): If argmax is True, the first dimension will be argmaxed.
+                Useful when merger is initialized with `logits=True`.
+                Default is False.
 
-            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights. Default is True.
+            normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights.
+                Default is True.
 
-            dtype (np.dtype): Specify dtype for the final . Default is `np.float64`.
+            dtype (np.dtype, optional): Specify dtype for the final merged output.
+                If None, uses `data_dtype` specified when Merger was initialized.
+                Default is None.
 
         Returns:
             np.ndarray: Final merged data array obtained from added tiles.
@@ -395,4 +400,7 @@ class Merger:
         if argmax:
             data = np.argmax(data, 0)
 
-        return data.astype(dtype)
+        if dtype is not None:
+            return data.astype(dtype)
+        else:
+            return data.astype(self.data_dtype)
