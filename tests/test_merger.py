@@ -24,9 +24,9 @@ class TestMergingCommon(unittest.TestCase):
 
         # Check save_visits
         merger3 = Merger(tiler=tiler, save_visits=False)
-        self.assert_(merger3.data_visits is None)
+        self.assertTrue(merger3.data_visits is None)
         merger3 = Merger(tiler=tiler, save_visits=True)
-        self.assert_(merger3.data_visits is not None)
+        self.assertTrue(merger3.data_visits is not None)
 
         # Check data and weights dtypes
         merger4 = Merger(
