@@ -52,7 +52,7 @@ class Tiler:
 
             overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.
                 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
-                If float, percentage of a tile_shape to overlap (from 0.0 to 1.0), except channel_dimension.
+                If float, percentage of a tile_shape to overlap [0.0, 1.0), i.e. from 0% to 100% non-inclusive, except channel_dimension.
                 If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).
                 Default is `0`.
 
@@ -151,9 +151,9 @@ class Tiler:
         if overlap is not None:
             self.overlap = overlap
         if isinstance(self.overlap, float):
-            if self.overlap < 0 or self.overlap > 1.0:
+            if self.overlap < 0 or self.overlap >= 1.0:
                 raise ValueError(
-                    "Float overlap must be in range of 0.0 (0%) to 1.0 (100%)."
+                    "Float overlap must be in range of [0.0, 1.0) i.e. [0%, 100%)."
                 )
 
             self._tile_overlap: np.ndarray = np.ceil(
