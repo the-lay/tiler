@@ -58,7 +58,7 @@ class Tiler:
 
             channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.
                 Usually it is the last or the first dimension of the array.
-                Negative indexing (`-len(data_shape)` to `-1` inclusive) is allowed.
+                Negative indexing (i.e., `-len(data_shape)` to `-1` inclusive) is allowed.
                 Default is `None`, no channel dimension in the data.
 
             mode (str): Defines how the data will be tiled.
@@ -147,6 +147,10 @@ class Tiler:
                 # negative indexing
                 self.channel_dimension = self._n_dim + self.channel_dimension
 
+        self.tile_shape_wo_channel = self.tile_shape[
+            np.arange(self._n_dim) != self.channel_dimension
+        ]
+
         # Overlap and step
         if overlap is not None:
             self.overlap = overlap
@@ -163,12 +167,9 @@ class Tiler:
                 self._tile_overlap[self.channel_dimension] = 0
 
         elif isinstance(self.overlap, int):
-            tile_shape_without_channel = self.tile_shape[
-                np.arange(self._n_dim) != self.channel_dimension
-            ]
-            if self.overlap < 0 or np.any(self.overlap >= tile_shape_without_channel):
+            if self.overlap < 0 or np.any(self.overlap >= self.tile_shape_wo_channel):
                 raise ValueError(
-                    f"Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}"
+                    f"Integer overlap must be in range of 0 to {np.max(self.tile_shape_wo_channel)}"
                 )
 
             self._tile_overlap: np.ndarray = np.array(
