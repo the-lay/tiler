@@ -17,4 +17,4 @@ Minimal code example to recreate the issue.
 A clear and concise description of what you expected to happen.
 
 **Tiler version**
-Can be retrieve quickly with `python -c "import tiler; print(tiler.__version__)"`.
+Can be retrieved with `python -c "import tiler; print(tiler.__version__)"`.

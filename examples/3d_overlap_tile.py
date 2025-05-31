@@ -1,4 +1,4 @@
-# 3D grayscale overlap-tile stratefy tiling/merging example
+# 3D grayscale overlap-tile strategy tiling/merging example
 #
 # "This strategy allows the seamless segmentation of arbitrarily large images by an overlap-tile strategy.
 # To predict the pixels in the border region of the image, the missing context is extrapolated by mirroring
@@ -6,9 +6,10 @@
 # since otherwise the resolution would be limited by the GPU memory." - Ronneberger et al 2015, U-Net paper
 
 # We will use napari to inspect 3D volumes
-import numpy as np
-from tiler import Tiler, Merger
 import napari
+import numpy as np
+
+from tiler import Merger, Tiler
 
 # Example "checkerboard"-like volume with some variation for visualization
 # https://stackoverflow.com/a/51715491
@@ -37,6 +38,7 @@ padded_volume = np.pad(volume, padding, mode="reflect")
 # or you can use window="overlap-tile"
 # it will automatically calculate such window based on tiler.overlap and applied padding
 merger = Merger(tiler=tiler, window="overlap-tile")
+
 
 # Let's define a function that will be applied to each tile
 # For this example, let's black out the sides that should be "cropped" by window function

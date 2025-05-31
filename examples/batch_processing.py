@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
-from tiler import Tiler, Merger
+
+from tiler import Merger, Tiler
 
 # Loading image
 # Photo by Christian Holzinger on Unsplash: https://unsplash.com/photos/CUY_YHhCFl4

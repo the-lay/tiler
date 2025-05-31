@@ -1,9 +1,9 @@
 # Again, this is almost verbatim from scipy's window tests
 import unittest
+
 import numpy as np
 
-from tiler import _windows
-from tiler import Merger
+from tiler import Merger, _windows
 
 
 class TestGetWindow(unittest.TestCase):
@@ -41,12 +41,8 @@ class TestBoxcar(unittest.TestCase):
 
 class TestTriang(unittest.TestCase):
     def test_basic(self):
-        np.testing.assert_allclose(
-            _windows._triang(6), [1 / 6, 1 / 2, 5 / 6, 5 / 6, 1 / 2, 1 / 6]
-        )
-        np.testing.assert_allclose(
-            _windows._triang(7), [1 / 4, 1 / 2, 3 / 4, 1, 3 / 4, 1 / 2, 1 / 4]
-        )
+        np.testing.assert_allclose(_windows._triang(6), [1 / 6, 1 / 2, 5 / 6, 5 / 6, 1 / 2, 1 / 6])
+        np.testing.assert_allclose(_windows._triang(7), [1 / 4, 1 / 2, 3 / 4, 1, 3 / 4, 1 / 2, 1 / 4])
 
 
 class TestParzen(unittest.TestCase):
@@ -117,9 +113,7 @@ class TestBlackman(unittest.TestCase):
             ],
             atol=1e-14,
         )
-        np.testing.assert_allclose(
-            _windows._blackman(7), [0, 0.13, 0.63, 1.0, 0.63, 0.13, 0], atol=1e-14
-        )
+        np.testing.assert_allclose(_windows._blackman(7), [0, 0.13, 0.63, 1.0, 0.63, 0.13, 0], atol=1e-14)
 
 
 class TestNuttall(unittest.TestCase):
@@ -163,9 +157,7 @@ class TestBlackmanHarris(unittest.TestCase):
 class TestBartlett(unittest.TestCase):
     def test_basic(self):
         np.testing.assert_allclose(_windows._bartlett(6), [0, 0.4, 0.8, 0.8, 0.4, 0])
-        np.testing.assert_allclose(
-            _windows._bartlett(7), [0, 1 / 3, 2 / 3, 1.0, 2 / 3, 1 / 3, 0]
-        )
+        np.testing.assert_allclose(_windows._bartlett(7), [0, 1 / 3, 2 / 3, 1.0, 2 / 3, 1 / 3, 0])
 
 
 class TestHann(unittest.TestCase):
@@ -181,9 +173,7 @@ class TestHann(unittest.TestCase):
                 0,
             ],
         )
-        np.testing.assert_allclose(
-            _windows._hann(7), [0, 0.25, 0.75, 1.0, 0.75, 0.25, 0]
-        )
+        np.testing.assert_allclose(_windows._hann(7), [0, 0.25, 0.75, 1.0, 0.75, 0.25, 0])
 
 
 class TestBartHann(unittest.TestCase):
@@ -199,9 +189,7 @@ class TestBartHann(unittest.TestCase):
                 0,
             ],
         )
-        np.testing.assert_allclose(
-            _windows._barthann(7), [0, 0.27, 0.73, 1.0, 0.73, 0.27, 0]
-        )
+        np.testing.assert_allclose(_windows._barthann(7), [0, 0.27, 0.73, 1.0, 0.73, 0.27, 0])
 
 
 class TestHamming(unittest.TestCase):
@@ -217,6 +205,4 @@ class TestHamming(unittest.TestCase):
                 0.08,
             ],
         )
-        np.testing.assert_allclose(
-            _windows._hamming(7), [0.08, 0.31, 0.77, 1.0, 0.77, 0.31, 0.08]
-        )
+        np.testing.assert_allclose(_windows._hamming(7), [0.08, 0.31, 0.77, 1.0, 0.77, 0.31, 0.08])

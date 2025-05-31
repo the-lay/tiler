@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-from tiler import Tiler, Merger
+
+from tiler import Merger, Tiler
 
 
 class TestMergingCommon(unittest.TestCase):
@@ -93,9 +95,7 @@ class TestMergingCommon(unittest.TestCase):
         with self.assertRaises(ValueError):
             merger_irregular.add(0, np.ones((13,)))
         merger_irregular.add(len(tiler2) - 1, tile_irregular)
-        np.testing.assert_equal(
-            merger_irregular.merge()[-len(tile_irregular) :], tile_irregular
-        )
+        np.testing.assert_equal(merger_irregular.merge()[-len(tile_irregular) :], tile_irregular)
 
         # Channel dimension merger
         with self.assertRaises(ValueError):
@@ -152,9 +152,7 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(merger.merge(), self.data)
         merger.reset()
 
-        batch8_drop = [
-            x for _, x in tiler(self.data, False, batch_size=8, drop_last=True)
-        ]
+        batch8_drop = [x for _, x in tiler(self.data, False, batch_size=8, drop_last=True)]
         np.testing.assert_equal(len(batch8_drop), 1)
         np.testing.assert_equal(
             batch8_drop[0].shape,
@@ -191,12 +189,9 @@ class TestMergingCommon(unittest.TestCase):
         merger = Merger(tiler=tiler, window=window)
         for t_id, t in tiler(self.data):
             merger.add(t_id, t)
-        np.testing.assert_equal(
-            merger.merge(), [i if i % 10 else 0 for i in range(100)]
-        )
+        np.testing.assert_equal(merger.merge(), [i if i % 10 else 0 for i in range(100)])
 
     def test_overlap_tile_window(self):
-
         # no overlap is given - the resulting window should be just zeros
         tiler = Tiler(data_shape=(100,), tile_shape=(10,), overlap=0)
         merger = Merger(tiler=tiler, window="overlap-tile")
@@ -213,27 +208,19 @@ class TestMergingCommon(unittest.TestCase):
         np.testing.assert_equal(merger.window, [0, 0, 0, 1, 1, 1, 1, 0, 0, 0])
 
         # channel dimension case
-        tiler = Tiler(
-            data_shape=(3, 100), tile_shape=(3, 4), channel_dimension=0, overlap=2
-        )
+        tiler = Tiler(data_shape=(3, 100), tile_shape=(3, 4), channel_dimension=0, overlap=2)
         merger = Merger(tiler=tiler, window="overlap-tile")
-        np.testing.assert_equal(
-            merger.window, [[0, 1, 1, 0], [0, 1, 1, 0], [0, 1, 1, 0]]
-        )
+        np.testing.assert_equal(merger.window, [[0, 1, 1, 0], [0, 1, 1, 0], [0, 1, 1, 0]])
 
         # 2D even case
         tiler = Tiler(data_shape=(100, 100), tile_shape=(4, 4), overlap=(2, 2))
         merger = Merger(tiler=tiler, window="overlap-tile")
-        np.testing.assert_equal(
-            merger.window, [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
-        )
+        np.testing.assert_equal(merger.window, [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]])
 
         # 2D odd case
         tiler = Tiler(data_shape=(100, 100), tile_shape=(4, 4), overlap=3)
         merger = Merger(tiler=tiler, window="overlap-tile")
-        np.testing.assert_equal(
-            merger.window, [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
-        )
+        np.testing.assert_equal(merger.window, [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]])
 
         # Channel + 2D even case
         tiler = Tiler(
@@ -253,7 +240,6 @@ class TestMergingCommon(unittest.TestCase):
         )
 
     def test_merge(self):
-
         # Test unpadding
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(12,))
         merger = Merger(tiler)
@@ -261,9 +247,7 @@ class TestMergingCommon(unittest.TestCase):
             merger.add(t_id, t)
 
         np.testing.assert_equal(merger.merge(unpad=True), self.data)
-        np.testing.assert_equal(
-            merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0]))
-        )
+        np.testing.assert_equal(merger.merge(unpad=False), np.hstack((self.data, [0, 0, 0, 0, 0, 0, 0, 0])))
 
         # Test without normalization by weights
         window = np.ones((12,)) * 2
@@ -284,9 +268,7 @@ class TestMergingCommon(unittest.TestCase):
             np.vstack((self.data, self.data / 2, self.data / 3)),
         )
 
-        np.testing.assert_equal(
-            merger.merge(unpad=False, argmax=True), np.zeros((108,))
-        )
+        np.testing.assert_equal(merger.merge(unpad=False, argmax=True), np.zeros((108,)))
         np.testing.assert_equal(
             merger.merge(unpad=False, argmax=False),
             np.vstack(

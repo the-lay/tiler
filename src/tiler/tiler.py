@@ -1,29 +1,29 @@
-import warnings
 import itertools
+import warnings
+from typing import Callable, Generator, List, Optional, Tuple, Union
 
 import numpy as np
 from tqdm.auto import tqdm
-from typing import Optional, Tuple, List, Union, Generator, Callable
 
 
 class Tiler:
     TILING_MODES = ["constant", "drop", "irregular", "reflect", "edge", "wrap"]
     r"""
     Supported tiling modes:
-    - `constant` (default)  
+    - `constant` (default)
         If a tile is smaller than `tile_shape`, pad it with the constant value along each axis to match `tile_shape`.
-        Set the value with the keyword `constant_value`.  
-    - `drop`  
+        Set the value with the keyword `constant_value`.
+    - `drop`
         If a tile is smaller than `tile_shape` in any of the dimensions, ignore it. Can result in zero tiles.
-    - `irregular`  
+    - `irregular`
         Allow tiles to be smaller than `tile_shape`.
-    - `reflect`  
+    - `reflect`
         If a tile is smaller than `tile_shape`,
         pad it with the reflection of values along each axis to match `tile_shape`.
-    - `edge`  
+    - `edge`
         If a tile is smaller than `tile_shape`,
         pad it with the edge values of data along each axis to match `tile_shape`.
-    - `wrap`  
+    - `wrap`
         If a tile is smaller than `tile_shape`,
         pad it with the wrap of the vector along each axis to match `tile_shape`.
         The first values are used to pad the end and the end values are used to pad the beginning.
@@ -43,17 +43,21 @@ class Tiler:
         with `Tiler.iterate()` (or the alias `Tiler.__call__()`).
 
         Args:
-            data_shape (tuple, list or np.ndarray): Input data shape, e.g. (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
+            data_shape (tuple, list or np.ndarray): Input data shape.
                 If there is a channel dimension, it should be included in the shape.
+                For example, (1920, 1080, 3), [512, 512, 512] or np.ndarray([3, 1024, 768]).
 
-            tile_shape (tuple, list or np.ndarray): Shape of a tile, e.g. (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
+            tile_shape (tuple, list or np.ndarray): Shape of a tile.
                 Tile must have the same number of dimensions as data or less.
                 If less, the shape will be automatically prepended with ones to match data_shape size.
+                For example,  (256, 256, 3), [64, 64, 64] or np.ndarray([3, 128, 128]).
 
             overlap (int, float, tuple, list or np.ndarray): Specifies overlap between tiles.
                 If integer, the same overlap of overlap pixels applied in each dimension, except channel_dimension.
-                If float, percentage of a tile_shape to overlap [0.0, 1.0), i.e. from 0% to 100% non-inclusive, except channel_dimension.
-                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each dimension).
+                If float, percentage of a tile_shape to overlap [0.0, 1.0), from 0% to 100% non-inclusive, except
+                channel_dimension.
+                If tuple, list or np.ndarray, explicit size of the overlap (must be smaller than tile_shape in each
+                dimension).
                 Default is `0`.
 
             channel_dimension (int, optional): Specifies which axis is the channel dimension that will not be tiled.
@@ -101,17 +105,14 @@ class Tiler:
             # Append ones to match data_shape size
             if self.tile_shape.size < self.data_shape.size:
                 size_difference = self.data_shape.size - self.tile_shape.size
-                self.tile_shape = np.insert(
-                    arr=self.tile_shape, obj=0, values=np.ones(size_difference), axis=0
-                )
+                self.tile_shape = np.insert(arr=self.tile_shape, obj=0, values=np.ones(size_difference), axis=0)
                 warnings.warn(
-                    f"Tiler automatically adjusted tile_shape from {tuple(tile_shape)} to {tuple(self.tile_shape)}."
+                    f"Tiler automatically adjusted tile_shape from {tuple(tile_shape)} to {tuple(self.tile_shape)}.",
+                    stacklevel=2,
                 )
         self._n_dim: int = len(self.data_shape)
         if (self.tile_shape <= 0).any() or (self.data_shape <= 0).any():
-            raise ValueError(
-                "Tile and data shapes must be tuple, list or ndarray of positive integers."
-            )
+            raise ValueError("Tile and data shapes must be tuple, list or ndarray of positive integers.")
         if self.tile_shape.size != self.data_shape.size:
             raise ValueError(
                 "Tile shape must have less or equal number of elements compared to the data shape. "
@@ -123,22 +124,17 @@ class Tiler:
         if mode is not None:
             self.mode = mode
         if self.mode not in self.TILING_MODES:
-            raise ValueError(
-                f"{self.mode} is an unsupported tiling mode, please check the documentation."
-            )
+            raise ValueError(f"{self.mode} is an unsupported tiling mode, please check the documentation.")
 
         # Constant value used for constant tiling mode
         if constant_value is not None:
             self.constant_value = constant_value
 
-        # Channel dimension
         # Channel dimension can be None which means we need to check for init too
         if not hasattr(self, "channel_dimension") or channel_dimension is not None:
             self.channel_dimension = channel_dimension
         if self.channel_dimension:
-            if (self.channel_dimension >= self._n_dim) or (
-                self.channel_dimension < -self._n_dim
-            ):
+            if (self.channel_dimension >= self._n_dim) or (self.channel_dimension < -self._n_dim):
                 raise ValueError(
                     f"Specified channel dimension is out of bounds "
                     f"(should be None or an integer from {-self._n_dim} to {self._n_dim - 1})."
@@ -152,51 +148,31 @@ class Tiler:
             self.overlap = overlap
         if isinstance(self.overlap, float):
             if self.overlap < 0 or self.overlap >= 1.0:
-                raise ValueError(
-                    "Float overlap must be in range of [0.0, 1.0) i.e. [0%, 100%)."
-                )
+                raise ValueError("Float overlap must be in range of [0.0, 1.0) i.e. [0%, 100%).")
 
-            self._tile_overlap: np.ndarray = np.ceil(
-                self.overlap * self.tile_shape
-            ).astype(int)
+            self._tile_overlap: np.ndarray = np.ceil(self.overlap * self.tile_shape).astype(int)
             if self.channel_dimension is not None:
                 self._tile_overlap[self.channel_dimension] = 0
 
         elif isinstance(self.overlap, int):
-            tile_shape_without_channel = self.tile_shape[
-                np.arange(self._n_dim) != self.channel_dimension
-            ]
+            tile_shape_without_channel = self.tile_shape[np.arange(self._n_dim) != self.channel_dimension]
             if self.overlap < 0 or np.any(self.overlap >= tile_shape_without_channel):
-                raise ValueError(
-                    f"Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}"
-                )
+                raise ValueError(f"Integer overlap must be in range of 0 to {np.max(tile_shape_without_channel)}")
 
-            self._tile_overlap: np.ndarray = np.array(
-                [self.overlap for _ in self.tile_shape]
-            )
+            self._tile_overlap: np.ndarray = np.array([self.overlap for _ in self.tile_shape])
             if self.channel_dimension is not None:
                 self._tile_overlap[self.channel_dimension] = 0
 
-        elif (
-            isinstance(self.overlap, list)
-            or isinstance(self.overlap, tuple)
-            or isinstance(self.overlap, np.ndarray)
-        ):
-            if np.any(np.array(self.overlap) < 0) or np.any(
-                self.overlap >= self.tile_shape
-            ):
+        elif isinstance(self.overlap, (list, tuple, np.ndarray)):
+            if np.any(np.array(self.overlap) < 0) or np.any(self.overlap >= self.tile_shape):
                 raise ValueError("Overlap size must be smaller than tile_shape.")
 
             self._tile_overlap: np.ndarray = np.array(self.overlap).astype(int)
 
         else:
-            raise ValueError(
-                "Unsupported overlap mode (not float, int, list, tuple or np.ndarray)."
-            )
+            raise ValueError("Unsupported overlap mode (not float, int, list, tuple or np.ndarray).")
 
-        self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(
-            int
-        )  # tile step
+        self._tile_step: np.ndarray = (self.tile_shape - self._tile_overlap).astype(int)  # tile step
 
         # Calculate mosaic (collection of tiles) shape
         div, mod = np.divmod(
@@ -214,9 +190,7 @@ class Tiler:
         if self.mode == "irregular":
             self._new_shape = self.data_shape
         else:
-            self._new_shape = (
-                self._indexing_shape * self._tile_step
-            ) + self._tile_overlap
+            self._new_shape = (self._indexing_shape * self._tile_step) + self._tile_overlap
         self._shape_diff = self._new_shape - self.data_shape
         if self.channel_dimension is not None:
             self._shape_diff[self.channel_dimension] = 0
@@ -226,16 +200,15 @@ class Tiler:
             self._tile_step[self.channel_dimension] = 0
 
         # Tile indexing
-        self._tile_index = np.vstack(
-            np.meshgrid(*[np.arange(0, x) for x in self._indexing_shape], indexing="ij")
-        )
+        self._tile_index = np.vstack(np.meshgrid(*[np.arange(0, x) for x in self._indexing_shape], indexing="ij"))
         self._tile_index = self._tile_index.reshape(self._n_dim, -1).T
         self.n_tiles = len(self._tile_index)
 
         if self.n_tiles == 0:
             warnings.warn(
                 f"Tiler (mode={mode}, overlap={overlap}) will split data_shape {data_shape} "
-                f"into zero tiles (tile_shape={tile_shape})."
+                f"into zero tiles (tile_shape={tile_shape}).",
+                stacklevel=2,
             )
 
     def __len__(self) -> int:
@@ -251,11 +224,11 @@ class Tiler:
             str: String representation of the object.
         """
         return (
-            f"Tiler split {list(self.data_shape)} data into {len(self)} tiles of {list(self.tile_shape)}."
-            f"\n\tMosaic shape: {list(self._indexing_shape)}"
-            f"\n\tPadded shape: {list(self._new_shape)}"
+            f"Tiler split {self.data_shape.tolist()} data into {len(self)} tiles of {self.tile_shape.tolist()}."
+            f"\n\tMosaic shape: {self._indexing_shape.tolist()}"
+            f"\n\tPadded shape: {self._new_shape.tolist()}"
             f"\n\tTile overlap: {self.overlap}"
-            f"\n\tElement step: {list(self._tile_step)}"
+            f"\n\tElement step: {self._tile_step.tolist()}"
             f"\n\tMode: {self.mode}"
             f"\n\tChannel dimension: {self.channel_dimension}"
         )
@@ -330,23 +303,15 @@ class Tiler:
 
         # return a tile at a time
         if batch_size == 0:
-            for tile_i in tqdm(
-                range(self.n_tiles), disable=not progress_bar, unit=" tiles"
-            ):
+            for tile_i in tqdm(range(self.n_tiles), disable=not progress_bar, unit=" tiles"):
                 yield tile_i, self.get_tile(data, tile_i, copy_data=copy_data)
 
         # return in batches
         if batch_size > 0:
             # check for drop_last
-            length = (
-                (self.n_tiles - (self.n_tiles % batch_size))
-                if drop_last
-                else self.n_tiles
-            )
+            length = (self.n_tiles - (self.n_tiles % batch_size)) if drop_last else self.n_tiles
 
-            for tile_i in tqdm(
-                range(0, length, batch_size), disable=not progress_bar, unit=" batches"
-            ):
+            for tile_i in tqdm(range(0, length, batch_size), disable=not progress_bar, unit=" batches"):
                 tiles = np.stack(
                     [
                         self.get_tile(data, x, copy_data=copy_data)
@@ -396,14 +361,10 @@ class Tiler:
 
         if (tile_id < 0) or (tile_id >= self.n_tiles):
             raise IndexError(
-                f"Out of bounds, there is no tile {tile_id}."
-                f"There are {len(self) - 1} tiles, starting from index 0."
+                f"Out of bounds, there is no tile {tile_id}.There are {len(self) - 1} tiles, starting from index 0."
             )
 
-        if (
-            isinstance(data, np.ndarray)
-            and np.not_equal(data.shape, self.data_shape).any()
-        ):
+        if isinstance(data, np.ndarray) and np.not_equal(data.shape, self.data_shape).any():
             raise ValueError(
                 f"Shape of provided data array ({data.shape}) does not match "
                 f"same as Tiler's data_shape ({tuple(self.data_shape)})."
@@ -439,9 +400,7 @@ class Tiler:
                     constant_values=self.constant_value,
                 )
             elif self.mode == "reflect" or self.mode == "edge" or self.mode == "wrap":
-                tile_data = np.pad(
-                    tile_data, list((0, diff) for diff in shape_diff), mode=self.mode
-                )
+                tile_data = np.pad(tile_data, list((0, diff) for diff in shape_diff), mode=self.mode)
 
         return tile_data
 
@@ -507,14 +466,11 @@ class Tiler:
 
         if (tile_id < 0) or (tile_id >= self.n_tiles):
             raise IndexError(
-                f"Out of bounds, there is no tile {tile_id}. "
-                f"There are {len(self) - 1} tiles, starting from index 0."
+                f"Out of bounds, there is no tile {tile_id}. There are {len(self) - 1} tiles, starting from index 0."
             )
 
         # find min and max vertices
-        bottom_left_corner = self._tile_step * self.get_tile_mosaic_position(
-            tile_id, True
-        )
+        bottom_left_corner = self._tile_step * self.get_tile_mosaic_position(tile_id, True)
         top_right_corner = bottom_left_corner + self.tile_shape
 
         # remove channel dimension if not required
@@ -542,9 +498,7 @@ class Tiler:
             corners = np.stack([intervals[x][indexing.T[x]] for x in range(n_dim)], -1)
             return corners
 
-    def get_tile_mosaic_position(
-        self, tile_id: int, with_channel_dim: bool = False
-    ) -> np.ndarray:
+    def get_tile_mosaic_position(self, tile_id: int, with_channel_dim: bool = False) -> np.ndarray:
         """Returns tile position in the mosaic.
 
         Args:
@@ -559,14 +513,11 @@ class Tiler:
         """
         if (tile_id < 0) or (tile_id >= self.n_tiles):
             raise IndexError(
-                f"Out of bounds, there is no tile {tile_id}. "
-                f"There are {len(self) - 1} tiles, starting from index 0."
+                f"Out of bounds, there is no tile {tile_id}. There are {len(self) - 1} tiles, starting from index 0."
             )
 
         if self.channel_dimension is not None and not with_channel_dim:
-            return self._tile_index[tile_id][
-                ~(np.arange(self._n_dim) == self.channel_dimension)
-            ]
+            return self._tile_index[tile_id][~(np.arange(self._n_dim) == self.channel_dimension)]
         return self._tile_index[tile_id]
 
     def get_mosaic_shape(self, with_channel_dim: bool = False) -> np.ndarray:
@@ -580,9 +531,7 @@ class Tiler:
             np.ndarray: Shape of tiles mosaic.
         """
         if self.channel_dimension is not None and not with_channel_dim:
-            return self._indexing_shape[
-                ~(np.arange(self._n_dim) == self.channel_dimension)
-            ]
+            return self._indexing_shape[~(np.arange(self._n_dim) == self.channel_dimension)]
         return self._indexing_shape
 
     def calculate_padding(self) -> Tuple[np.ndarray, List[Tuple[int, int]]]:

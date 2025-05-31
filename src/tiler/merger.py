@@ -1,15 +1,14 @@
-from typing import Union, Tuple, List, Optional
 import warnings
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
 
-from tiler import Tiler
 from tiler._windows import get_window
+from tiler.tiler import Tiler
 
 
 class Merger:
-
     SUPPORTED_WINDOWS = [
         "boxcar",
         "triang",
@@ -26,30 +25,30 @@ class Merger:
     ]
     r"""
     Supported windows:
-    - 'boxcar' (default)  
-        Boxcar window: the weight of each is tile element is 1.  
+    - 'boxcar' (default)
+        Boxcar window: the weight of each is tile element is 1.
         Also known as rectangular window or Dirichlet window (and equivalent to no window at all).
-    - 'triang'  
+    - 'triang'
         Triangular window.
-    - 'blackman'  
+    - 'blackman'
         Blackman window.
-    - 'hamming'  
+    - 'hamming'
         Hamming window.
-    - 'hann'  
+    - 'hann'
         Hann window.
-    - 'bartlett'  
+    - 'bartlett'
         Bartlett window.
-    - 'parzen'  
+    - 'parzen'
         Parzen window.
-    - 'bohman'  
+    - 'bohman'
         Bohman window.
-    - 'blackmanharris'  
+    - 'blackmanharris'
         Minimum 4-term Blackman-Harris window.
-    - 'nuttall'  
+    - 'nuttall'
         Minimum 4-term Blackman-Harris window according to Nuttall.
-    - 'barthann'  
-        Bartlett-Hann window.    
-    - 'overlap-tile'  
+    - 'barthann'
+        Bartlett-Hann window.
+    - 'overlap-tile'
         Creates a boxcar window for the non-overlapping, middle part of tile, and zeros everywhere else.
         Requires applying padding calculated with `Tiler.calculate_padding()` for correct results.
         (based on Ronneberger et al. 2015, U-Net paper)
@@ -70,15 +69,6 @@ class Merger:
         There are two required np.float64 buffers: `self.data` and `self.weights_sum`
         and one optional np.uint32 `self.data_visits` (see below `save_visits` argument).
 
-        TODO:
-            - generate window depending on tile border type
-                # some reference for the future borders generation
-                # 1d = 3 types of tiles: 2 corners and middle
-                # 2d = 9 types of tiles: 4 corners, 4 tiles with 1 edge and middle
-                # 3d = 25 types of tiles: 8 corners, 12 tiles with 2 edges, 6 tiles with one edge and middle
-                # corners: 2^ndim
-                # tiles: 2*ndim*nedges
-
         Args:
             tiler (Tiler): Tiler with which the tiles were originally created.
 
@@ -94,7 +84,7 @@ class Merger:
             data_dtype (np.dtype): Specify data type for data buffer that stores cumulative result.
                 Default is `np.float32`.
 
-            weights_dtype (np.dtype): Specify data type for weights buffer that stores cumulative weights and window array.
+            weights_dtype (np.dtype): Specify data type for weights buffer that stores cumulative weights and window.
                 If you don't need precision but would rather save memory you can use `np.float16`.
                 Likewise, on the opposite, you can use `np.float64`.
                 Default is `np.float32`.
@@ -102,22 +92,26 @@ class Merger:
         """
 
         self.tiler = tiler
+        """@private"""
 
         # Logits support
         if not isinstance(logits, int) or logits < 0:
-            raise ValueError(
-                f"Logits must be an integer 0 or a positive number ({logits})."
-            )
+            raise ValueError(f"Logits must be an integer 0 or a positive number ({logits}).")
         self.logits = int(logits)
+        """@private"""
 
         # Generate data and normalization arrays
         self.data = self.data_visits = self.weights_sum = None
+        """@private"""
         self.data_dtype = data_dtype
+        """@private"""
         self.weights_dtype = weights_dtype
+        """@private"""
         self.reset(save_visits)
 
         # Generate window function
         self.window = None
+        """@private"""
         self.set_window(window)
 
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
@@ -171,9 +165,7 @@ class Merger:
 
         # Warn user that changing window type after some elements were already visited is a bad idea.
         if np.count_nonzero(self.data_visits):
-            warnings.warn(
-                "You are setting window type after some elements were already added."
-            )
+            warnings.warn("You are setting window type after some elements were already added.", stacklevel=2)
 
         # Default window is boxcar
         if window is None:
@@ -186,14 +178,10 @@ class Merger:
             self.window = self._generate_window(window, self.tiler.tile_shape)
         elif isinstance(window, np.ndarray):
             if not np.array_equal(window.shape, self.tiler.tile_shape):
-                raise ValueError(
-                    f"Window function must have the same shape as tile shape."
-                )
+                raise ValueError("Window function must have the same shape as tile shape.")
             self.window = window.astype(self.weights_dtype)
         else:
-            raise ValueError(
-                f"Unsupported type for window function ({type(window)}), expected str or np.ndarray."
-            )
+            raise ValueError(f"Unsupported type for window function ({type(window)}), expected str or np.ndarray.")
 
     def reset(self, save_visits: bool = True) -> None:
         """Reset data, weights and optional data_visits buffers.
@@ -212,17 +200,13 @@ class Merger:
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros(
-                (self.logits, *padded_data_shape), dtype=self.data_dtype
-            )
+            self.data = np.zeros((self.logits, *padded_data_shape), dtype=self.data_dtype)
         else:
             self.data = np.zeros(padded_data_shape, dtype=self.data_dtype)
 
         # Data visits holds the number of times each element was assigned
         if save_visits:
-            self.data_visits = np.zeros(
-                padded_data_shape, dtype=np.uint32
-            )  # uint32 ought to be enough for anyone :)
+            self.data_visits = np.zeros(padded_data_shape, dtype=np.uint32)  # uint32 ought to be enough for anyone :)
 
         # Total data window (weight) coefficients
         self.weights_sum = np.zeros(padded_data_shape, dtype=self.weights_dtype)
@@ -240,28 +224,23 @@ class Merger:
         """
         if tile_id < 0 or tile_id >= len(self.tiler):
             raise IndexError(
-                f"Out of bounds, there is no tile {tile_id}. "
-                f"There are {len(self.tiler)} tiles, starting from index 0."
+                f"Out of bounds, there is no tile {tile_id}. There are {len(self.tiler)} tiles, starting from index 0."
             )
 
         data_shape = np.array(data.shape)
         expected_tile_shape = (
-            ((self.logits,) + tuple(self.tiler.tile_shape))
-            if self.logits > 0
-            else tuple(self.tiler.tile_shape)
+            ((self.logits,) + tuple(self.tiler.tile_shape)) if self.logits > 0 else tuple(self.tiler.tile_shape)
         )
 
         if self.tiler.mode != "irregular":
             if not np.all(np.equal(data_shape, expected_tile_shape)):
                 raise ValueError(
-                    f"Passed data shape ({data_shape}) "
-                    f"does not fit expected tile shape ({expected_tile_shape})."
+                    f"Passed data shape ({data_shape}) does not fit expected tile shape ({expected_tile_shape})."
                 )
         else:
             if not np.all(np.less_equal(data_shape, expected_tile_shape)):
                 raise ValueError(
-                    f"Passed data shape ({data_shape}) "
-                    f"must be less or equal than tile shape ({expected_tile_shape})."
+                    f"Passed data shape ({data_shape}) must be less or equal than tile shape ({expected_tile_shape})."
                 )
 
         # Select coordinates for data
@@ -269,15 +248,10 @@ class Merger:
         a, b = self.tiler.get_tile_bbox(tile_id, with_channel_dim=True)
 
         sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
-        win_sl = [
-            slice(None, -diff) if (diff > 0) else slice(None, None)
-            for diff in shape_diff
-        ]
+        win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
 
         if self.logits > 0:
-            self.data[tuple([slice(None, None, None)] + sl)] += (
-                data * self.window[tuple(win_sl[1:])]
-            )
+            self.data[tuple([slice(None, None, None)] + sl)] += data * self.window[tuple(win_sl[1:])]
             self.weights_sum[tuple(sl)] += self.window[tuple(win_sl[1:])]
         else:
             self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
@@ -305,21 +279,15 @@ class Merger:
         n_batches = (div + 1) if mod > 0 else div
 
         if batch_id < 0 or batch_id >= n_batches:
-            raise IndexError(
-                f"Out of bounds. There are {n_batches} batches of {batch_size}, starting from index 0."
-            )
+            raise IndexError(f"Out of bounds. There are {n_batches} batches of {batch_size}, starting from index 0.")
 
         # add each tile in a batch with computed tile_id
         for data_i, tile_i in enumerate(
-            range(
-                batch_id * batch_size, min((batch_id + 1) * batch_size, len(self.tiler))
-            )
+            range(batch_id * batch_size, min((batch_id + 1) * batch_size, len(self.tiler)))
         ):
             self.add(tile_i, data[data_i])
 
-    def _unpad(
-        self, data: np.ndarray, extra_padding: Optional[List[Tuple[int, int]]] = None
-    ):
+    def _unpad(self, data: np.ndarray, extra_padding: Optional[List[Tuple[int, int]]] = None):
         """Slices/unpads data according to merger and tiler settings, as well as additional padding.
 
         Args:
@@ -333,15 +301,10 @@ class Merger:
         if extra_padding:
             sl = [
                 slice(pad_from, shape - pad_to)
-                for shape, (pad_from, pad_to) in zip(
-                    self.tiler.data_shape, extra_padding
-                )
+                for shape, (pad_from, pad_to) in zip(self.tiler.data_shape, extra_padding)
             ]
         else:
-            sl = [
-                slice(None, self.tiler.data_shape[i])
-                for i in range(len(self.tiler.data_shape))
-            ]
+            sl = [slice(None, self.tiler.data_shape[i]) for i in range(len(self.tiler.data_shape))]
 
         # if merger has logits dimension, add another slicing in front
         if self.logits:

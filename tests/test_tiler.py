@@ -1,7 +1,7 @@
 import unittest
-import warnings
 
 import numpy as np
+
 from tiler import Tiler
 
 
@@ -96,9 +96,7 @@ class TestTilingCommon(unittest.TestCase):
             )
 
         # channel dimension test
-        tiler = Tiler(
-            data_shape=(100, 100, 3), tile_shape=(10, 20, 3), channel_dimension=2
-        )
+        tiler = Tiler(data_shape=(100, 100, 3), tile_shape=(10, 20, 3), channel_dimension=2)
         for i in range(tiler.n_tiles):
             with self.assertRaises(ValueError) as cm:
                 tiler.get_tile(fn, i)
@@ -121,9 +119,7 @@ class TestTiling(unittest.TestCase):
         tile_size = 15
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), mode="drop")
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
         expected_split = expected_split[:-1]
 
         calculated_split = [t for _, t in tiler(self.data)]
@@ -143,13 +139,9 @@ class TestTiling(unittest.TestCase):
     def test_irregular_mode(self):
         # Irregular mode returns last chunk even if it is not equal to the tile size
         tile_size = 15
-        tiler = Tiler(
-            data_shape=self.data.shape, tile_shape=(tile_size,), mode="irregular"
-        )
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), mode="irregular")
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
 
         calculated_split = [t for _, t in tiler(self.data)]
 
@@ -167,9 +159,7 @@ class TestTiling(unittest.TestCase):
             constant_value=constant_value,
         )
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
         expected_split[-1] = np.pad(
             expected_split[-1],
             (0, tile_size - len(expected_split[-1])),
@@ -189,16 +179,10 @@ class TestTiling(unittest.TestCase):
     def test_reflect_mode(self):
         # Reflect mode pads with reflected values along the axis
         tile_size = 15
-        tiler = Tiler(
-            data_shape=self.data.shape, tile_shape=(tile_size,), mode="reflect"
-        )
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), mode="reflect")
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
-        expected_split[-1] = np.pad(
-            expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="reflect"
-        )
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
+        expected_split[-1] = np.pad(expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="reflect")
 
         calculated_split = [t for _, t in tiler(self.data)]
 
@@ -210,12 +194,8 @@ class TestTiling(unittest.TestCase):
         tile_size = 15
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), mode="edge")
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
-        expected_split[-1] = np.pad(
-            expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="edge"
-        )
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
+        expected_split[-1] = np.pad(expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="edge")
 
         calculated_split = [t for _, t in tiler(self.data)]
 
@@ -227,12 +207,8 @@ class TestTiling(unittest.TestCase):
         tile_size = 15
         tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), mode="wrap")
 
-        expected_split = [
-            self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)
-        ]
-        expected_split[-1] = np.pad(
-            expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="wrap"
-        )
+        expected_split = [self.data[i : i + tile_size] for i in range(0, self.n_elements, tile_size)]
+        expected_split[-1] = np.pad(expected_split[-1], (0, tile_size - len(expected_split[-1])), mode="wrap")
 
         calculated_split = [t for _, t in tiler(self.data)]
 
@@ -299,21 +275,19 @@ class TestTiling(unittest.TestCase):
         # copy test
         t = tiler.get_tile(self.data, 0, copy_data=True)
         t[9] = 0
-        np.testing.assert_equal(
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0)
-        )
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
 
         t = tiler.get_tile(self.data, 0, copy_data=False)
         t[9] = 0
-        np.testing.assert_equal(
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0)
-        )
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t)
         t[9] = 9
 
         # test callable data
-        fn = lambda x, w: self.data[x : x + w]
+        def fn(x, w):
+            return self.data[x : x + w]
+
         t = tiler.get_tile(fn, 0)
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], t)
         t = tiler.get_tile(fn, 1)
@@ -326,17 +300,13 @@ class TestTiling(unittest.TestCase):
         # copy test with iterator
         t = list(tiler(self.data, copy_data=True))
         t[0][1][9] = 0
-        np.testing.assert_equal(
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0)
-        )
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t[0][1])
         self.assertNotEqual(t[0][1][9], self.data[9])
 
         t = [tile for _, tile in tiler(self.data, copy_data=False)]
         t[0][9] = 0
-        np.testing.assert_equal(
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0)
-        )
+        np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], tiler.get_tile(self.data, 0))
         np.testing.assert_equal([0, 1, 2, 3, 4, 5, 6, 7, 8, 0], t[0])
         self.assertEqual(t[0][9], self.data[9])
 
@@ -370,13 +340,10 @@ class TestTiling(unittest.TestCase):
         # If overlap is an integer, the same overlap should be applied in each dimension
         tile_size = 10
         overlap = 5
-        tiler = Tiler(
-            data_shape=self.data.shape, tile_shape=(tile_size,), overlap=overlap
-        )
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), overlap=overlap)
 
         expected_split = [
-            [i for i in range(j, j + tile_size)]
-            for j in range(0, self.n_elements - overlap, tile_size - overlap)
+            [i for i in range(j, j + tile_size)] for j in range(0, self.n_elements - overlap, tile_size - overlap)
         ]
 
         calculated_split = [t for _, t in tiler(self.data)]
@@ -389,13 +356,10 @@ class TestTiling(unittest.TestCase):
         tile_size = 10
         overlap = 0.5
         el_overlap = int(tile_size * overlap)
-        tiler = Tiler(
-            data_shape=self.data.shape, tile_shape=(tile_size,), overlap=overlap
-        )
+        tiler = Tiler(data_shape=self.data.shape, tile_shape=(tile_size,), overlap=overlap)
 
         expected_split = [
-            [i for i in range(j, j + tile_size)]
-            for j in range(0, self.n_elements - el_overlap, tile_size - el_overlap)
+            [i for i in range(j, j + tile_size)] for j in range(0, self.n_elements - el_overlap, tile_size - el_overlap)
         ]
 
         calculated_split = [t for _, t in tiler(self.data)]
@@ -466,23 +430,15 @@ class TestTiling(unittest.TestCase):
 
         tile_id = 0
         np.testing.assert_equal([0], tiler.get_tile_mosaic_position(tile_id))
-        np.testing.assert_equal(
-            [0], tiler.get_tile_mosaic_position(tile_id, with_channel_dim=True)
-        )
+        np.testing.assert_equal([0], tiler.get_tile_mosaic_position(tile_id, with_channel_dim=True))
         np.testing.assert_equal([0], tiler2.get_tile_mosaic_position(tile_id))
-        np.testing.assert_equal(
-            [0, 0], tiler2.get_tile_mosaic_position(tile_id, with_channel_dim=True)
-        )
+        np.testing.assert_equal([0, 0], tiler2.get_tile_mosaic_position(tile_id, with_channel_dim=True))
 
         tile_id = len(tiler) - 1
         np.testing.assert_equal([9], tiler.get_tile_mosaic_position(tile_id))
-        np.testing.assert_equal(
-            [9], tiler.get_tile_mosaic_position(tile_id, with_channel_dim=True)
-        )
+        np.testing.assert_equal([9], tiler.get_tile_mosaic_position(tile_id, with_channel_dim=True))
         np.testing.assert_equal([9], tiler2.get_tile_mosaic_position(tile_id))
-        np.testing.assert_equal(
-            [0, 9], tiler2.get_tile_mosaic_position(tile_id, with_channel_dim=True)
-        )
+        np.testing.assert_equal([0, 9], tiler2.get_tile_mosaic_position(tile_id, with_channel_dim=True))
 
         with self.assertRaises(IndexError):
             tiler.get_tile_mosaic_position(-1)
@@ -560,9 +516,7 @@ class TestTiling(unittest.TestCase):
 
         # first tile
         np.testing.assert_equal(tiler1d.get_tile_bbox(0), ([0], [10]))
-        np.testing.assert_equal(
-            tiler1d.get_tile_bbox(0, with_channel_dim=True), ([0], [10])
-        )
+        np.testing.assert_equal(tiler1d.get_tile_bbox(0, with_channel_dim=True), ([0], [10]))
         np.testing.assert_equal(tiler1d.get_tile_bbox(0, all_corners=True), [[0], [10]])
         np.testing.assert_equal(
             tiler1d.get_tile_bbox(0, with_channel_dim=True, all_corners=True),
@@ -570,9 +524,7 @@ class TestTiling(unittest.TestCase):
         )
 
         np.testing.assert_equal(tiler2d.get_tile_bbox(0), ([0], [10]))
-        np.testing.assert_equal(
-            tiler2d.get_tile_bbox(0, with_channel_dim=True), ([0, 0], [3, 10])
-        )
+        np.testing.assert_equal(tiler2d.get_tile_bbox(0, with_channel_dim=True), ([0, 0], [3, 10]))
         np.testing.assert_equal(tiler2d.get_tile_bbox(0, all_corners=True), [[0], [10]])
         np.testing.assert_equal(
             tiler2d.get_tile_bbox(0, with_channel_dim=True, all_corners=True),
@@ -580,9 +532,7 @@ class TestTiling(unittest.TestCase):
         )
 
         np.testing.assert_equal(tiler3d.get_tile_bbox(0), ([0, 0], [10, 10]))
-        np.testing.assert_equal(
-            tiler3d.get_tile_bbox(0, with_channel_dim=True), ([0, 0, 0], [10, 3, 10])
-        )
+        np.testing.assert_equal(tiler3d.get_tile_bbox(0, with_channel_dim=True), ([0, 0, 0], [10, 3, 10]))
         np.testing.assert_equal(
             tiler3d.get_tile_bbox(0, all_corners=True),
             [[0, 0], [0, 10], [10, 0], [10, 10]],
@@ -603,24 +553,16 @@ class TestTiling(unittest.TestCase):
 
         # last tile
         np.testing.assert_equal(tiler1d.get_tile_bbox(9), ([90], [100]))
-        np.testing.assert_equal(
-            tiler1d.get_tile_bbox(9, with_channel_dim=True), ([90], [100])
-        )
-        np.testing.assert_equal(
-            tiler1d.get_tile_bbox(9, all_corners=True), [[90], [100]]
-        )
+        np.testing.assert_equal(tiler1d.get_tile_bbox(9, with_channel_dim=True), ([90], [100]))
+        np.testing.assert_equal(tiler1d.get_tile_bbox(9, all_corners=True), [[90], [100]])
         np.testing.assert_equal(
             tiler1d.get_tile_bbox(9, with_channel_dim=True, all_corners=True),
             [[90], [100]],
         )
 
         np.testing.assert_equal(tiler2d.get_tile_bbox(9), ([90], [100]))
-        np.testing.assert_equal(
-            tiler2d.get_tile_bbox(9, with_channel_dim=True), ([0, 90], [3, 100])
-        )
-        np.testing.assert_equal(
-            tiler2d.get_tile_bbox(9, all_corners=True), [[90], [100]]
-        )
+        np.testing.assert_equal(tiler2d.get_tile_bbox(9, with_channel_dim=True), ([0, 90], [3, 100]))
+        np.testing.assert_equal(tiler2d.get_tile_bbox(9, all_corners=True), [[90], [100]])
         np.testing.assert_equal(
             tiler2d.get_tile_bbox(9, with_channel_dim=True, all_corners=True),
             [[0, 90], [0, 100], [3, 90], [3, 100]],
