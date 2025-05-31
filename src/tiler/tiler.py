@@ -564,6 +564,6 @@ class Tiler:
         post_pad = pre_pad + np.mod(self._tile_step, 2)
 
         new_shape = pre_pad + self.data_shape + post_pad
-        padding = list(zip(pre_pad, post_pad, strict=False))
+        padding = list(zip(pre_pad, post_pad))
 
         return new_shape, padding

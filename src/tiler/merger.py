@@ -247,7 +247,7 @@ class Merger:
         shape_diff = expected_tile_shape - data_shape
         a, b = self.tiler.get_tile_bbox(tile_id, with_channel_dim=True)
 
-        sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b, strict=False))]
+        sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
         win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
 
         if self.logits > 0:
@@ -301,7 +301,7 @@ class Merger:
         if extra_padding:
             sl = [
                 slice(pad_from, shape - pad_to)
-                for shape, (pad_from, pad_to) in zip(self.tiler.data_shape, extra_padding, strict=False)
+                for shape, (pad_from, pad_to) in zip(self.tiler.data_shape, extra_padding)
             ]
         else:
             sl = [slice(None, self.tiler.data_shape[i]) for i in range(len(self.tiler.data_shape))]
