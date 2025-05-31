@@ -3,7 +3,6 @@
 ![Tiler teaser image](misc/teaser/tiler_teaser.png)
 
 [![CI](https://github.com/the-lay/tiler/actions/workflows/ci.yml/badge.svg)](https://github.com/the-lay/tiler/actions/workflows/ci.yml)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Coverage status](https://coveralls.io/repos/github/the-lay/tiler/badge.svg?branch=master)](https://coveralls.io/github/the-lay/tiler?branch=master)
 [![PyPI version](https://badge.fury.io/py/tiler.svg)](https://badge.fury.io/py/tiler)
 
@@ -11,8 +10,6 @@
 [Github repository](https://github.com/the-lay/tiler) | 
 [Github issues](https://github.com/the-lay/tiler/issues) | 
 [Documentation](https://the-lay.github.io/tiler)
-_________________
-⚠️ **Please note: work in progress, things will change and/or break!** ⚠️
 _________________
 
 This python package provides consistent and user-friendly

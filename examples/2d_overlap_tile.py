@@ -5,10 +5,11 @@
 # the input image. This tiling strategy is important to apply the network to large images,
 # since otherwise the resolution would be limited by the GPU memory." - Ronneberger et al 2015, U-Net paper
 
-import numpy as np
 import matplotlib.pyplot as plt
-from PIL import Image, ImageEnhance
-from tiler import Tiler, Merger
+import numpy as np
+from PIL import Image
+
+from tiler import Merger, Tiler
 
 # Loading image
 # Photo by Christian Holzinger on Unsplash: https://unsplash.com/photos/CUY_YHhCFl4
@@ -37,6 +38,7 @@ padded_image = np.pad(image, padding, mode="reflect")
 # or you can use window="overlap-tile"
 # it will automatically calculate such window based on tiler.overlap and applied padding
 merger = Merger(tiler=tiler, window="overlap-tile")
+
 
 # Let's define a function that will be applied to each tile
 # For this example, let's black out the sides that should be "cropped" by window function

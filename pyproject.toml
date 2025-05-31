@@ -1,25 +1,68 @@
-[build-system]
-requires = [
-    "setuptools >= 40.6.0",
-    "setuptools_scm[toml] >= 4, <6",
-    "setuptools_scm_git_archive",
-    "wheel"
+[project]
+name = "tiler"
+dynamic = ["version"]
+description = "N-dimensional NumPy array tiling and merging with overlapping, padding and tapering"
+authors = [
+    {name = "the-lay", email = "ilja.gubin@gmail.com"}
 ]
+dependencies = [
+    "numpy",
+    "tqdm",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.urls]
+Documentation = "https://the-lay.github.io/tiler/"
+Source = "https://github.com/the-lay/tiler"
+Issues = "https://github.com/the-lay/tiler/issues"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "coverage[toml]",
+]
+docs = [
+    "pdoc==15.0.3",
+]
+all = [
+    "pytest",
+    "coverage[toml]",
+    "pdoc==15.0.3",
+]
+
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "tiler/version.py"
 
 [tool.coverage.run]
 branch = true
 relative_files = true
-source = ['tiler']
-omit = ['tiler/version.py']
+source = ["tiler"]
 
 [tool.coverage.report]
 show_missing = true
 fail_under = 95
 
-[tool.black]
-line-length = 88
-target-version = ['py38']
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "I", "F", "W", "B", "A"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

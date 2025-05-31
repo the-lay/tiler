@@ -1,6 +1,7 @@
 # Heavily based on scipy code
 # For more information please refer to scipy/signal/windows/windows.py
-from typing import Union, List
+from typing import List, Union
+
 import numpy as np
 
 
@@ -156,9 +157,7 @@ def _bartlett(m: int):
         return np.ones(m)
 
     n = np.arange(0, m)
-    w = np.where(
-        np.less_equal(n, (m - 1) / 2.0), 2.0 * n / (m - 1), 2.0 - 2.0 * n / (m - 1)
-    )
+    w = np.where(np.less_equal(n, (m - 1) / 2.0), 2.0 * n / (m - 1), 2.0 - 2.0 * n / (m - 1))
 
     return w
 
