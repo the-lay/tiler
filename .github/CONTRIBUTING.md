@@ -18,7 +18,7 @@ pip install -e .[all]
 
 3. After you've finished with your changes, please run linter, tests and check that coverage didn't go down too much:
 ```bash
-black tiler tests
+ruff check . && ruff format .
 coverage run -m pytest
 coverage report
 ```

@@ -1,36 +1,45 @@
 name: CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
 
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
       with:
-        python-version: 3.9
-    - uses: pre-commit/action@v3.0.1
+        python-version: "3.13"
+    - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd  # v3.0.1
 
   test:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
       matrix:
-        # 3.9 will reach EoL in October 2025
-        # https://devguide.python.org/#status-of-python-branches
-        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13" ]
+        # https://devguide.python.org/versions/
+        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        numpy: [ "" ]
+        include:
+          # oldest supported numpy (the floor declared in pyproject.toml)
+          - python-version: "3.9"
+            numpy: "==1.20.3"
+          # newest numpy 1.x
+          - python-version: "3.12"
+            numpy: "<2"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
       - run: |
           python -m pip install --upgrade pip
-          pip install .[test]
+          pip install -e .[test]
+          if [ -n "${{ matrix.numpy }}" ]; then pip install "numpy${{ matrix.numpy }}"; fi
           pip install coveralls
       - run: coverage run -m pytest -v
+      - run: coverage report
       - if: github.event_name != 'pull_request'
         run: coveralls
         env:
