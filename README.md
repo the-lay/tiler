@@ -77,7 +77,20 @@ for batch_id, batch in tiler(image, batch_size=10):
 # Final merging: applies tapering and optional unpadding
 final_image = merger.merge(unpad=True)  # (3, 1920, 1080)
 ```
- 
+
+Multi-class segmentation example — a model that consumes all channels and outputs class logits,
+with the class axis placed wherever your framework puts it:
+```python
+# Input tiles are (32, 32, 4) channel-last, model output is (32, 32, 6) — 6 classes instead of channels
+tiler = Tiler(data_shape=(1080, 1920, 4), tile_shape=(32, 32, 4), channel_dimension=-1)
+merger = Merger(tiler, logits=6, logits_dim=-1, ignore_channels=True)
+
+for tile_id, tile in tiler(image):
+   merger.add(tile_id, model(tile))
+
+segmentation = merger.merge(argmax=True)  # (1080, 1920), argmax over the class axis
+```
+
 Installation
 -------------
 The latest release is available through pip:
