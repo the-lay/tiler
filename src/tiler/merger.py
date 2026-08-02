@@ -59,6 +59,8 @@ class Merger:
         tiler: Tiler,
         window: Union[None, str, np.ndarray] = None,
         logits: int = 0,
+        logits_dim: int = 0,
+        ignore_channels: bool = False,
         save_visits: bool = True,
         data_dtype: npt.DTypeLike = np.float32,
         weights_dtype: npt.DTypeLike = np.float32,
@@ -76,7 +78,15 @@ class Merger:
                 Must be one of `Merger.SUPPORTED_WINDOWS` or a numpy array with the same size as the tile.
                 Default is None which creates a boxcar window (constant 1s).
 
-            logits (int): Specify whether to add logits dimensions in front of the data array. Default is `0`.
+            logits (int): Specify the number of classes/logits dimensions in the added tiles. Default is `0`.
+
+            logits_dim (int): Specifies in which axis of the added tiles the logits are expected.
+                Negative indexing is allowed. Only used when `logits` is set.
+                Default is `0`, i.e. logits in front of the data, matching the behavior of earlier versions.
+
+            ignore_channels (bool): If True, makes Merger expect tiles without the Tiler's channel dimension,
+                e.g. for models that consume all channels and output per-class or single-channel predictions.
+                Requires the Tiler to have `channel_dimension` set. Default is `False`.
 
             save_visits (bool): Specify whether to save which elements has been modified and how many times in
                 `self.data_visits`. Can be disabled to save some memory. Default is `True`.
@@ -94,10 +104,31 @@ class Merger:
         self.tiler = tiler
         """@private"""
 
+        # Channel dimension can be ignored, e.g. for models that consume channels and output classes
+        if ignore_channels and tiler.channel_dimension is None:
+            raise ValueError("ignore_channels requires the Tiler to have channel_dimension set.")
+        self.ignore_channels = ignore_channels
+        """@private"""
+
         # Logits support
         if not isinstance(logits, int) or logits < 0:
             raise ValueError(f"Logits must be an integer 0 or a positive number ({logits}).")
         self.logits = int(logits)
+        """@private"""
+
+        if self.logits:
+            if not isinstance(logits_dim, int):
+                raise ValueError(f"Logits dimension must be an integer ({logits_dim}).")
+
+            # added tiles have one extra axis for logits, support negative indexing against that shape
+            out_n_dim = len(self._base_shape(self.tiler.tile_shape)) + 1
+            if logits_dim >= out_n_dim or logits_dim < -out_n_dim:
+                raise ValueError(f"Logits dimension must be from {-out_n_dim} to {out_n_dim - 1} ({logits_dim}).")
+            if logits_dim < 0:
+                logits_dim = out_n_dim + logits_dim
+        elif logits_dim != 0:
+            raise ValueError("logits_dim is only used when logits is set.")
+        self.logits_dim = logits_dim
         """@private"""
 
         # Generate data and normalization arrays
@@ -113,6 +144,13 @@ class Merger:
         self.window = None
         """@private"""
         self.set_window(window)
+
+    def _base_shape(self, shape) -> np.ndarray:
+        """Drops the channel axis from the given shape if `ignore_channels` is set."""
+        shape = np.asarray(shape)
+        if self.ignore_channels:
+            shape = np.delete(shape, self.tiler.channel_dimension)
+        return shape
 
     def _generate_window(self, window: str, shape: Union[Tuple, List]) -> np.ndarray:
         """Generate n-dimensional window according to the given shape.
@@ -183,6 +221,13 @@ class Merger:
         else:
             raise ValueError(f"Unsupported type for window function ({type(window)}), expected str or np.ndarray.")
 
+        # The window that is actually applied in add(): the channel axis (always weighted 1s) is dropped
+        # when the added tiles do not carry it
+        if self.ignore_channels:
+            self._merge_window = np.take(self.window, 0, axis=self.tiler.channel_dimension)
+        else:
+            self._merge_window = self.window
+
     def reset(self, save_visits: bool = True) -> None:
         """Reset data, weights and optional data_visits buffers.
 
@@ -196,11 +241,11 @@ class Merger:
             None
         """
 
-        padded_data_shape = self.tiler._new_shape
+        padded_data_shape = self._base_shape(self.tiler._new_shape)
 
         # Image holds sum of all processed tiles multiplied by the window
         if self.logits:
-            self.data = np.zeros((self.logits, *padded_data_shape), dtype=self.data_dtype)
+            self.data = np.zeros(np.insert(padded_data_shape, self.logits_dim, self.logits), dtype=self.data_dtype)
         else:
             self.data = np.zeros(padded_data_shape, dtype=self.data_dtype)
 
@@ -228,9 +273,11 @@ class Merger:
             )
 
         data_shape = np.array(data.shape)
-        expected_tile_shape = (
-            ((self.logits,) + tuple(self.tiler.tile_shape)) if self.logits > 0 else tuple(self.tiler.tile_shape)
-        )
+        base_tile_shape = self._base_shape(self.tiler.tile_shape)
+        if self.logits > 0:
+            expected_tile_shape = tuple(np.insert(base_tile_shape, self.logits_dim, self.logits))
+        else:
+            expected_tile_shape = tuple(base_tile_shape)
 
         if self.tiler.mode != "irregular":
             if not np.all(np.equal(data_shape, expected_tile_shape)):
@@ -245,17 +292,24 @@ class Merger:
 
         # Select coordinates for data
         shape_diff = expected_tile_shape - data_shape
-        a, b = self.tiler.get_tile_bbox(tile_id, with_channel_dim=True)
+        if self.logits > 0:
+            # slicing and window are aligned with the tile axes, without the logits axis
+            spatial_diff = np.delete(shape_diff, self.logits_dim)
+        else:
+            spatial_diff = shape_diff
+        a, b = self.tiler.get_tile_bbox(tile_id, with_channel_dim=not self.ignore_channels)
 
-        sl = [slice(x, y - shape_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
-        win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in shape_diff]
+        sl = [slice(x, y - spatial_diff[i]) for i, (x, y) in enumerate(zip(a, b))]
+        win_sl = [slice(None, -diff) if (diff > 0) else slice(None, None) for diff in spatial_diff]
+        win = self._merge_window[tuple(win_sl)]
 
         if self.logits > 0:
-            self.data[tuple([slice(None, None, None)] + sl)] += data * self.window[tuple(win_sl[1:])]
-            self.weights_sum[tuple(sl)] += self.window[tuple(win_sl[1:])]
+            data_sl = list(sl)
+            data_sl.insert(self.logits_dim, slice(None, None, None))
+            self.data[tuple(data_sl)] += data * np.expand_dims(win, self.logits_dim)
         else:
-            self.data[tuple(sl)] += data * self.window[tuple(win_sl)]
-            self.weights_sum[tuple(sl)] += self.window[tuple(win_sl)]
+            self.data[tuple(sl)] += data * win
+        self.weights_sum[tuple(sl)] += win
 
         if self.data_visits is not None:
             self.data_visits[tuple(sl)] += 1
@@ -298,17 +352,15 @@ class Merger:
                 ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
                 Default is None.
         """
+        base_data_shape = self._base_shape(self.tiler.data_shape)
         if extra_padding:
-            sl = [
-                slice(pad_from, shape - pad_to)
-                for shape, (pad_from, pad_to) in zip(self.tiler.data_shape, extra_padding)
-            ]
+            sl = [slice(pad_from, shape - pad_to) for shape, (pad_from, pad_to) in zip(base_data_shape, extra_padding)]
         else:
-            sl = [slice(None, self.tiler.data_shape[i]) for i in range(len(self.tiler.data_shape))]
+            sl = [slice(None, shape) for shape in base_data_shape]
 
-        # if merger has logits dimension, add another slicing in front
+        # if merger has logits dimension, add another slicing for it
         if self.logits:
-            sl = [slice(None, None, None)] + sl
+            sl.insert(self.logits_dim, slice(None, None, None))
 
         return data[tuple(sl)]
 
@@ -330,8 +382,8 @@ class Merger:
                 ((before_1, after_1), … (before_N, after_N)) unique pad widths for each axis.
                 Default is None.
 
-            argmax (bool): If argmax is True, the first dimension will be argmaxed.
-                Useful when merger is initialized with `logits=True`.
+            argmax (bool): If argmax is True, the logits dimension (`logits_dim`, first by default)
+                will be argmaxed. Useful when merger is initialized with `logits`.
                 Default is False.
 
             normalize_by_weights (bool): If normalize is True, the accumulated data will be divided by weights.
@@ -355,13 +407,17 @@ class Merger:
             #  ignoring should be more precise without atol
             #  but can hide other errors
             with np.errstate(divide="ignore", invalid="ignore"):
-                data = np.nan_to_num(data / self.weights_sum)
+                weights = self.weights_sum
+                if self.logits:
+                    # weights do not have the logits axis, expand for broadcasting
+                    weights = np.expand_dims(weights, self.logits_dim)
+                data = np.nan_to_num(data / weights)
 
         if unpad:
             data = self._unpad(data, extra_padding)
 
         if argmax:
-            data = np.argmax(data, 0)
+            data = np.argmax(data, self.logits_dim)
 
         if dtype is not None:
             return data.astype(dtype)

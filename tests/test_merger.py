@@ -293,3 +293,128 @@ class TestMergingCommon(unittest.TestCase):
             merger.add(t_id, t)
         np.testing.assert_equal(merger.merge(), padded_data)
         np.testing.assert_equal(merger.merge(extra_padding=padding), self.data)
+
+
+class TestMulticlassMerging(unittest.TestCase):
+    """Multi-class (logits) merging with arbitrary class axis placement, see issue #20."""
+
+    def test_init_validation(self):
+        tiler = Tiler(data_shape=(100,), tile_shape=(10,))
+        tiler_channel = Tiler(data_shape=(4, 96, 96), tile_shape=(4, 32, 32), channel_dimension=0)
+
+        with self.assertRaises(ValueError):
+            Merger(tiler, logits=2, logits_dim="unsupported_type")
+        # 1D data + logits -> expected tile is 2D, so valid dims are -2..1
+        with self.assertRaises(ValueError):
+            Merger(tiler, logits=2, logits_dim=2)
+        with self.assertRaises(ValueError):
+            Merger(tiler, logits=2, logits_dim=-3)
+        # logits_dim without logits is a no-op and most likely a mistake
+        with self.assertRaises(ValueError):
+            Merger(tiler, logits_dim=1)
+        # ignore_channels requires a channel dimension to ignore
+        with self.assertRaises(ValueError):
+            Merger(tiler, ignore_channels=True)
+
+        # negative indexing is allowed
+        merger = Merger(tiler, logits=3, logits_dim=-1)
+        np.testing.assert_equal(merger.data.shape, (100, 3))
+        merger = Merger(tiler_channel, logits=3, logits_dim=-1, ignore_channels=True)
+        np.testing.assert_equal(merger.data.shape, (96, 96, 3))
+
+    def test_logits_dim_last(self):
+        # 1D data, class axis last: model output (10, 3) per tile
+        tiler = Tiler(data_shape=(100,), tile_shape=(10,))
+        merger = Merger(tiler, logits=3, logits_dim=-1)
+
+        for tile_id in range(len(tiler)):
+            prediction = np.zeros((10, 3))
+            prediction[:, tile_id % 3] = 1
+            merger.add(tile_id, prediction)
+
+        merged = merger.merge()
+        np.testing.assert_equal(merged.shape, (100, 3))
+        argmaxed = merger.merge(argmax=True)
+        np.testing.assert_equal(argmaxed.shape, (100,))
+        np.testing.assert_equal(argmaxed[:10], np.zeros(10))
+        np.testing.assert_equal(argmaxed[10:20], np.ones(10))
+
+    def test_logits_dim_zero_matches_legacy_logits(self):
+        tiler = Tiler(data_shape=(100,), tile_shape=(10,))
+        legacy = Merger(tiler, logits=3)
+        explicit = Merger(tiler, logits=3, logits_dim=0)
+
+        for tile_id in range(len(tiler)):
+            prediction = np.zeros((3, 10))
+            prediction[tile_id % 3] = 1
+            legacy.add(tile_id, prediction)
+            explicit.add(tile_id, prediction)
+
+        np.testing.assert_equal(legacy.merge(), explicit.merge())
+        np.testing.assert_equal(legacy.merge(argmax=True), explicit.merge(argmax=True))
+
+    def test_ignore_channels_with_class_axis_last(self):
+        # The exact scenario from issue #20: channel-last input tiles,
+        # model replaces the channel axis with a class axis
+        tiler = Tiler(data_shape=(96, 96, 4), tile_shape=(32, 32, 4), channel_dimension=-1)
+        merger = Merger(tiler, logits=6, logits_dim=-1, ignore_channels=True)
+
+        for tile_id in range(len(tiler)):
+            prediction = np.zeros((32, 32, 6))
+            prediction[..., tile_id % 6] = 1
+            merger.add(tile_id, prediction)
+
+        merged = merger.merge()
+        np.testing.assert_equal(merged.shape, (96, 96, 6))
+
+        argmaxed = merger.merge(argmax=True)
+        np.testing.assert_equal(argmaxed.shape, (96, 96))
+        # tiles are iterated row-major over the 3x3 mosaic
+        self.assertEqual(argmaxed[0, 0], 0)
+        self.assertEqual(argmaxed[0, 40], 1)
+        self.assertEqual(argmaxed[40, 0], 3)
+
+    def test_ignore_channels_without_logits(self):
+        # model collapses channels into a single map: (4, 32, 32) in, (32, 32) out
+        tiler = Tiler(data_shape=(4, 96, 96), tile_shape=(4, 32, 32), channel_dimension=0)
+        merger = Merger(tiler, ignore_channels=True)
+
+        for tile_id in range(len(tiler)):
+            merger.add(tile_id, np.full((32, 32), tile_id, dtype=np.float32))
+
+        merged = merger.merge()
+        np.testing.assert_equal(merged.shape, (96, 96))
+        self.assertEqual(merged[0, 0], 0)
+        self.assertEqual(merged[40, 40], 4)
+
+    def test_multiclass_with_window_and_overlap(self):
+        # normalization must stay correct when the window is non-trivial
+        # and the class axis is not the leading one
+        tiler = Tiler(data_shape=(64, 64), tile_shape=(16, 16), overlap=0.5)
+        merger = Merger(tiler, window="hann", logits=2, logits_dim=-1)
+
+        for tile_id in range(len(tiler)):
+            merger.add(tile_id, np.ones((16, 16, 2)))
+
+        merged = merger.merge()
+        np.testing.assert_equal(merged.shape, (64, 64, 2))
+        visited = merger.merge(normalize_by_weights=True)
+        nonzero = visited[visited != 0]
+        np.testing.assert_allclose(nonzero, 1.0, rtol=1e-5)
+
+    def test_multiclass_batch_add(self):
+        tiler = Tiler(data_shape=(100,), tile_shape=(10,))
+        merger = Merger(tiler, logits=3, logits_dim=-1)
+
+        batch = np.ones((5, 10, 3))
+        merger.add_batch(0, 5, batch)
+        merger.add_batch(1, 5, batch)
+        np.testing.assert_equal(merger.merge().shape, (100, 3))
+
+    def test_reset_preserves_multiclass_shapes(self):
+        tiler = Tiler(data_shape=(100,), tile_shape=(10,))
+        merger = Merger(tiler, logits=3, logits_dim=-1)
+        merger.add(0, np.ones((10, 3)))
+        merger.reset()
+        np.testing.assert_equal(merger.data.shape, (100, 3))
+        self.assertEqual(np.count_nonzero(merger.data), 0)
