@@ -133,7 +133,7 @@ class Tiler:
         # Channel dimension can be None which means we need to check for init too
         if not hasattr(self, "channel_dimension") or channel_dimension is not None:
             self.channel_dimension = channel_dimension
-        if self.channel_dimension:
+        if self.channel_dimension is not None:
             if (self.channel_dimension >= self._n_dim) or (self.channel_dimension < -self._n_dim):
                 raise ValueError(
                     f"Specified channel dimension is out of bounds "

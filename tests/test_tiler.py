@@ -2,10 +2,20 @@ import unittest
 
 import numpy as np
 
+import tiler
 from tiler import Tiler
 
 
 class TestTilingCommon(unittest.TestCase):
+    def test_version(self):
+        self.assertIsInstance(tiler.__version__, str)
+        self.assertTrue(tiler.__version__)
+
+    def test_channel_dimension_zero_bounds_check(self):
+        # channel_dimension=0 must go through the same bounds validation as any other value
+        with self.assertRaises(ValueError):
+            Tiler(data_shape=(), tile_shape=(), channel_dimension=0)
+
     def test_init(self):
         with self.assertRaises(ValueError):
             Tiler(data_shape=(-10, -30), tile_shape=(10, 10))
