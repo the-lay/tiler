@@ -91,7 +91,7 @@ Alternatively, you can clone the repository and install it manually:
 ```bash
 git clone git@github.com:the-lay/tiler.git
 cd tiler
-pip install
+pip install .
 ```
 
 If you are planning to contribute, please take a look at the [contribution instructions](.github/CONTRIBUTING.md).

@@ -1,9 +1,15 @@
+import importlib.metadata
 import sys
 
 from tiler.merger import Merger
 from tiler.tiler import Tiler
 
 __all__ = ["Tiler", "Merger"]
+
+try:
+    __version__ = importlib.metadata.version("tiler")
+except importlib.metadata.PackageNotFoundError:  # pragma: no cover
+    __version__ = "0+unknown"
 
 # Import README file as a module general docstring, only when generating documentation
 # We also modify it to make it prettier
